@@ -14,6 +14,22 @@ const adminSchema = new mongoose.Schema({
           'Please fill a valid email address'
         ]
     },
+    pg_name:{
+        type:String,
+        required:[true, 'PG name is required.']
+    },
+    address:{
+        type:String,
+        required:[true, 'Address is required.']
+    },
+    contactno:{
+        type:String,
+        required:[true, 'Contact number is required.'],
+        match: [/^\d{10}$/, 'Please fill a valid 10-digit contact number']
+    },
+    pglogo:{
+        type:String,
+    }
 },{timestamps:true})
 
 export default mongoose.model('Admin',adminSchema)

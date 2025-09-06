@@ -27,6 +27,20 @@ const loginmappingSchema = new mongoose.Schema({
     status:{
         type:Boolean,
         default:true
+    },
+    pgcode:{
+        type:String,
+        required:[true, 'PG code is required.'],
+        unique:true
+    },
+    expiry:{
+        type:Date,
+        required:[true, 'Expiry date is required.']
+    },
+    plantype:{
+        type:String,
+        enum:['BASIC',"PRO",'PREMIUM'],
+        required:[true, 'Plan type is required.']
     }
 },{timestamps:true})
 
