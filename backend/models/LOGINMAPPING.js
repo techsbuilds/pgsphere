@@ -35,12 +35,12 @@ const loginmappingSchema = new mongoose.Schema({
     },
     expiry:{
         type:Date,
-        required:[true, 'Expiry date is required.']
+        default: Date.now
     },
     plantype:{
         type:String,
         enum:['BASIC',"PRO",'PREMIUM'],
-        required:[true, 'Plan type is required.']
+        default:'BASIC'
     }
 },{timestamps:true})
 
