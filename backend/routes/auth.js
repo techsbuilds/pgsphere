@@ -1,5 +1,5 @@
 import express from 'express'
-import { loginUser, logoutPortal, signupUser, validateToken } from '../controller/authController.js'
+import { loginUser, logoutPortal, signupUser, validateToken, verifyOtp } from '../controller/authController.js'
 
 const app = express.Router()
 
@@ -14,6 +14,9 @@ app.post('/validate-token',validateToken)
 
 //Logout
 app.get('/logout',logoutPortal)
+
+// verify otp
+app.post('/verify-otp',verifyOtp)
 
 
 export default app
