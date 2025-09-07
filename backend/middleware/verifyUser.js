@@ -15,6 +15,7 @@ export const verifyToken = async (req, res, next) =>{
  
         req.mongoid = decoded.mongoid
         req.userType = decoded.userType
+        req.pgcode = decoded.pgcode;
         next()
 
     }catch(err){
