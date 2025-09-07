@@ -12,7 +12,8 @@ const adminSchema = new mongoose.Schema({
         match: [
           /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+$/,
           'Please fill a valid email address'
-        ]
+        ],
+        required:true
     },
     pg_name:{
         type:String,
