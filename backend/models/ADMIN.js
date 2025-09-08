@@ -15,7 +15,7 @@ const adminSchema = new mongoose.Schema({
         ],
         required:true
     },
-    pg_name:{
+    pgname:{
         type:String,
         required:[true, 'PG name is required.']
     },

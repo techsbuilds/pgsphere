@@ -94,9 +94,9 @@ export const validateToken = async (req, res, next) =>{
 
 export const signupUser = async (req, res, next) =>{
     try{
-        const {full_name, email, password , userType, contact_no, pgname,address} = req.body
-
-        if(!full_name || !email || !password || !userType) return res.status(400).json({message:"Please provide all required fields."})
+        const {full_name, email, password, contactno, pgname,address} = req.body
+        console.log(req.body)
+        if(!full_name || !email || !password || !contactno || !pgname || !address) return res.status(400).json({message:"Please provide all required fields."})
 
         const existUser = await LOGINMAPPING.findOne({email})
 
@@ -105,23 +105,14 @@ export const signupUser = async (req, res, next) =>{
         const saltRounds = 10;
         const hashedPassword = await bcryptjs.hash(password, saltRounds);
 
-        let newUser = null
-        if(userType === 'Admin'){
-            newUser = new ADMIN({
+        let newUser = new ADMIN({
                 email,
                 full_name,
                 pgname,
+                contactno,
                 address
             })
-        }else if(userType === 'Account'){
-            newUser = new ACCOUNT({
-                full_name,
-                contact_no,
-                email
-            })
-        }else{
-            return res.status(400).json({message:"Please provide valid user type.",success:false})
-        }
+       
 
         await newUser.save()
 
@@ -131,13 +122,13 @@ export const signupUser = async (req, res, next) =>{
             mongoid:newUser._id,
             email,
             password:hashedPassword,
-            userType,
+            userType:'Admin',
             pgcode,
         })
         
         await newLogin.save()
         
-        const DASHBOARD_URL = process.env.NODE_ENV === "production" ? "" : "";
+        const DASHBOARD_URL = process.env.NODE_ENV === "production" ? "app.pgsphere.com" : "http://localhost:5173";
         
         const hasSentEmail = await sendRegistrationEmail(email, pgcode, DASHBOARD_URL);
         
@@ -146,7 +137,7 @@ export const signupUser = async (req, res, next) =>{
         }
         
 
-        return res.status(200).json({message:`New user created successfully. A Dashboard Link and Pgcode has been sent to your email.`,success:true,data:newUser})
+        return res.status(200).json({message:`Your Account created successfully. A Dashboard Link and Pgcode has been sent to your email.`,success:true,data:newUser})
 
 
     }catch(err){
