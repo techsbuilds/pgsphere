@@ -25,13 +25,29 @@ export const loginUser = async (req, res, next) =>{
 
       if(!isPasswordMatched) return res.status(401).json({message:"Password is incorrect.",success:false})
 
-      const otp = Math.floor(1000 + Math.random() * 9000).toString(); 
+      // Generate OTP
+      const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
+      // Save OTP in DB
+      await OTP.create({
+        email,
+        otp,
+        expiresAt: new Date(Date.now() + 3 * 60 * 1000) // 3 minutes
+      });
+
+      // Send OTP via email
       const sentOtp = await sendOtopEmail(email, otp);
 
-      if(!sentOtp) return res.status(500).json({message:"Error in sending OTP. Please try again.",success:false})
+      if(!sentOtp) return res.status(500).json({
+        message: "Error in sending OTP. Please try again.",
+        success: false
+      });
 
-      return res.status(200).json({message:"OTP sent to your email address. Please verify OTP to login.", success:true, data:{email, otp}})
+      return res.status(200).json({
+        message: "OTP sent to your email address. Please verify OTP to login.",
+        success: true,
+        data: { email }
+      });
     }catch(err){
       next(err)
     }
@@ -53,7 +69,7 @@ export const verifyOtp = async (req, res, next) =>{
 
       const user = await LOGINMAPPING.findOne({email})
 
-      const token = jwt.sign({mongoid:user.mongoid, userType:user.userType}, process.env.JWT, {expiresIn:'7d'})
+      const token = jwt.sign({mongoid:user.mongoid, userType:user.userType, pgcode: user.pgcode}, process.env.JWT, {expiresIn:'7d'})
 
       res.cookie('pgtoken', token, {
         expires: new Date(Date.now() + 2592000000),
@@ -108,6 +124,9 @@ export const signupUser = async (req, res, next) =>{
         let newUser = new ADMIN({
                 email,
                 full_name,
+                pg_name: pgname,
+                address,
+                contactno: contact_no
                 pgname,
                 contactno,
                 address
@@ -160,4 +179,3 @@ export const logoutPortal = async (req, res, next) =>{
       next(err);
     }
   }
-  

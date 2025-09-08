@@ -8,10 +8,12 @@ import EMPLOYEE from "../models/EMPLOYEE.js";
 
 dotenv.config();
 
+/* Create Branch */
 export const createBranch = async (req, res, next) => {
   try {
-    const { mongoid } = req;
+    const { mongoid, pgcode } = req; // from auth middleware
     const { branch_name, branch_address } = req.body;
+
     if (!branch_name || !branch_address) {
       if (req.file) {
         await removeFile(path.join("uploads", "branch", req.file.filename));
@@ -19,6 +21,15 @@ export const createBranch = async (req, res, next) => {
       return res
         .status(400)
         .json({ message: "Please provide required fields.", success: false });
+    }
+
+    const existing = await BRANCH.findOne({ branch_name, pgcode });
+    if (existing) {
+      if (req.file) await removeFile(path.join("uploads", "branch", req.file.filename));
+      return res.status(400).json({
+        message: "Branch name already exists.",
+        success: false,
+      });
     }
 
     let imageUrl = null;
@@ -31,13 +42,16 @@ export const createBranch = async (req, res, next) => {
       branch_address,
       branch_image: imageUrl,
       added_by: mongoid,
+      pgcode,
     });
 
     await newBranch.save();
 
-    return res
-      .status(201)
-      .json({ message: "New branch created successfully", success: true });
+    return res.status(201).json({
+      message: "New branch created successfully",
+      success: true,
+      data: newBranch,
+    });
   } catch (err) {
     if (req.file) {
       await removeFile(path.join("uploads", "branch", req.file.filename));
@@ -46,88 +60,98 @@ export const createBranch = async (req, res, next) => {
   }
 };
 
+/* Get All Branches */
 export const getAllBranch = async (req, res, next) => {
   try {
+    const { pgcode } = req;
     const { searchQuery } = req.query;
-    let branch = [];
+
+    let query = { pgcode };
     if (searchQuery) {
-      branch = await BRANCH.find({
-        branch_name: { $regex: searchQuery, $options: "i" },
-      }).sort({ createdAt: -1 });
-    } else {
-      branch = await BRANCH.find().sort({ createdAt: -1 });
+      query.$or = [
+        { branch_name: { $regex: searchQuery, $options: "i" } },
+        { branch_address: { $regex: searchQuery, $options: "i" } }
+      ];
     }
 
-    return res
-      .status(200)
-      .json({
-        message: "All Branches retrived successfully.",
-        success: true,
-        data: branch,
+    const branch = await BRANCH.find(query).sort({ createdAt: -1 });
+
+    if (!branch || branch.length === 0) {
+      return res.status(404).json({
+        message: searchQuery ? "No branches found for the given search query." : "No branches found.",
+        success: false,
+        data: [],
+        count: 0,
       });
+    }
+
+    return res.status(200).json({
+      message: "All Branches retrieved successfully.",
+      success: true,
+      data: branch,
+      count: branch.length,
+    });
   } catch (err) {
     next(err);
   }
 };
 
+/* Update Branch */
 export const updateBranch = async (req, res, next) => {
   try {
+    const { pgcode } = req;
     const { branchId } = req.params;
-
-    const { branch_name, branch_address, remove_image } = req.body;
-
+    const { branch_name, branch_address, remove_image } = req.body || {};
     const uploadedFile = req.file;
+
+    if (!mongoose.Types.ObjectId.isValid(branchId)) {
+      return res.status(400).json({ message: "Invalid branch ID.", success: false });
+    }
 
     if (!branchId)
       return res
         .status(400)
         .json({ message: "Please provide branch id.", success: false });
 
-    const branch = await BRANCH.findById(branchId);
-
+    const branch = await BRANCH.findOne({ _id: branchId, pgcode });
     if (!branch)
       return res
         .status(404)
-        .json({ message: "Branch not found.", success: false });
+        .json({ message: "Branch not found or unauthorized.", success: false });
 
     if (uploadedFile) {
       if (branch.branch_image) {
         const arr = branch.branch_image.split("/");
         const fileName = arr[arr.length - 1];
-
         removeFile(path.join("uploads", "branch", fileName));
       }
-
       branch.branch_image = `${process.env.DOMAIN}/uploads/branch/${uploadedFile.filename}`;
     }
 
     if (remove_image && branch.branch_image) {
       const arr = branch.branch_image.split("/");
       const fileName = arr[arr.length - 1];
-      removeFile(path.join("uploads", "branch", fileName));
+      await removeFile(path.join("uploads", "branch", fileName));
       branch.branch_image = null;
     }
 
-    if (branch_name) {
-      branch.branch_name = branch_name;
-    }
-
-    if (branch_address) {
-      branch.branch_address = branch_address;
-    }
+    if (branch_name) branch.branch_name = branch_name;
+    if (branch_address) branch.branch_address = branch_address;
 
     await branch.save();
 
     return res
       .status(200)
-      .json({ message: "Branch saved successfully.", success: true });
+      .json({ message: "Branch Updates Saved Successfully.", success: true });
   } catch (err) {
     next(err);
   }
 };
 
+/* Get Branch By ID */
 export const getBranchById = async (req, res, next) => {
   try {
+    const { pgcode } = req;
     const { branchId } = req.params;
 
     if (!branchId)
@@ -135,27 +159,30 @@ export const getBranchById = async (req, res, next) => {
         .status(400)
         .json({ message: "Please provide branch id.", success: false });
 
-    const branch = await BRANCH.findById(branchId);
+    if (!mongoose.Types.ObjectId.isValid(branchId)) {
+      return res.status(400).json({ message: "Invalid branch ID.", success: false });
+    }
 
+    const branch = await BRANCH.findOne({ _id: branchId, pgcode });
     if (!branch)
       return res
-        .status(200)
-        .json({ message: "Branch not found.", success: false });
+        .status(404)
+        .json({ message: "Branch not found or unauthorized.", success: false });
 
-    return res
-      .status(200)
-      .json({
-        message: "Branch details retrived successfully.",
-        success: true,
-        data: branch,
-      });
+    return res.status(200).json({
+      message: "Branch details retrieved successfully.",
+      success: true,
+      data: branch,
+    });
   } catch (err) {
     next(err);
   }
 };
 
+/* Dashboard Summary */
 export const getDashboardSummery = async (req, res, next) => {
   try {
+    const { pgcode } = req;
     const { branchId } = req.params;
 
     if (!branchId)
@@ -163,23 +190,25 @@ export const getDashboardSummery = async (req, res, next) => {
         .status(400)
         .json({ message: "Please provide branch id.", success: false });
 
-    const totalRooms = await ROOM.find({ branch: branchId }).countDocuments();
-    const totalCustomers = await CUSTOMER.find({
+    const branch = await BRANCH.findOne({ _id: branchId, pgcode });
+    if (!branch)
+      return res
+        .status(404)
+        .json({ message: "Branch not found or unauthorized.", success: false });
+
+    const totalRooms = await ROOM.countDocuments({ branch: branchId });
+    const totalCustomers = await CUSTOMER.countDocuments({
       branch: branchId,
       status: true,
-    }).countDocuments();
-    const totalEmployees = await EMPLOYEE.find({
+    });
+    const totalEmployees = await EMPLOYEE.countDocuments({
       branch: branchId,
       status: true,
-    }).countDocuments();
+    });
 
     return res.status(200).json({
-      message: "Dashboard summery retrived for branch.",
-      data: {
-        totalRooms,
-        totalCustomers,
-        totalEmployees,
-      },
+      message: "Dashboard summary retrieved for branch.",
+      data: { totalRooms, totalCustomers, totalEmployees },
       success: true,
     });
   } catch (err) {
