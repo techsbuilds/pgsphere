@@ -28,12 +28,13 @@ export const loginUser = async (req, res, next) =>{
       // Generate OTP
       const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-      // Save OTP in DB
-      await OTP.create({
+      //Create OTP in DB
+      const newOtp = new OTP({
         email,
-        otp,
-        expiresAt: new Date(Date.now() + 3 * 60 * 1000) // 3 minutes
-      });
+        otp
+      })
+
+      await newOtp.save()
 
       // Send OTP via email
       const sentOtp = await sendOtopEmail(email, otp);
@@ -111,7 +112,7 @@ export const validateToken = async (req, res, next) =>{
 export const signupUser = async (req, res, next) =>{
     try{
         const {full_name, email, password, contactno, pgname,address} = req.body
-        console.log(req.body)
+
         if(!full_name || !email || !password || !contactno || !pgname || !address) return res.status(400).json({message:"Please provide all required fields."})
 
         const existUser = await LOGINMAPPING.findOne({email})
@@ -126,7 +127,7 @@ export const signupUser = async (req, res, next) =>{
                 full_name,
                 pg_name: pgname,
                 address,
-                contactno: contact_no
+                contactno,
                 pgname,
                 contactno,
                 address

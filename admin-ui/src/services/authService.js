@@ -18,8 +18,20 @@ export const login = async (data)=>{
       const response = await api.post('/auth/sign-in',data)
       return response.data.data
     }catch(err){
+      console.log(err)
       const errMessage = err?.response?.data?.message
       throw new Error(errMessage)
     }
 }
 
+
+export const verifyOtp = async (data) =>{
+   try{
+    const response = await api.post('/auth/verify-otp', data)
+    return response.data.data
+   }catch(err){
+    console.log(err)
+    const errMessage = err?.response?.data?.message
+    throw new Error(errMessage)
+   }
+}
