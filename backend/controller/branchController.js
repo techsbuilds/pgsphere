@@ -5,7 +5,7 @@ import { removeFile } from "../utils/removeFile.js";
 import ROOM from "../models/ROOM.js";
 import CUSTOMER from "../models/CUSTOMER.js";
 import EMPLOYEE from "../models/EMPLOYEE.js";
-
+import mongoose from "mongoose";
 dotenv.config();
 
 /* Create Branch */

@@ -32,18 +32,26 @@ function EmployeeForm({selectedEmployee, onClose}) {
     }
   })
 
-  useEffect(()=>{
-    if(selectedEmployee) {
-        reset({
-            employee_name:selectedEmployee.employee_name,
-            salary:selectedEmployee.salary,
-            mobile_no:selectedEmployee.mobile_no,
-            branch:selectedEmployee.branch._id,
-            employee_type:selectedEmployee.employee_type
-        })
-        setSelectedBranch(selectedEmployee?.branch?._id)
+  useEffect(() => {
+    if (selectedEmployee) {
+      reset({
+        employee_name: selectedEmployee.employee_name,
+        salary: selectedEmployee.salary,
+        mobile_no: selectedEmployee.mobile_no,
+        branch: selectedEmployee.branch._id,
+        employee_type: selectedEmployee.employee_type,
+      });
     }
-  },[])
+  }, [selectedEmployee, reset]);
+
+  useEffect(() => {
+    if (selectedEmployee && branches.length > 0) {
+      reset((prevValues) => ({
+        ...prevValues,
+        branch: selectedEmployee?.branch._id,
+      }));
+    }
+  }, [branches, selectedEmployee, reset]);
 
   useEffect(()=>{
    const handleGetAllBranch = async ()=>{
@@ -146,17 +154,16 @@ function EmployeeForm({selectedEmployee, onClose}) {
               <div className='flex flex-col gap-2'>
                 <label>Branch <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
-                  <select 
-                  {...register('branch')}
-                  value={selectedBranch}
-                  onChange={(e)=>setSelectedBranch(e.target.value)}
-                  className='p-2 border border-neutral-300 rounded-md outline-none'>
-                     <option value={''}>--- Select Branch ---</option>
-                     {
-                        branches.map((item,index) => (
-                            <option key={index} value={item._id}>{item.branch_name}</option>
-                        ))
-                     }
+                  <select
+                    {...register("branch")}
+                    className="p-2 border border-neutral-300 rounded-md outline-none"
+                  >
+                    <option value="">--- Select Branch ---</option>
+                    {branches.map((item) => (
+                      <option key={item._id} value={item._id}>
+                        {item.branch_name}
+                      </option>
+                    ))}
                   </select>
                   {errors.branch && <span className='text-sm text-red-500'>{errors.branch.message}</span>}
                 </div>
