@@ -49,42 +49,42 @@ function AdminDashboard() {
   },[])
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-4 sm:gap-6 lg:gap-8 px-2 sm:px-4 lg:px-0">
       <Breadcrumb></Breadcrumb>
 
       {/* State Card */}
-      <div className="grid grid-cols-4 gap-4">
-        <div className="p-4 bg-white border border-neutral-300 rounded-md flex items-center">
-          <div className="flex flex-col gap-4">
-            <span className="text-[#7E7E85]">Total Branches</span>
-            <h1 className="text-4xl font-semibold">{dashboardData?.totalBranch}</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="p-3 sm:p-4 bg-white border border-neutral-300 rounded-md flex items-center">
+          <div className="flex flex-col gap-2 sm:gap-4">
+            <span className="text-[#7E7E85] text-sm sm:text-base">Total Branches</span>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold">{dashboardData?.totalBranch}</h1>
           </div>
         </div>
-        <div className="p-4 bg-white border border-neutral-300 rounded-md flex items-center">
-          <div className="flex flex-col gap-4">
-            <span className="text-[#7E7E85]">Total Customer</span>
-            <h1 className="text-4xl font-semibold">{dashboardData?.totalCustomers}</h1>
+        <div className="p-3 sm:p-4 bg-white border border-neutral-300 rounded-md flex items-center">
+          <div className="flex flex-col gap-2 sm:gap-4">
+            <span className="text-[#7E7E85] text-sm sm:text-base">Total Customer</span>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold">{dashboardData?.totalCustomers}</h1>
           </div>
         </div>
-        <div className="p-4 bg-white border border-neutral-300 rounded-md flex items-center">
-          <div className="flex flex-col gap-4">
-            <span className="text-[#7E7E85]">Total Employees</span>
-            <h1 className="text-4xl font-semibold">{dashboardData?.totalEmployees}</h1>
+        <div className="p-3 sm:p-4 bg-white border border-neutral-300 rounded-md flex items-center">
+          <div className="flex flex-col gap-2 sm:gap-4">
+            <span className="text-[#7E7E85] text-sm sm:text-base">Total Employees</span>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold">{dashboardData?.totalEmployees}</h1>
           </div>
         </div>
-        <div className="p-4 bg-white border border-neutral-300 rounded-md flex items-center">
-          <div className="flex flex-col gap-4">
-            <span className="text-[#7E7E85]">Total Account Manager</span>
-            <h1 className="text-4xl font-semibold">4</h1>
+        <div className="p-3 sm:p-4 bg-white border border-neutral-300 rounded-md flex items-center">
+          <div className="flex flex-col gap-2 sm:gap-4">
+            <span className="text-[#7E7E85] text-sm sm:text-base">Total Account Manager</span>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold">4</h1>
           </div>
         </div>
       </div>
 
       {/* Analytic */}
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-semibold">Analytics</h1>
-          <div className="relative inline-flex bg-gray-100 rounded-xl p-1 w-56">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+          <h1 className="text-xl sm:text-2xl font-semibold">Analytics</h1>
+          <div className="relative inline-flex bg-gray-100 rounded-xl p-1 w-full sm:w-56">
             {/* Sliding background */}
             <span
               className={`absolute top-1 bottom-1 w-1/2 rounded-lg bg-white shadow-sm transition-transform duration-300`}
@@ -99,7 +99,7 @@ function AdminDashboard() {
             {/* Buttons */}
             <button
               onClick={() => setView("monthly")}
-              className={`relative z-10 flex-1 text-center py-2 font-medium transition-colors ${
+              className={`relative z-10 flex-1 text-center py-2 font-medium transition-colors text-sm sm:text-base ${
                 view === "monthly" ? "text-[#2b7fff]" : "text-gray-500 cursor-pointer"
               }`}
             >
@@ -107,7 +107,7 @@ function AdminDashboard() {
             </button>
             <button
               onClick={() => setView("yearly")}
-              className={`relative z-10 flex-1 text-center py-2 font-medium transition-colors ${
+              className={`relative z-10 flex-1 text-center py-2 font-medium transition-colors text-sm sm:text-base ${
                 view === "yearly" ? "text-[#2b7fff]" : "text-gray-500 cursor-pointer"
               }`}
             >
@@ -115,36 +115,38 @@ function AdminDashboard() {
             </button>
           </div>
         </div>
-        <div className="flex items-stretch gap-4">
-          <Chart view={view} chartDataJson={dashboardData}></Chart>
-          <div className="w-5/12 border flex flex-col gap-4 rounded-md border-neutral-300 bg-white p-4">
+        <div className="flex flex-col lg:flex-row items-stretch gap-4">
+          <div className="flex-1">
+            <Chart view={view} chartDataJson={dashboardData}></Chart>
+          </div>
+          <div className="w-full lg:w-5/12 border flex flex-col gap-3 sm:gap-4 rounded-md border-neutral-300 bg-white p-3 sm:p-4">
             <div className="flex flex-col items-center">
-              <h1 className="text-lg text-[#71717a] font-medium">Current Balance</h1>
-              <h1 className="text-xl font-bold">{convertIntoRupees(dashboardData?.current_balance)}</h1>
+              <h1 className="text-base sm:text-lg text-[#71717a] font-medium">Current Balance</h1>
+              <h1 className="text-lg sm:text-xl font-bold">{convertIntoRupees(dashboardData?.current_balance)}</h1>
             </div>
-            <div className="grid grid-cols-2 gap-2 items-center">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 items-center">
                <div className="flex flex-col items-center">
-                 <span className="text-sm text-[#71717a] font-medium">Total Profits</span>
-                 <span className="font-bold">{convertIntoRupees(view === "monthly"? dashboardData?.total_current_year_profit :dashboardData?.total_profit)}</span>
+                 <span className="text-xs sm:text-sm text-[#71717a] font-medium">Total Profits</span>
+                 <span className="font-bold text-sm sm:text-base">{convertIntoRupees(view === "monthly"? dashboardData?.total_current_year_profit :dashboardData?.total_profit)}</span>
                </div>
                <div className="flex flex-col items-center">
-                 <span className="text-sm text-[#71717a] font-medium">Total Expenses</span>
-                 <span className="font-bold">{convertIntoRupees(view === "monthly"? dashboardData?.total_current_year_expenditure :dashboardData?.total_expenditure)}</span>
+                 <span className="text-xs sm:text-sm text-[#71717a] font-medium">Total Expenses</span>
+                 <span className="font-bold text-sm sm:text-base">{convertIntoRupees(view === "monthly"? dashboardData?.total_current_year_expenditure :dashboardData?.total_expenditure)}</span>
                </div>
             </div>
             <div className="flex h-full flex-col gap-2">
-               <h1>Accounts</h1>
-               <div className="h-48 flex flex-col gap-2 overflow-scroll">
+               <h1 className="text-sm sm:text-base font-medium">Accounts</h1>
+               <div className="h-32 sm:h-40 lg:h-48 flex flex-col gap-2 overflow-scroll">
                  {
                   dashboardData?.accounts?.map((account, index) =>(
-                   <div className="flex bg-neutral-100 rounded-md justify-between items-center p-2">
+                   <div key={index} className="flex bg-neutral-100 rounded-md justify-between items-center p-2">
                     <div className="flex items-center gap-2">
-                       <div className="h-8 w-8 bg-white flex justify-center items-center rounded-full">
-                         <UserRound size={24} className="text-gray-500"></UserRound>
+                       <div className="h-6 w-6 sm:h-8 sm:w-8 bg-white flex justify-center items-center rounded-full">
+                         <UserRound size={16} className="sm:w-6 sm:h-6 text-gray-500"></UserRound>
                        </div>
-                       <span>{account?.account_holdername}</span>
+                       <span className="text-xs sm:text-sm truncate">{account?.account_holdername}</span>
                     </div>
-                    <span>{convertIntoRupees(account.current_balance)}</span>
+                    <span className="text-xs sm:text-sm font-medium">{convertIntoRupees(account.current_balance)}</span>
                   </div>
                   ))
                  }
