@@ -50,7 +50,7 @@ export const getAllEmployee = async (req, res, next) => {
 
     const filter = {};
 
-    // ✅ Admin vs non-Admin filter
+    // Admin vs non-Admin filter
     if (userType === "Admin") {
       filter.pgcode = pgcode;
     } else {
@@ -75,28 +75,8 @@ export const getAllEmployee = async (req, res, next) => {
       .populate("added_by")
       .sort({ createdAt: -1 });
 
-    // ✅ Flatten the response
-    const formattedEmployees = employees.map((emp) => ({
-      _id: emp._id,
-      employee_name: emp.employee_name,
-      mobile_no: emp.mobile_no,
-      salary: emp.salary,
-      employee_type: emp.employee_type,
-      status: emp.status,
-      pgcode: emp.pgcode,
-      branch_id: emp.branch?._id || null,
-      branch_name: emp.branch?.branch_name || null,
-      branch_address: emp.branch?.branch_address || null,
-      added_by_id: emp.added_by?._id || null,
-      added_by_name: emp.added_by?.full_name || null,
-      added_by_email: emp.added_by?.email || null,
-      added_by_type: emp.added_by_type || null,
-      createdAt: emp.createdAt,
-      updatedAt: emp.updatedAt,
-    }));
-
-    // ✅ Check if any employees exist
-    if (formattedEmployees.length === 0) {
+    // Check if any employees exist
+    if (employees.length === 0) {
       return res.status(200).json({
         message: searchQuery? "No employees found matching your search criteria." :"No employees found.",
         success: false,
@@ -105,9 +85,9 @@ export const getAllEmployee = async (req, res, next) => {
     }
 
     return res.status(200).json({
-      message: `${formattedEmployees.length} employee(s) retrieved successfully.`,
+      message: `${employees.length} employee(s) retrieved successfully.`,
       success: true,
-      data: formattedEmployees,
+      data: employees,
     });
   } catch (err) {
     next(err);
