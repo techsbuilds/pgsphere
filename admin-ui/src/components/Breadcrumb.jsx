@@ -35,25 +35,25 @@ function Breadcrumb({
 
       case "/admin/branches":
         return (
-          <div className="flex justify-between items-center w-full">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center w-full gap-4">
             <h1 className="text-2xl md:text-3xl font-semibold">Branches</h1>
-            <div className="flex items-center gap-2">
-              <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-48 md:w-72  flex items-center gap-2">
-                <Search className="text-gray-500" size={20}></Search>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-full sm:w-48 md:w-72 flex items-center gap-2">
+                <Search className="text-gray-500 flex-shrink-0" size={18}></Search>
                 <input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   type="text"
-                  className="flex-1 outline-none"
+                  className="flex-1 outline-none text-sm"
                   placeholder="Search branch"
                 ></input>
               </div>
               <button
                 onClick={() => onClick()}
-                className="md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                className="md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white flex-shrink-0"
               >
                 <span className="hidden md:block">Add New Branch</span>
-                <Plus className="block md:hidden"></Plus>
+                <Plus className="block md:hidden" size={18}></Plus>
               </button>
             </div>
           </div>
