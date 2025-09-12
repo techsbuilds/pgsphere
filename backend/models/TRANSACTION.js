@@ -28,6 +28,11 @@ const transactionSchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'Branch'
     },
+    pgcode: {
+        type: String,
+        required: true,             // enforce PG reference
+        ref: 'Loginmapping'         // pgcode lives in Loginmapping
+    },
     bank_account:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Bankaccount'

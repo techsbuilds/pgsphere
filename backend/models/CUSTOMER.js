@@ -32,6 +32,11 @@ const customerSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Branch'
   },
+  pgcode: {
+    type: String,
+    required: true,             // enforce PG reference
+    ref: 'Loginmapping'         // pgcode lives in Loginmapping
+  },
   status:{
     type:Boolean,
     default:true
