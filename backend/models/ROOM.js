@@ -35,7 +35,12 @@ const roomSchema = new mongoose.Schema({
         type:String,
         enum:['Admin','Account'],
         required:true
-    }
+    },
+    pgcode: {
+        type: String,
+        required: true,             // enforce PG reference
+        ref: 'Loginmapping'         // pgcode lives in Loginmapping
+    },
 },{timestamps:true})
 
 

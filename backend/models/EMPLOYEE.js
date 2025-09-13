@@ -8,7 +8,7 @@ const employeeSchema = new mongoose.Schema({
     mobile_no: {
         type: String,
         match: [
-          /^(?:\+91[-\s]?)?[6-9]\d{9}$/,
+           /^(?:\+91[-\s]?)?[6-9]\d{9}$/,
           'Mobile number must be valid and can optionally start with +91'
         ],
         trim: true,
@@ -29,6 +29,11 @@ const employeeSchema = new mongoose.Schema({
     branch:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Branch'
+    },
+    pgcode: {
+        type: String,
+        required: true,             // enforce PG reference
+        ref: 'Loginmapping'         // pgcode lives in Loginmapping
     },
     added_by:{
         type:mongoose.Schema.Types.ObjectId,

@@ -31,7 +31,6 @@ const loginmappingSchema = new mongoose.Schema({
     pgcode:{
         type:String,
         required:[true, 'PG code is required.'],
-        unique:true
     },
     expiry:{
         type:Date,
