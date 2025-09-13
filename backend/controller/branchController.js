@@ -6,6 +6,7 @@ import ROOM from "../models/ROOM.js";
 import CUSTOMER from "../models/CUSTOMER.js";
 import EMPLOYEE from "../models/EMPLOYEE.js";
 import mongoose from "mongoose";
+import ACCOUNT from "../models/ACCOUNT.js";
 dotenv.config();
 
 /* Create Branch */
@@ -63,34 +64,38 @@ export const createBranch = async (req, res, next) => {
 /* Get All Branches */
 export const getAllBranch = async (req, res, next) => {
   try {
-    const { pgcode } = req;
+    const { pgcode, userType, mongoid } = req;
     const { searchQuery } = req.query;
-
     let query = { pgcode };
+
+    if (userType === 'Account') {
+      const acmanager = await ACCOUNT.findById(mongoid)
+
+      if (!acmanager) {
+        return res.status(404).json({ message: "Account Manager Not Found.", success: false })
+      }
+
+      query.branch = { $in: acmanager.branch }
+    }
+
     if (searchQuery) {
       query.$or = [
         { branch_name: { $regex: searchQuery, $options: "i" } },
         { branch_address: { $regex: searchQuery, $options: "i" } }
       ];
+
     }
 
     const branch = await BRANCH.find(query).sort({ createdAt: -1 });
 
-    if (!branch || branch.length === 0) {
-      return res.status(404).json({
-        message: searchQuery ? "No branches found for the given search query." : "No branches found.",
-        success: false,
-        data: [],
-        count: 0,
+    return res
+      .status(200)
+      .json({
+        message: "All Branches retrived successfully.",
+        success: true,
+        data: branch,
       });
-    }
 
-    return res.status(200).json({
-      message: "All Branches retrieved successfully.",
-      success: true,
-      data: branch,
-      count: branch.length,
-    });
   } catch (err) {
     next(err);
   }
@@ -151,8 +156,19 @@ export const updateBranch = async (req, res, next) => {
 /* Get Branch By ID */
 export const getBranchById = async (req, res, next) => {
   try {
-    const { pgcode } = req;
+    const { pgcode, userType, mongoid } = req;
     const { branchId } = req.params;
+
+    if (userType === 'Account') {
+      const acmanager = await ACCOUNT.findOne({ _id: mongoid })
+      if (!acmanager) {
+        return res.status(404).json({ message: "Account Manager Not Found.", success: false })
+      }
+
+      if (!acmanager.branch.includes(branchId)) {
+        return res.status(403).json({ message: "You are not Autherized to access this Branch.", success: false })
+      }
+    }
 
     if (!branchId)
       return res
@@ -182,8 +198,19 @@ export const getBranchById = async (req, res, next) => {
 /* Dashboard Summary */
 export const getDashboardSummery = async (req, res, next) => {
   try {
-    const { pgcode } = req;
+    const { pgcode, userType, mongoid } = req;
     const { branchId } = req.params;
+
+    if (userType === 'Account') {
+      const acmanager = await ACCOUNT.findOne({ _id: mongoid })
+      if (!acmanager) {
+        return res.status(404).json({ message: "Account Manager Not Found.", success: false })
+      }
+
+      if (!acmanager.branch.includes(branchId)) {
+        return res.status(403).json({ message: "You are not Autherized to access this Branch-Data.", success: false })
+      }
+    }
 
     if (!branchId)
       return res
