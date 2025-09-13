@@ -7,16 +7,28 @@ import INVENTORYPURCHASE from "../models/INVENTORYPURCHASE.js";
 import MONTHLYPAYMENT from "../models/MONTHLYPAYMENT.js";
 import MONTHLYPAYMENTRECEIPT from "../models/MONTHLYPAYMENTRECEIPT.js";
 import TRANSACTION from "../models/TRANSACTION.js";
+import ACCOUNT from "../models/ACCOUNT.js"
 
 export const createTransactionForCustomerRent = async (req, res, next) =>{
    try{
+     const {pgcode, userType, mongoid} = req  
      const {amount, payment_mode, customer, bank_account, month, year} = req.body 
      
      if(!amount || !payment_mode || !customer || !month || !year) return res.status(400).json({message:"Please provide all required fields.",success:false})
 
-     const existCustomer = await CUSTOMER.findById(customer)
+     const existCustomer = await CUSTOMER.findOne({_id:customer, pgcode})
 
      if(!existCustomer) return res.status(404).json({message:"Customer not found.",success:false})
+
+     if(userType === "Account"){
+         const account = await ACCOUNT.findById(mongoid)
+
+         if(!account) return res.status(404).json({message:"Account not found.",success:false})
+
+         if(!account.branch.includes(existCustomer.branch.toString())){
+            return res.status(403).json({message:"You are not authorized to create transaction for this customer.",success:false})
+         }
+     }
 
      if(amount < 0) return res.status(400).json({message:"amount value is invalid.",success:false})
 
@@ -39,7 +51,8 @@ export const createTransactionForCustomerRent = async (req, res, next) =>{
         refId:newCustomerRentRecipt,
         payment_mode,
         branch:existCustomer.branch,
-        bank_account
+        bank_account,
+        pgcode
      })
 
      await newTransaction.save()
