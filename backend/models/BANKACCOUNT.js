@@ -5,6 +5,11 @@ const bankAccountSchema = new mongoose.Schema({
     account_holdername:{
         type:String,
         required:true
+    },
+    pgcode:{
+        type:String,
+        required:true,
+        ref:'Loginmapping'
     }
 },{timestamps:true})
 

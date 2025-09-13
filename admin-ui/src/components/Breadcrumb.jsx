@@ -35,25 +35,25 @@ function Breadcrumb({
 
       case "/admin/branches":
         return (
-          <div className="flex justify-between items-center w-full">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center w-full gap-4">
             <h1 className="text-2xl md:text-3xl font-semibold">Branches</h1>
-            <div className="flex items-center gap-2">
-              <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-48 md:w-72  flex items-center gap-2">
-                <Search className="text-gray-500" size={20}></Search>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-full sm:w-48 md:w-72 flex items-center gap-2">
+                <Search className="text-gray-500 flex-shrink-0" size={18}></Search>
                 <input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   type="text"
-                  className="flex-1 outline-none"
+                  className="flex-1 outline-none text-sm"
                   placeholder="Search branch"
                 ></input>
               </div>
               <button
                 onClick={() => onClick()}
-                className="md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                className="md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white flex-shrink-0"
               >
                 <span className="hidden md:block">Add New Branch</span>
-                <Plus className="block md:hidden"></Plus>
+                <Plus className="block md:hidden" size={18}></Plus>
               </button>
             </div>
           </div>
@@ -73,37 +73,46 @@ function Breadcrumb({
 
       case "/admin/customers":
         return (
-          <div className="flex justify-between items-center w-full">
-            <h1 className="text-2xl md:text-3xl font-semibold">Customers</h1>
-            <div className="flex items-center gap-2">
-              <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-48 md:w-72  flex items-center gap-2">
-                <Search className="text-gray-500" size={20}></Search>
-                <input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  type="text"
-                  className="flex-1 outline-none"
-                  placeholder="Search customers"
-                ></input>
+          <div className="flex flex-col gap-4 w-full">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold">Customers</h1>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-full sm:w-48 md:w-72 flex items-center gap-2">
+                  <Search className="text-gray-500 flex-shrink-0" size={18}></Search>
+                  <input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    type="text"
+                    className="outline-none h-8 text-sm flex-1"
+                    placeholder="Search customers"
+                  ></input>
+                </div>
+                <div className="relative w-full sm:w-52 max-w-full overflow-hidden">
+                  <select
+                    onChange={(e) => setSelectedBranch(e.target.value)}
+                    value={selectedBranch}
+                    className="p-2 w-full px-4 border rounded-2xl border-neutral-300 bg-white outline-none text-sm appearance-none pr-8 max-w-full"
+                  >
+                    <option value={""}>All Branch</option>
+                    {branch.map((item, index) => (
+                      <option key={index} value={item._id}>
+                        {item.branch_name}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
               </div>
-              <select
-                onChange={(e) => setSelectedBranch(e.target.value)}
-                value={selectedBranch}
-                className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none"
-              >
-                <option value={""}>All Branch</option>
-                {branch.map((item, index) => (
-                  <option key={index} value={item._id}>
-                    {item.branch_name}
-                  </option>
-                ))}
-              </select>
               <button
                 onClick={() => onClick()}
-                className="md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-2xl text-white"
+                className="md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-2xl text-white w-full sm:w-fit"
               >
                 <span className="hidden md:block">Add New Customer</span>
-                <Plus className="block md:hidden"></Plus>
+                <span className="block md:hidden">Add Customer</span>
               </button>
             </div>
           </div>
