@@ -14,8 +14,8 @@ const branchSchema = new mongoose.Schema({
   },
   pgcode: {
     type: String,
-    required: true,             // enforce PG reference
-    ref: 'Loginmapping'         // pgcode lives in Loginmapping
+    required: true,             
+    ref: 'Loginmapping'
   },
   added_by: {
     type: mongoose.Schema.Types.ObjectId,
