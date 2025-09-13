@@ -1,5 +1,5 @@
 import express from 'express'
-import { verifyAdmin, verifyToken } from '../middleware/verifyUser.js'
+import {verifyToken } from '../middleware/verifyUser.js'
 import { changeEmployeeStatus, createEmployee, getAllEmployee, getEmployeePendingSalaries, updateEmployee } from '../controller/employeeController.js'
 
 const app = express.Router()
@@ -8,7 +8,7 @@ const app = express.Router()
 app.post('/',verifyToken, createEmployee)
 
 //For get All employee
-app.get('/', verifyToken, verifyAdmin, getAllEmployee)
+app.get('/', verifyToken, getAllEmployee)
 
 //For update employee details
 app.put('/:employeeId', verifyToken, updateEmployee)

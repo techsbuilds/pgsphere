@@ -4,71 +4,90 @@ import TRANSACTION from "../models/TRANSACTION.js";
 import ACCOUNT from "../models/ACCOUNT.js";
 import mongoose from "mongoose";
 
-export const createEmployee = async (req, res, next) =>{
-    try{
-        const {mongoid, userType, pgcode} = req
-        const {employee_name, mobile_no, salary, employee_type, branch} = req.body
+export const createEmployee = async (req, res, next) => {
+  try {
+    const { mongoid, userType, pgcode } = req
+    const { employee_name, mobile_no, salary, employee_type, branch } = req.body
 
-        // 1. Required fields check
-        if (!employee_name || !mobile_no || !salary || !employee_type || !branch) {
-        return res.status(400).json({ message: "Please provide all required fields.", success: false });
-        }
 
-        // 2. Validate branch
-        if (!mongoose.Types.ObjectId.isValid(branch)) {
-        return res.status(400).json({ message: "Invalid branch ID.", success: false });
-        }
-
-        const existEmployee = await EMPLOYEE.findOne({mobile_no,branch})
-
-        if(existEmployee) return res.status(409).json({message:"Employee is already exist with same mobile no.",success:false})
-
-        const newEmployee = new EMPLOYEE({
-            employee_name,
-            mobile_no,
-            salary,
-            employee_type,
-            branch,
-            pgcode,
-            added_by:mongoid,
-            added_by_type:userType
-        })
-
-        await newEmployee.save()
-
-        return res.status(200).json({message:"New employee created successfully.",success:true})
-
-    }catch(err){
-        next(err)
+    // 1. Required fields check
+    if (!employee_name || !mobile_no || !salary || !employee_type || !branch) {
+      return res.status(400).json({ message: "Please provide all required fields.", success: false });
     }
+
+    // 2. Validate branch
+    if (!mongoose.Types.ObjectId.isValid(branch)) {
+      return res.status(400).json({ message: "Invalid branch ID.", success: false });
+    }
+
+    // 3. Account manager authorization check
+    if (userType === 'Account') {
+      const acmanager = await ACCOUNT.findById(mongoid)
+
+      if (!acmanager) {
+        return res.status(404).json({ message: "Account Manager Not Fount.", success: false })
+      }
+
+      if (!acmanager.branch.includes(branch)) {
+        return res.status(403).json({ message: "You are not Autherized to add employee in this branch.", success: false })
+      }
+    }
+
+    const existEmployee = await EMPLOYEE.findOne({ mobile_no, branch })
+
+    if (existEmployee) return res.status(409).json({ message: "Employee is already exist with same mobile no.", success: false })
+
+    const newEmployee = new EMPLOYEE({
+      employee_name,
+      mobile_no,
+      salary,
+      employee_type,
+      branch,
+      pgcode,
+      added_by: mongoid,
+      added_by_type: userType
+    })
+
+    await newEmployee.save()
+
+    return res.status(200).json({ message: "New employee created successfully.", success: true })
+
+  } catch (err) {
+    next(err)
+  }
 }
 
 export const getAllEmployee = async (req, res, next) => {
   try {
     const { searchQuery, branch } = req.query;
-    const { userType, pgcode, account } = req; // assuming you set this in middleware
+    const { userType, pgcode, mongoid } = req; // assuming you set this in middleware
 
     const filter = {};
 
     // Admin vs non-Admin filter
-    if (userType === "Admin") {
-      filter.pgcode = pgcode;
-    } else {
-      const accountDoc = await ACCOUNT.findOne({ _id: mongoId }).lean();
-      if (!accountDoc) {
-        return res.status(404).json({
-          message: "Account not found for this user.",
-          success: false,
-          data: [],
-        });
+    if (userType === 'Account') {
+      const acmanager = await ACCOUNT.findById(mongoid)
+
+      if (!acmanager) {
+        return res.status(404).json({ message: "Account manager not found.", success: false })
       }
-      filter.branch = accountDoc.branch; // only employees of this branch
+
+      if (branch) {
+        if (!acmanager.branch.includes(branch)) {
+          return res.status(403).json({ message: "You are not Autherized to view Employee in this Branch.", success: false })
+        }
+
+        filter.branch = branch
+      } else {
+        filter.branch = { $in: acmanager.branch }
+      }
+    } else {
+      if (branch) filter.branch = branch
     }
 
-    if (searchQuery)
-      filter.employee_name = { $regex: searchQuery, $options: "i" };
+    filter.pgcode = pgcode;
 
-    if (branch) filter.branch = branch;
+    if (searchQuery) filter.employee_name = { $regex: searchQuery, $options: "i" };
 
     const employees = await EMPLOYEE.find(filter)
       .populate("branch")
@@ -78,7 +97,7 @@ export const getAllEmployee = async (req, res, next) => {
     // Check if any employees exist
     if (employees.length === 0) {
       return res.status(200).json({
-        message: searchQuery? "No employees found matching your search criteria." :"No employees found.",
+        message: searchQuery ? "No employees found matching your search criteria." : "No employees found.",
         success: false,
         data: [],
       });
@@ -94,86 +113,121 @@ export const getAllEmployee = async (req, res, next) => {
   }
 };
 
-export const updateEmployee = async (req, res, next) =>{
-    try{
-        const {employeeId} = req.params
+export const updateEmployee = async (req, res, next) => {
+  try {
+    const { employeeId } = req.params
+    const { userType, mongoid } = req
 
-        const {employee_name, salary, branch, mobile_no, employee_type} = req.body
+    const { employee_name, salary, branch, mobile_no, employee_type } = req.body
 
-        if(!employeeId) return res.status(400).json({message:"please provide employee id",success:false})
+    if (!employeeId) return res.status(400).json({ message: "please provide employee id", success: false })
 
-        const employee = await EMPLOYEE.findById(employeeId)
+    const employee = await EMPLOYEE.findById(employeeId)
 
-        if(!employee) return res.status(404).json({message:"Employee not found.",success:false})
+    if (!employee) return res.status(404).json({ message: "Employee not found.", success: false })
 
-        if(mobile_no && employee.mobile_no !== mobile_no){
-            const existEmployee = await EMPLOYEE.findOne({mobile_no})
+    if (userType === 'Account') {
+      const acmanager = await ACCOUNT.findById(mongoid)
 
-            if(existEmployee) return res.status(409).json({message:"Employee already exists with the same mobile no.",success:false})
-        }
+      if (!acmanager) {
+        return res.status(404).json({ message: "Account manager not found.", success: false })
+      }
 
-        if(employee_name) employee.employee_name = employee_name
-        if(salary) employee.salary = salary
-        if(branch) employee.branch = branch
-        if(mobile_no) employee.mobile_no = mobile_no
-        if(employee_type) employee.employee_type = employee_type
-
-        await employee.save()
-
-        return res.status(200).json({message:"Employee details updated successfully.",success:false,data:employee})
-
-    }catch(err){
-        next(err)
+      if (!acmanager.branch.includes(employee.branch)) {
+        return res.status(403).json({ message: "You are not Autherized to Update Employee in this Branch.", success: false })
+      }
     }
+
+    if (mobile_no && employee.mobile_no !== mobile_no) {
+      const existEmployee = await EMPLOYEE.findOne({ mobile_no })
+
+      if (existEmployee) return res.status(409).json({ message: "Employee already exists with the same mobile no.", success: false })
+    }
+
+    if (employee_name) employee.employee_name = employee_name
+    if (salary) employee.salary = salary
+    if (branch) employee.branch = branch
+    if (mobile_no) employee.mobile_no = mobile_no
+    if (employee_type) employee.employee_type = employee_type
+
+    await employee.save()
+
+    return res.status(200).json({ message: "Employee details updated successfully.", success: false, data: employee })
+
+  } catch (err) {
+    next(err)
+  }
 }
 
-export const changeEmployeeStatus = async (req, res, next) =>{
-    try{
-        const {employeeId} = req.params 
+export const changeEmployeeStatus = async (req, res, next) => {
+  try {
+    const { employeeId } = req.params
 
-        const {status} = req.body
+    const { status } = req.body
 
-        if(!employeeId || status===undefined) return res.status(400).json({message:"Please provide all required fields.",success:false})
+    if (!employeeId || status === undefined) return res.status(400).json({ message: "Please provide all required fields.", success: false })
 
-        const employee = await EMPLOYEE.findById(employeeId)
+    const employee = await EMPLOYEE.findById(employeeId)
 
-        if(!employee) return res.status(400).json({message:"Employee is not found.",success:false})
+    if (!employee) return res.status(400).json({ message: "Employee is not found.", success: false })
 
-        employee.status = status 
+    if (userType === 'Account') {
+      const acmanager = await ACCOUNT.findById(mongoid)
 
-        await employee.save()
+      if (!acmanager) {
+        return res.status(404).json({ message: "Account manager not found.", success: false })
+      }
 
-        return res.status(200).json({message:"Employee status changed successfully.",success:true})
-
-    }catch(err){
-        next(err)
+      if (!acmanager.branch.includes(employee.branch)) {
+        return res.status(403).json({ message: "You are not Autherized to Change Employee Status in this Branch.", success: false })
+      }
     }
+
+    employee.status = status
+
+    await employee.save()
+
+    return res.status(200).json({ message: "Employee status changed successfully.", success: true })
+
+  } catch (err) {
+    next(err)
+  }
 }
 
 export const getEmployeePendingSalaries = async (req, res, next) => {
   try {
     const { searchQuery, branch } = req.query;
-    const { userType, pgcode, mongoId } = req;
+    const { userType, pgcode, mongoid } = req;
 
     const filter = { status: true };
+  
+    if (userType === 'Account') {
 
-    // Admin vs Account logic
-    if (userType === "Admin") {
-        filter.pgcode = pgcode;
-        if (branch) {
-            filter.branch = branch;
+      const acManager = await ACCOUNT.findById(mongoid)
+
+      if (!acManager) {
+        return res.status(404).json({ message: "Account Manager Not Found.", success: false })
+      }
+
+      const branchId = acManager.branch
+
+      if (branch) {
+
+        if (!branchId.includes(branch)) {
+          return res.status(403).json({ message: "You are not Autherized to access this Branch.", success: false })
         }
+
+        filter.branch = branch
+      } else {
+        filter.branch = { $in: branchId }
+      }
+
     } else {
-        const accountDoc = await ACCOUNT.findOne({ _id: mongoId }).lean();
-        if (!accountDoc) {
-            return res.status(404).json({
-            message: "Account not found for this user.",
-            success: false,
-            data: [],
-            });
-        }
-        filter.branch = accountDoc.branch; // restrict to account’s branch
+      if (branch) {
+        filter.branch = branch
+      }
     }
+    filter.pgcode = pgcode;
 
     // Apply additional filters
     if (searchQuery) {
