@@ -4,11 +4,15 @@ import bcryptjs from 'bcryptjs'
 
 export const createAccountManager = async (req, res, next) =>{
     try{
-        const {mongoid} = req
+        const {mongoid, pgcode} = req
 
         const {full_name, contact_no, email, branch, password} = req.body 
         
         if(!full_name || !contact_no || !email || !branch || !password) return res.status(200).json({message:"Please provide all required fields.",success:false})
+
+        const admin = await LOGINMAPPING.findOne({mongoid:mongoid, userType:'Admin'})
+
+        if(!admin) return res.status(404).json({message:"Admin not found.",success:false})
 
         const existAcContactNo = await ACCOUNT.findOne({contact_no})
 
@@ -36,6 +40,8 @@ export const createAccountManager = async (req, res, next) =>{
             email,
             password:hashedPassword,
             userType:'Account',
+            pgcode,
+            expiry:admin.expiry
         })
 
         await newLoginMapping.save()
@@ -50,9 +56,10 @@ export const createAccountManager = async (req, res, next) =>{
 
 export const getAllAcmanager = async (req, res, next) =>{
     try{
+        const {pgcode} = req
         const {searchQuery = '', branch = ''} = req.query 
 
-       const mappings = await LOGINMAPPING.find({userType:"Account"})
+       const mappings = await LOGINMAPPING.find({userType:"Account", pgcode})
        .populate({
          path:'mongoid',
          model:"Account",
@@ -103,6 +110,8 @@ export const getAllAcmanager = async (req, res, next) =>{
 
 export const updateAcManager = async (req, res, next) =>{
     try{
+        //WIP: For add existing in only contact no and email validation
+        const {pgcode} = req
         const {acmanagerId} = req.params
 
         if(!acmanagerId) return res.status(400).json({message:"Please provide acmanager id.",success:false})
@@ -144,12 +153,13 @@ export const updateAcManager = async (req, res, next) =>{
 export const changeAcmanagerStatus = async (req, res, next) =>{
     try{
         const {acmanagerId} = req.params
+        const {pgcode} = req 
 
         const {status} = req.body
 
         if(!acmanagerId || status===undefined) return res.status(400).json({message:"Please provide all required fields",success:false})
 
-        const acmanager = await LOGINMAPPING.findOne({mongoid:acmanagerId})
+        const acmanager = await LOGINMAPPING.findOne({mongoid:acmanagerId, pgcode, userType:'Account'})
 
         if(!acmanager) return res.status(404).json({message:"Acmanager not found.",success:false})
 
