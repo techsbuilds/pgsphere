@@ -36,10 +36,9 @@ const loginmappingSchema = new mongoose.Schema({
         type:Date,
         default: Date.now
     },
-    plantype:{
-        type:String,
-        enum:['BASIC',"PRO",'PREMIUM'],
-        default:'BASIC'
+    branchcount:{
+        type:Number,
+        default:1
     }
 },{timestamps:true})
 
