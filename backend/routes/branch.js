@@ -9,7 +9,7 @@ const app = express.Router()
 app.post('/', verifyToken, verifyAdmin, branchMulter, createBranch)
 
 //For get all branch
-app.get('/',verifyToken, verifyAdmin, getAllBranch)
+app.get('/',verifyToken, getAllBranch)
 
 //For update branch details
 app.put('/:branchId', verifyToken, verifyAdmin, branchMulter, updateBranch)
