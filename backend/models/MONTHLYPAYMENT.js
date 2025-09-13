@@ -21,6 +21,11 @@ const monthlyPaySchema = new mongoose.Schema({
     starting_date:{
         type: Date,
         default: () => new Date()
+    },
+    pgcode:{
+        type:String,
+        required:true,
+        ref:'Loginmapping'
     }
 },{timestamps:true})
 
