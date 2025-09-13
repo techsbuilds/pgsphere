@@ -1,5 +1,5 @@
 import express from 'express'
-import { verifyToken, verifyAdmin } from '../middleware/verifyUser.js'
+import { verifyToken } from '../middleware/verifyUser.js'
 import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, getPendingCustomerRentList, updateCustomerDetails } from '../controller/customerController.js'
 
 const app = express.Router()
@@ -8,7 +8,7 @@ const app = express.Router()
 app.post('/', verifyToken, createCustomer)
 
 //For get all customer
-app.get('/',verifyToken, verifyAdmin, getAllCustomer)
+app.get('/',verifyToken, getAllCustomer)
 
 //For get customer by room id
 app.get('/room/:roomId', verifyToken, getCustomerByRoomId)
