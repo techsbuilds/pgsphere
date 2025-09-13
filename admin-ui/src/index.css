@@ -20,6 +20,465 @@ input[type=number] {
   -moz-appearance: textfield; /* Firefox */
 }
 
+/* Customer Grid Pagination Styles */
+.customer-grid .ag-theme-alpine .ag-paging-panel {
+  padding: 16px 20px !important;
+  font-size: 14px !important;
+  min-height: 64px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
+  background-color: #f8f9fa !important;
+  border-top: 1px solid #e9ecef !important;
+  overflow: hidden !important;
+}
+
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-description {
+  white-space: nowrap !important;
+  margin-right: 16px !important;
+  font-size: 14px !important;
+  flex-shrink: 0 !important;
+  color: #495057 !important;
+  min-width: fit-content !important;
+  display: inline-block !important;
+}
+
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-description span {
+  white-space: nowrap !important;
+  display: inline !important;
+}
+
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-button {
+  margin: 0 6px !important;
+  padding: 8px 12px !important;
+  min-width: 40px !important;
+  height: 40px !important;
+  flex-shrink: 0 !important;
+  border: 2px solid #dee2e6 !important;
+  background-color: white !important;
+  border-radius: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+}
+
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-button:hover {
+  background-color: #f8f9fa !important;
+  border-color: #adb5bd !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-button svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-summary-panel {
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  color: #495057 !important;
+  font-size: 14px !important;
+  min-width: fit-content !important;
+  display: inline-block !important;
+}
+
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-summary-panel span {
+  white-space: nowrap !important;
+  display: inline !important;
+}
+
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-size-selector {
+  margin-left: 16px !important;
+  flex-shrink: 0 !important;
+  padding: 6px 12px !important;
+  border: 2px solid #dee2e6 !important;
+  border-radius: 6px !important;
+  background-color: white !important;
+  font-size: 14px !important;
+  transition: all 0.2s ease !important;
+}
+
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-size-selector:hover {
+  border-color: #adb5bd !important;
+  background-color: #f8f9fa !important;
+}
+
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-size-selector select {
+  border: none !important;
+  background: transparent !important;
+  font-size: 14px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  outline: none !important;
+  cursor: pointer !important;
+}
+
+@media (max-width: 640px) {
+  .customer-grid .ag-theme-alpine .ag-paging-panel {
+    flex-direction: column !important;
+    gap: 12px !important;
+    align-items: center !important;
+    padding: 16px 12px !important;
+    justify-content: center !important;
+    min-height: auto !important;
+    flex-wrap: nowrap !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+  }
+  
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-description {
+    margin: 0 !important;
+    text-align: center !important;
+    font-size: 12px !important;
+    min-width: auto !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    order: 2 !important;
+  }
+  
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-summary-panel {
+    font-size: 12px !important;
+    margin: 0 !important;
+    text-align: center !important;
+    min-width: auto !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    order: 2 !important;
+  }
+  
+  
+  /* Navigation buttons row with horizontal scroll */
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-button-group {
+    display: flex !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 8px 0 !important;
+    width: 100% !important;
+    justify-content: center !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: #dee2e6 transparent !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-button-group::-webkit-scrollbar {
+    height: 4px !important;
+  }
+  
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-button-group::-webkit-scrollbar-track {
+    background: transparent !important;
+  }
+  
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-button-group::-webkit-scrollbar-thumb {
+    background-color: #dee2e6 !important;
+    border-radius: 2px !important;
+  }
+  
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-button-group::-webkit-scrollbar-thumb:hover {
+    background-color: #adb5bd !important;
+  }
+  
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-button {
+    margin: 0 !important;
+    min-width: 44px !important;
+    height: 44px !important;
+    border-radius: 8px !important;
+    background-color: white !important;
+    border: 2px solid #e9ecef !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    order: 3 !important;
+  }
+  
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-button:hover {
+    background-color: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+    transform: scale(1.05) !important;
+  }
+  
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-button svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-size-selector {
+    margin: 0 !important;
+    text-align: center !important;
+    padding: 8px 16px !important;
+    border: 2px solid #e9ecef !important;
+    border-radius: 8px !important;
+    background-color: white !important;
+    font-size: 14px !important;
+    min-width: 120px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    width: fit-content !important;
+    order: 1 !important;
+  }
+  
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-size-selector select {
+    border: none !important;
+    background: transparent !important;
+    font-size: 14px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    outline: none !important;
+  }
+  
+  /* Force pagination elements to stack vertically with proper order */
+  .customer-grid .ag-theme-alpine .ag-paging-panel > * {
+    margin: 4px 0 !important;
+  }
+  
+  /* Make sure buttons are in a horizontal row */
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-button {
+    display: inline-flex !important;
+    margin: 0 4px !important;
+  }
+  
+  /* Center all elements */
+  .customer-grid .ag-theme-alpine .ag-paging-panel {
+    text-align: center !important;
+  }
+  
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-description,
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-summary-panel {
+    display: block !important;
+    width: 100% !important;
+    margin: 8px 0 !important;
+  }
+  
+  /* Ensure proper ordering */
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-size-selector {
+    order: 1 !important;
+  }
+  
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-description,
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-summary-panel {
+    order: 2 !important;
+  }
+  
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-button {
+    order: 3 !important;
+  }
+  
+}
+
+/* Ensure pagination is always visible */
+.customer-grid .ag-theme-alpine .ag-paging-panel {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Fix any potential hiding issues */
+.customer-grid .ag-theme-alpine .ag-paging-panel[style*="display: none"] {
+  display: flex !important;
+}
+
+.customer-grid .ag-theme-alpine .ag-paging-panel[style*="visibility: hidden"] {
+  visibility: visible !important;
+}
+
+/* Fix AG Grid specific pagination text elements */
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-description,
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-summary-panel {
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  hyphens: none !important;
+  line-height: 1.2 !important;
+}
+
+/* Target specific AG Grid pagination spans */
+.customer-grid .ag-theme-alpine .ag-paging-panel span {
+  white-space: nowrap !important;
+  display: inline !important;
+  word-break: keep-all !important;
+}
+
+/* Fix any nested text elements */
+.customer-grid .ag-theme-alpine .ag-paging-panel * {
+  white-space: nowrap !important;
+}
+
+/* Override any AG Grid default text wrapping */
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-description,
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-summary-panel {
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+/* More aggressive AG Grid pagination text fixes */
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-description,
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-summary-panel,
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-description span,
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-summary-panel span {
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  hyphens: none !important;
+  display: inline !important;
+  line-height: 1 !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+}
+
+/* Force all pagination text to be inline */
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-description *,
+.customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-summary-panel * {
+  white-space: nowrap !important;
+  display: inline !important;
+  word-break: keep-all !important;
+}
+
+/* Mobile specific fixes with higher specificity */
+@media (max-width: 640px) {
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-description,
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-summary-panel {
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
+    hyphens: none !important;
+    display: inline-block !important;
+    width: 100% !important;
+    text-align: center !important;
+    line-height: 1.2 !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+  }
+  
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-description span,
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-summary-panel span {
+    white-space: nowrap !important;
+    display: inline !important;
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
+    hyphens: none !important;
+  }
+  
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-description *,
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-summary-panel * {
+    white-space: nowrap !important;
+    display: inline !important;
+    word-break: keep-all !important;
+  }
+}
+
+/* Ultra-specific AG Grid pagination text fixes */
+.customer-grid.ag-theme-alpine .ag-paging-panel .ag-paging-description,
+.customer-grid.ag-theme-alpine .ag-paging-panel .ag-paging-page-summary-panel {
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  hyphens: none !important;
+  display: inline-block !important;
+  line-height: 1 !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+}
+
+.customer-grid.ag-theme-alpine .ag-paging-panel .ag-paging-description span,
+.customer-grid.ag-theme-alpine .ag-paging-panel .ag-paging-page-summary-panel span {
+  white-space: nowrap !important;
+  display: inline !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  hyphens: none !important;
+}
+
+/* Force override any AG Grid inline styles */
+.customer-grid.ag-theme-alpine .ag-paging-panel .ag-paging-description[style],
+.customer-grid.ag-theme-alpine .ag-paging-panel .ag-paging-page-summary-panel[style] {
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  hyphens: none !important;
+  display: inline-block !important;
+  line-height: 1 !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+}
+
+/* Branch Selection Dropdown Styles */
+@media (max-width: 640px) {
+  select {
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    position: relative !important;
+  }
+  
+  select option {
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+  
+  /* Fix dropdown positioning for mobile */
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-size-selector {
+    position: relative !important;
+    z-index: 1 !important;
+  }
+  
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-size-selector select {
+    position: relative !important;
+    z-index: 1 !important;
+    max-width: 100% !important;
+  }
+  
+  /* Ensure dropdown doesn't overflow */
+  .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-size-selector select:focus {
+    position: relative !important;
+    z-index: 10 !important;
+  }
+  
+  /* Fix any dropdown that might overflow */
+  select:focus {
+    position: relative !important;
+    z-index: 10 !important;
+    max-width: calc(100vw - 32px) !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+  
+  /* Fix Breadcrumb branch selection dropdown */
+  .relative select {
+    position: relative !important;
+    z-index: 1 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  
+  .relative select:focus {
+    position: relative !important;
+    z-index: 10 !important;
+    max-width: calc(100vw - 32px) !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+  
+  /* Ensure dropdown container doesn't overflow */
+  .relative {
+    position: relative !important;
+    overflow: visible !important;
+    max-width: 100% !important;
+  }
+}
+
 .ag-theme-alpine .ag-root-wrapper {
   background-color: white;
   border: 1px solid #e0e0e0 !important;

@@ -53,38 +53,38 @@ function BranchPreview() {
   },[location.state])
 
   return (
-    <div className='flex flex-col px-8 gap-8'>
+    <div className='flex flex-col px-2 sm:px-4 lg:px-8 gap-4 sm:gap-6 lg:gap-8'>
         <Breadcrumb></Breadcrumb>
 
         {/* Branch Details */}
-        <div className='flex bg-[#edf2f7] overflow-hidden items-stretch gap-8 rounded-2xl'>
-            <div className='w-1/3'>
+        <div className='flex flex-col lg:flex-row bg-[#edf2f7] overflow-hidden items-stretch gap-4 sm:gap-6 lg:gap-8 rounded-2xl'>
+            <div className='w-full lg:w-1/3 h-48 sm:h-56 lg:h-auto'>
               {
                branch?.branch_image ?
                <img className='object-cover h-full w-full' src={branch?.branch_image}></img>
                :<div className="bg-gradient-to-br from-[#5f9df9] to-[#636ef2] w-full h-full flex justify-center items-center">
-                 <Image size={40} className="text-white"></Image>
+                 <Image size={32} className="sm:w-10 sm:h-10 text-white"></Image>
                 </div>
               }
             </div>
-            <div className='w-3/5 p-8'>
-               <div className='w-full flex flex-col gap-8'>
+            <div className='w-full lg:w-3/5 p-4 sm:p-6 lg:p-8'>
+               <div className='w-full flex flex-col gap-4 sm:gap-6 lg:gap-8'>
                  <div className='flex flex-col gap-1'>
-                   <h1 className='text-2xl font-semibold'>{branch?.branch_name}</h1>
-                   <span className='text-[#98a3b3]'>{branch?.branch_address}</span>
+                   <h1 className='text-xl sm:text-2xl font-semibold'>{branch?.branch_name}</h1>
+                   <span className='text-[#98a3b3] text-sm sm:text-base'>{branch?.branch_address}</span>
                  </div>
-                 <div className='grid grid-cols-3 gap-4 items-stretch'>
-                    <div className='flex border-r border-neutral-300 flex-col gap-2'>
-                       <span className='text-lg text-gray-500'>Customers</span>
-                       <h1 className='text-3xl font-bold'>{dashboardData.totalCustomers}</h1>
+                 <div className='grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 items-stretch'>
+                    <div className='flex border-r-0 sm:border-r border-neutral-300 flex-col gap-2 p-2 sm:p-0'>
+                       <span className='text-sm sm:text-lg text-gray-500'>Customers</span>
+                       <h1 className='text-2xl sm:text-3xl font-bold'>{dashboardData.totalCustomers}</h1>
                     </div>
-                    <div className='flex border-r border-neutral-300 flex-col gap-2'>
-                       <span className='text-lg text-gray-500'>Rooms</span>
-                       <h1 className='text-3xl font-bold'>{dashboardData.totalRooms}</h1>
+                    <div className='flex border-r-0 sm:border-r border-neutral-300 flex-col gap-2 p-2 sm:p-0'>
+                       <span className='text-sm sm:text-lg text-gray-500'>Rooms</span>
+                       <h1 className='text-2xl sm:text-3xl font-bold'>{dashboardData.totalRooms}</h1>
                     </div>
-                    <div className='flex flex-col gap-2'>
-                       <span className='text-lg text-gray-500'>Employees</span>
-                       <h1 className='text-3xl font-bold'>{dashboardData.totalEmployees}</h1>
+                    <div className='flex flex-col gap-2 p-2 sm:p-0'>
+                       <span className='text-sm sm:text-lg text-gray-500'>Employees</span>
+                       <h1 className='text-2xl sm:text-3xl font-bold'>{dashboardData.totalEmployees}</h1>
                     </div>
                  </div>
                </div>

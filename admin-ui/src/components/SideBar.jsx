@@ -2,7 +2,7 @@ import React from 'react'
 import { Link, useLocation } from 'react-router-dom';
 
 //Importing icon
-import { House, User } from 'lucide-react';
+import { House, User, X } from 'lucide-react';
 import { LayoutDashboard } from 'lucide-react';
 import { Building2 } from 'lucide-react';
 import { Users } from 'lucide-react';
@@ -74,7 +74,7 @@ const adminRoutes = [
     }
 ]
 
-function SideBar({showSideBar}) {
+function SideBar({showSideBar, setShowSideBar}) {
   const location = useLocation()
 
   const isActive = (label) =>{
@@ -88,13 +88,21 @@ function SideBar({showSideBar}) {
   }
 
   return (
-    <div className={`w-64 bg-white border-r border-neutral-200 fixed top-0 ${showSideBar ? "left-0" : "-left-64 "} md:left-0  bottom-0 z-20`}>
+    <div className={`w-64 bg-white border-r border-neutral-200 fixed top-0 ${showSideBar ? "left-0" : "-left-64"} bottom-0 z-20 transition-transform duration-300 ease-in-out`}>
        {/* Logo */}
-       <div className='h-16 w-full flex justify-center gap-2 items-center'>
-         <div className='bg-blue-500 rounded-md flex justify-center items-center p-2'>
-            <House size={18} className='text-white'></House>
+       <div className='h-16 w-full flex justify-between items-center px-4'>
+         <div className='flex gap-2 items-center'>
+           <div className='bg-blue-500 rounded-md flex justify-center items-center p-2'>
+              <House size={18} className='text-white'></House>
+           </div>
+           <h1 className='text-xl font-semibold'>PgPanel</h1>
          </div>
-         <h1 className='text-xl font-semibold'>PgPanel</h1>
+         <button 
+           onClick={() => setShowSideBar(false)}
+           className='p-1 hover:bg-gray-100 rounded-md'
+         >
+           <X size={20} className='text-gray-500'></X>
+         </button>
        </div>
        {/* Links */}
        <div className='flex flex-col p-6 gap-4'>
