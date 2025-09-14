@@ -1,16 +1,33 @@
 import INVENTORYPURCHASE from "../models/INVENTORYPURCHASE.js";
 import TRANSACTION from "../models/TRANSACTION.js";
-
+import ACCOUNT from "../models/ACCOUNT.js";
 
 export const getAllInventoryTransaction = async (req, res, next) =>{
     try{
+        const {mongoid, userType, pgcode} = req
         const {searchQuery, branch} = req.query
         const filter = {
-            type: 'inventory_purchase'
+            type: 'inventory_purchase',
+            pgcode
         };
 
-        if (branch) {
-            filter.branch = branch
+        if(userType === 'Account'){
+
+            const account = await ACCOUNT.findById(mongoid)
+
+            if(!account) return res.status(404).json({message:"Account manager is not found.",success:false})
+
+            if(branch){
+                if(!account.branch.includes(branch)) return res.status(403).json({message:"You have not access to get transaction of this branch.",success:false})
+
+                filter.branch = branch
+            }else{
+                filter.branch = { $in: account.branch }
+            }
+        }else{
+            if (branch) {
+                filter.branch = branch
+            }
         }
 
         let inventoryIds = [] 
@@ -23,8 +40,6 @@ export const getAllInventoryTransaction = async (req, res, next) =>{
 
             filter.refId = {$in : inventoryIds}
         }
-
-        console.log(filter)
 
         const transactions = await TRANSACTION.find(filter)
         .populate({

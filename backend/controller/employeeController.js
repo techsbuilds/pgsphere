@@ -247,6 +247,7 @@ export const getEmployeePendingSalaries = async (req, res, next) => {
         type: "employee_salary",
         refModel: "Employeesalary",
         branch: employee.branch._id,
+        pgcode
       }).populate({
         path: "refId",
         model: "Employeesalary",
