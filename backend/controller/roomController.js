@@ -101,6 +101,10 @@ export const getRoomByBranchId = async (req, res, next) => {
 
         if (!branchId) return res.status(400).json({ message: "Please provide branch id.", success: false })
 
+        const branch = await BRANCH.findOne({ _id: branchId, pgcode })
+
+        if (!branch) return res.status(404).json({ message: "Branch not found.", success: false })
+
         if (userType === 'Account') {
             const acmanager = await ACCOUNT.findById(mongoid)
 
@@ -111,10 +115,6 @@ export const getRoomByBranchId = async (req, res, next) => {
                 return res.status(403).json({ message: "You are not Autherized to add Room in this Branch.", success: false })
             }
         }
-
-        const branch = await BRANCH.findOne({ _id: branchId, pgcode })
-
-        if (!branch) return res.status(404).json({ message: "Branch not found.", success: false })
 
         const rooms = await ROOM.find({ branch: branchId, pgcode }).populate('branch')
 

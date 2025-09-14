@@ -1,9 +1,11 @@
 import { getMonthYearList } from "../helper.js";
+import ACCOUNT from "../models/ACCOUNT.js";
 import MONTHLYPAYMENT from "../models/MONTHLYPAYMENT.js";
 import TRANSACTION from "../models/TRANSACTION.js";
 
 export const createMonthlyPayment = async (req, res, next) =>{
     try{
+        const {pgcode} = req
         const {payment_name, notes, amount, starting_date, branch} = req.body
 
         if(!payment_name || !branch || !amount || !starting_date) return res.status(400).json({message:"Please provide all required fields.",success:false})
@@ -13,7 +15,8 @@ export const createMonthlyPayment = async (req, res, next) =>{
             notes,
             amount,
             starting_date,
-            branch
+            branch,
+            pgcode
         })
 
         await newMonthlyPayment.save()
@@ -28,14 +31,32 @@ export const createMonthlyPayment = async (req, res, next) =>{
 export const getMonthlyPaymentsList = async (req, res, next)=>{
    try{
      const {searchQuery, branch} = req.query 
+     const {pgcode, userType, mongoid} = req 
 
-     let filter = {}
+     let filter = {
+        pgcode
+     }
 
      if(searchQuery) {
         filter.payment_name = { $regex: searchQuery, $options: 'i'}
      }
 
-     if(branch) filter.branch = branch
+     if(userType === "Account"){
+        const account = await ACCOUNT.findById(mongoid)
+
+        if(!account) return res.status(404).json({message:"Account manager is not found.",success:false})
+
+        if(branch){
+           if(!account.branch.includes(branch)) return res.status(403).json({message:"You have not access to get monthly payment of this branch.",success:false})
+
+            filter.branch = branch
+              
+        }else{
+            filter.branch = { $in: account.branch }
+        }
+     }else{
+        if(branch) filter.branch = branch
+     }
 
      const monthlyPayments = await MONTHLYPAYMENT.find(filter).populate('branch')
 
@@ -48,7 +69,8 @@ export const getMonthlyPaymentsList = async (req, res, next)=>{
             transactionType:'expense',
             type:'monthly_bill',
             refModel:'Monthlypaymentreceipt',
-            branch:bill.branch._id
+            branch:bill.branch._id,
+            pgcode
         }).populate({
             path:'refId',
             model:'Monthlypaymentreceipt',
@@ -114,13 +136,14 @@ export const getMonthlyPaymentsList = async (req, res, next)=>{
 
 export const updateMonthlyPaymentDetails = async (req, res, next) =>{
      try{
+        const {pgcode} = req
         const {billId} = req.params 
 
         const {payment_name, notes, branch} = req.body 
 
         if(!billId) return res.status(400).json({message:"Please provide bill id.",success:false})
 
-        const bill = await MONTHLYPAYMENT.findById(billId) 
+        const bill = await MONTHLYPAYMENT.findOne({_id:billId, pgcode}) 
 
         if(!bill) return res.status(404).json({message:"Monthly bill is not found.",success:false}) 
 
@@ -147,11 +170,12 @@ export const updateMonthlyPaymentDetails = async (req, res, next) =>{
 
 export const deleteMonthlyBill = async (req, res, next) =>{
     try{
+        const {pgcode} = req
         const {billId} = req.params 
 
         if(!billId) return res.status(400).json({message:"Please provide bill id.",success:false})
 
-        const bill = await MONTHLYPAYMENT.findById(billId)
+        const bill = await MONTHLYPAYMENT.findOne({_id:billId, pgcode})
 
         if(!bill) return res.status(404).json({message:"Bill is not found.",success:false}) 
 
