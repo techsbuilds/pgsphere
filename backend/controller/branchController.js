@@ -77,13 +77,14 @@ export const getAllBranch = async (req, res, next) => {
     let query = { pgcode };
 
     if (userType === 'Account') {
+
       const acmanager = await ACCOUNT.findById(mongoid)
 
       if (!acmanager) {
         return res.status(404).json({ message: "Account Manager Not Found.", success: false })
       }
 
-      query.branch = { $in: acmanager.branch }
+      query._id = { $in: acmanager.branch }
     }
 
     if (searchQuery) {

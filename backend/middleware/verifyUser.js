@@ -37,6 +37,6 @@ export const verifyAdmin = async (req, res, next) =>{
     if(userType && userType==='Admin'){
         next()
     }else{
-        return res.status(400).json({message:"Invalid user type",success:false})
+        return res.status(400).json({message:"You are not Autherized to Perform this Task",success:false})
     }
 }

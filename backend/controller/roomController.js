@@ -1,3 +1,4 @@
+import ACCOUNT from "../models/ACCOUNT.js";
 import mongoose from "mongoose";
 import BRANCH from "../models/BRANCH.js";
 import ROOM from "../models/ROOM.js";
@@ -13,6 +14,8 @@ export const createRoom = async (req, res, next) => {
         const existRoom = await ROOM.findOne({ room_id, branch, pgcode })
 
         if (existRoom) return res.status(409).json({ message: "Room is already exist with given room no.", success: false })
+
+        console.log("pgcode", pgcode)
 
         const existBranch = await BRANCH.findOne({ _id: branch, pgcode })
 
@@ -171,8 +174,8 @@ export const getRoomById = async (req, res, next) => {
             if (!acmanager) {
                 return res.status(404).json({ message: "Account manager not Found.", success: false })
             }
-            if (!acmanager.branch.includes(room.branch)) {
-                return res.status(403).json({ message: "You are not Autherized to add Room in this Branch.", success: false })
+            if (!acmanager.branch.includes(room.branch._id)) {
+                return res.status(403).json({ message: "You are not Autherized to get Room in this Branch.", success: false })
             }
         }
         return res.status(200).json({ message: "Room details retrived successfully.", success: true, data: room })
