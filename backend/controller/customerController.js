@@ -183,7 +183,7 @@ export const updateCustomerDetails = async (req, res, next) => {
 
   try {
     const { customerId } = req.params;
-    const {userType, mongoid} = req 
+    const {userType, mongoid, pgcode} = req 
     const {
       customer_name,
       mobile_no,
@@ -200,7 +200,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       return res.status(400).json({ message: "Please provide customer id.", success: false });
     }
 
-    const customer = await CUSTOMER.findById(customerId).session(session);
+    const customer = await CUSTOMER.findOne({_id:customerId, pgcode}).session(session);
     if (!customer) {
       await session.abortTransaction();
       session.endSession();

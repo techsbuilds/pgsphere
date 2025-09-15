@@ -163,6 +163,8 @@ export const changeEmployeeStatus = async (req, res, next) => {
   try {
     const { employeeId } = req.params
 
+    const {mongoid, userType} = req
+
     const { status } = req.body
 
     const { userType, mongoid } = req
