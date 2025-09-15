@@ -14,7 +14,7 @@ export const createTransactionForCustomerRent = async (req, res, next) =>{
      const {pgcode, userType, mongoid} = req  
      const {amount, payment_mode, customer, bank_account, month, year} = req.body 
      
-     if(!amount || !payment_mode || !customer || !month || !year) return res.status(400).json({message:"Please provide all required fields.",success:false})
+     if(!amount || !payment_mode || !customer || !bank_account || !month || !year) return res.status(400).json({message:"Please provide all required fields.",success:false})
 
      const existCustomer = await CUSTOMER.findOne({_id:customer, pgcode})
 

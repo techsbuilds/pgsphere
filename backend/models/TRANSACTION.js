@@ -35,7 +35,8 @@ const transactionSchema = new mongoose.Schema({
     },
     bank_account:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:'Bankaccount'
+        ref:'Bankaccount',
+        required:true
     }
 },{timestamps:true})
 
