@@ -18,7 +18,7 @@ export const createCustomer = async (req, res, next) =>{
 
            if(!account) return res.status(404).json({message:"Account manager is not found.",success:false})
 
-           if(!account.branch.include(branch)) return res.status(403).json({message:"You are not authorized to add customer in this branch.",success:false})
+           if(!account.branch.includes(branch)) return res.status(403).json({message:"You are not authorized to add customer in this branch.",success:false})
 
         }
 
