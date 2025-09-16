@@ -1,15 +1,42 @@
 import React from 'react'
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 //import icon
 import { Search } from 'lucide-react';
 import { Bell } from 'lucide-react';
+import { LogOut, User } from 'lucide-react';
+import Tooltip from '@mui/material/Tooltip';
 import { Menu, House } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { logout } from '../services/authService';
+
 import SearchBar from './SearchBar';
 
 function Header({setShowSideBar, showSideBar}) {
-
+  const {auth, setAuth} = useAuth()
   const [openSearchBar,setOpenSearchBar] = useState(false)
+  const navigate = useNavigate()
+
+  const handleLogout = async () =>{
+    try{
+      const data = await logout()
+      setAuth({
+        loading:false,
+        token:null,
+        user:null
+      })
+      navigate('/login')
+    }catch(err){
+      console.log(err)
+      toast.error(err?.message)
+    }
+  }
+
+  const handleNavigateProfile = () =>{
+    console.log('navigate to profile')
+    navigate('profile')
+ }
 
   return (
     <>
@@ -23,7 +50,7 @@ function Header({setShowSideBar, showSideBar}) {
              <div className='bg-blue-500 rounded-md flex justify-center items-center p-2'>
                <House size={18} className='text-white'></House>
              </div>
-             <h1 className='text-xl font-semibold'>PgPanel</h1>
+             <h1 className='text-xl font-semibold'>Pgsphere</h1>
            </div>
          )}
        </div>
@@ -32,7 +59,19 @@ function Header({setShowSideBar, showSideBar}) {
            <Search size={16} className='text-gray-500 flex-shrink-0'></Search>
            <input onFocus={()=>setOpenSearchBar(true)} type='text' className='outline-none h-7 text-xs sm:text-sm flex-1' placeholder='Search...'></input>
          </div>
-         <Bell size={16} className='text-gray-500'></Bell>
+         {/* <Bell size={16} className='text-gray-500'></Bell> */}
+         {
+          auth.user.userType === 'Admin' &&
+          <Tooltip onClick={handleNavigateProfile} title="profile">
+          <User size={20} className='text-gray-500 cursor-pointer'></User>
+         </Tooltip>
+         }
+         {/* <Tooltip title="notifications">
+         <Bell size={20} className='text-gray-500 cursor-pointer'></Bell>
+         </Tooltip> */}
+         <Tooltip title="logout">
+         <LogOut onClick={handleLogout} className='cursor-pointer text-red-500' size={20}></LogOut>
+         </Tooltip>
        </div>
     </div>
     </>

@@ -1,16 +1,17 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 //importing icons
 import { SquarePen } from 'lucide-react'
 
 function RoomCard({openForm,room}) {
   const navigate = useNavigate()
+  const {auth} = useAuth()
 
   const handleNavigate = () =>{
-     navigate('/admin/branches/room/preview', {state:room._id})
-  }
-
+    navigate(auth.user.userType === "Account" ? '/account/branches/room/preview' : "/admin/branches/room/preview", {state:room._id})
+ }
   return (
     <div onClick={handleNavigate} className='relative h-36 hover:scale-[1.02] transition-all duration-300 cursor-pointer rounded-2xl shadow-sm bg-gradient-to-br from-[#d8e8fe] to-[#c3ddfe] flex flex-col justify-between gap-4 p-4'>
        <div className="absolute p-1 right-2 top-2 hover:bg-black/80 transition-all duration-300 bg-black/40 backdrop-blur-sm rounded-md">
