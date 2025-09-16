@@ -61,7 +61,7 @@ function Branch() {
                <span className='text-gray-500 text-sm sm:text-base'>No Branch Found.</span>
             </div>
           </div>
-          :<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-stretch gap-4 sm:gap-6 lg:gap-8'>
+          :<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 items-stretch gap-4 sm:gap-6 lg:gap-8'>
             {
               branch.map((item, index) => (
                 <BranchCard openForm={handleOpenForm} key={index} item={item}></BranchCard>

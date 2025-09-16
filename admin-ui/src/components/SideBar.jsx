@@ -15,6 +15,9 @@ import { BookText } from 'lucide-react';
 import { HandCoins } from 'lucide-react';
 import { ArrowLeftRight } from 'lucide-react';
 
+//Importing images
+import LOGO from '../assets/logo1.png'
+
 
 const adminRoutes = [
     {
@@ -74,7 +77,55 @@ const adminRoutes = [
     }
 ]
 
-function SideBar({showSideBar, setShowSideBar}) {
+let accountRoutes = [
+  {
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    link: "/account",
+  },
+  {
+    label: "Branches",
+    icon: Building2,
+    link: "/account/branches",
+  },
+  {
+    label: "Customers",
+    icon: Users,
+    link: "/account/customers",
+  },
+  {
+    label: "Employees",
+    icon: IdCardLanyard,
+    link: "/account/employees",
+  },
+  {
+    label: "Rents",
+    icon: Coins,
+    link: "/account/rents",
+  },
+  {
+    label: "Salary",
+    icon: Wallet,
+    link: "/account/salary",
+  },
+  {
+    label: "Inventory",
+    icon: Box,
+    link: "/account/inventory",
+  },
+  {
+    label: "Monthly Bills",
+    icon: BookText,
+    link: "/account/monthlybill",
+  },
+  {
+    label: "Transactions",
+    icon: ArrowLeftRight,
+    link: "/account/transactions",
+  },
+];
+
+function SideBar({showSideBar, setShowSideBar, type}) {
   const location = useLocation()
 
   const isActive = (label) =>{
@@ -87,19 +138,19 @@ function SideBar({showSideBar, setShowSideBar}) {
 
   }
 
+  let routes = type === 'account' ? accountRoutes : adminRoutes
+
   return (
-    <div className={`w-64 bg-white border-r border-neutral-200 fixed top-0 ${showSideBar ? "left-0" : "-left-64"} bottom-0 z-20 transition-transform duration-300 ease-in-out`}>
+    <div className={`w-64 bg-[#202947] border-r border-neutral-200 fixed top-0 ${showSideBar ? "left-0" : "-left-64"} bottom-0 z-20 transition-transform duration-300 ease-in-out`}>
        {/* Logo */}
-       <div className='h-16 w-full flex justify-between items-center px-4'>
-         <div className='flex gap-2 items-center'>
-           <div className='bg-blue-500 rounded-md flex justify-center items-center p-2'>
-              <House size={18} className='text-white'></House>
-           </div>
-           <h1 className='text-xl font-semibold'>PgPanel</h1>
+       <div className='h-16 relative w-full flex border-b border-[#383e59] gap-1 justify-center items-center p-4'>
+         <div className='flex rounded-2xl bg-white justify-center items-center'>
+           <img className='w-12 h-12' src={LOGO}></img>
          </div>
+         <h1 className='text-white text-xl font-semibold'>Pgsphere</h1>
          <button 
            onClick={() => setShowSideBar(false)}
-           className='p-1 hover:bg-gray-100 rounded-md'
+           className='p-1 right-1 absolute hover:bg-gray-100 rounded-md'
          >
            <X size={20} className='text-gray-500'></X>
          </button>
@@ -107,10 +158,10 @@ function SideBar({showSideBar, setShowSideBar}) {
        {/* Links */}
        <div className='flex flex-col p-6 gap-4'>
           {
-            adminRoutes.map(({link, label, icon:Icon}, index) => (
-              <Link key={index} to={link} className={`group flex p-2 items-center hover:bg-blue-100 gap-2 ${isActive(label) && "bg-blue-100"} rounded-md`}>
-                <Icon className={`${isActive(label) && "text-blue-500"} group-hover:text-blue-500`} size={20}></Icon>
-                <span className={`${isActive(label) ? "text-blue-500" : 'text-black'} group-hover:text-blue-500 font-medium`}>{label}</span>
+            routes.map(({link, label, icon:Icon}, index) => (
+              <Link key={index} to={link} className={`group flex p-2 px-4 items-center hover:bg-white gap-2 ${isActive(label) && "bg-white"} rounded-full`}>
+                <Icon className={`${isActive(label) ? "text-[#202947]" : 'text-[#a2a6ba]'} group-hover:text-[#202947]`} size={20}></Icon>
+                <span className={`${isActive(label) ? "text-[#202947]" : 'text-[#a2a6ba]'} group-hover:text-[#202947] font-medium`}>{label}</span>
               </Link>
             ))
           }
