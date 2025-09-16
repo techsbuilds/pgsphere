@@ -7,6 +7,7 @@ import CUSTOMER from "../models/CUSTOMER.js";
 import EMPLOYEE from "../models/EMPLOYEE.js";
 import mongoose from "mongoose";
 import ACCOUNT from "../models/ACCOUNT.js";
+import LOGINMAPPING from "../models/LOGINMAPPING.js";
 dotenv.config();
 
 /* Create Branch */
@@ -14,6 +15,12 @@ export const createBranch = async (req, res, next) => {
   try {
     const { mongoid, pgcode } = req; // from auth middleware
     const { branch_name, branch_address } = req.body;
+
+    const admin = await LOGINMAPPING.findOne({mongoid, pgcode})
+
+    const branchCount = await BRANCH.countDocuments({pgcode})
+
+    if (branchCount >= admin.plan.branchCount) return res.status(403).json({message:"You reached your plan limit. Please upgrade your plan.", success:false})
 
     if (!branch_name || !branch_address) {
       if (req.file) {
@@ -25,6 +32,7 @@ export const createBranch = async (req, res, next) => {
     }
 
     const existing = await BRANCH.findOne({ branch_name, pgcode });
+
     if (existing) {
       if (req.file) await removeFile(path.join("uploads", "branch", req.file.filename));
       return res.status(400).json({
@@ -69,13 +77,14 @@ export const getAllBranch = async (req, res, next) => {
     let query = { pgcode };
 
     if (userType === 'Account') {
+
       const acmanager = await ACCOUNT.findById(mongoid)
 
       if (!acmanager) {
         return res.status(404).json({ message: "Account Manager Not Found.", success: false })
       }
 
-      query.branch = { $in: acmanager.branch }
+      query._id = { $in: acmanager.branch }
     }
 
     if (searchQuery) {

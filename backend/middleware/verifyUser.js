@@ -19,7 +19,7 @@ export const verifyToken = async (req, res, next) =>{
         req.pgcode = decoded.pgcode;
 
         if(req.userType === "Account"){
-            let isActiveAccount = await LOGINMAPPING.findOne({mongoid:req.mongoid, status:true}) 
+            let isActiveAccount = await LOGINMAPPING.findOne({mongoid:req.mongoid, pgcode:req.pgcode, status:true}) 
 
             if(!isActiveAccount) return res.status(403).json({message:"Your account is not active.",success:false})
         }
@@ -37,6 +37,6 @@ export const verifyAdmin = async (req, res, next) =>{
     if(userType && userType==='Admin'){
         next()
     }else{
-        return res.status(400).json({message:"Invalid user type",success:false})
+        return res.status(400).json({message:"You are not Autherized to Perform this Task",success:false})
     }
 }

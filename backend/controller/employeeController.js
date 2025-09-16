@@ -163,8 +163,10 @@ export const changeEmployeeStatus = async (req, res, next) => {
   try {
     const { employeeId } = req.params
 
-    const { status } = req.body
+    const {mongoid, userType} = req
 
+    const { status } = req.body
+    
     if (!employeeId || status === undefined) return res.status(400).json({ message: "Please provide all required fields.", success: false })
 
     const employee = await EMPLOYEE.findById(employeeId)
@@ -247,6 +249,7 @@ export const getEmployeePendingSalaries = async (req, res, next) => {
         type: "employee_salary",
         refModel: "Employeesalary",
         branch: employee.branch._id,
+        pgcode
       }).populate({
         path: "refId",
         model: "Employeesalary",

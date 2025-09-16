@@ -35,31 +35,32 @@ function Breadcrumb({
 
       case "/admin/branches":
         return (
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center w-full gap-4">
+          <div className="flex justify-between items-center w-full">
             <h1 className="text-2xl md:text-3xl font-semibold">Branches</h1>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-full sm:w-48 md:w-72 flex items-center gap-2">
-                <Search className="text-gray-500 flex-shrink-0" size={18}></Search>
+            <div className="flex items-center gap-2">
+              <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-48 md:w-72  flex items-center gap-2">
+                <Search className="text-gray-500" size={20}></Search>
                 <input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   type="text"
-                  className="flex-1 outline-none text-sm"
+                  className="flex-1 outline-none"
                   placeholder="Search branch"
                 ></input>
               </div>
               <button
                 onClick={() => onClick()}
-                className="md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white flex-shrink-0"
+                className="md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
               >
                 <span className="hidden md:block">Add New Branch</span>
-                <Plus className="block md:hidden" size={18}></Plus>
+                <Plus className="block md:hidden"></Plus>
               </button>
             </div>
           </div>
         );
 
       case "/admin/branches/preview":
+      case "/account/branches/preview":
         return (
           <div className="flex w-full flex-col gap-1">
             <h1 className="text-2xl md:text-3xl font-semibold">
@@ -71,54 +72,47 @@ function Breadcrumb({
           </div>
         );
 
+      case "/account/customers":
       case "/admin/customers":
         return (
-          <div className="flex flex-col gap-4 w-full">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold">Customers</h1>
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-                <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-full sm:w-48 md:w-72 flex items-center gap-2">
-                  <Search className="text-gray-500 flex-shrink-0" size={18}></Search>
-                  <input
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    type="text"
-                    className="outline-none h-8 text-sm flex-1"
-                    placeholder="Search customers"
-                  ></input>
-                </div>
-                <div className="relative w-full sm:w-52 max-w-full overflow-hidden">
-                  <select
-                    onChange={(e) => setSelectedBranch(e.target.value)}
-                    value={selectedBranch}
-                    className="p-2 w-full px-4 border rounded-2xl border-neutral-300 bg-white outline-none text-sm appearance-none pr-8 max-w-full"
-                  >
-                    <option value={""}>All Branch</option>
-                    {branch.map((item, index) => (
-                      <option key={index} value={item._id}>
-                        {item.branch_name}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
+          <div className="flex justify-between items-center w-full">
+            <h1 className="text-2xl md:text-3xl font-semibold">Customers</h1>
+            <div className="flex items-center gap-2">
+              <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-48 md:w-72  flex items-center gap-2">
+                <Search className="text-gray-500" size={20}></Search>
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  type="text"
+                  className="flex-1 outline-none"
+                  placeholder="Search customers"
+                ></input>
               </div>
+              <select
+                onChange={(e) => setSelectedBranch(e.target.value)}
+                value={selectedBranch}
+                className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none"
+              >
+                <option value={""}>All Branch</option>
+                {branch.map((item, index) => (
+                  <option key={index} value={item._id}>
+                    {item.branch_name}
+                  </option>
+                ))}
+              </select>
               <button
                 onClick={() => onClick()}
-                className="md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-2xl text-white w-full sm:w-fit"
+                className="md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-2xl text-white"
               >
                 <span className="hidden md:block">Add New Customer</span>
-                <span className="block md:hidden">Add Customer</span>
+                <Plus className="block md:hidden"></Plus>
               </button>
             </div>
           </div>
         );
 
       case "/admin/employees":
+      case "/account/employees":
         return (
           <div className="flex justify-between items-center w-full">
             <h1 className="text-2xl md:text-3xl font-semibold">Employees</h1>
@@ -197,6 +191,7 @@ function Breadcrumb({
         );
 
       case "/admin/rents":
+      case "/account/rents":
         return (
           <div className="flex justify-between items-center w-full">
             <h1 className="text-2xl md:text-3xl font-semibold">
@@ -230,6 +225,7 @@ function Breadcrumb({
         );
 
       case "/admin/salary":
+      case "/account/salary":
         return (
           <div className="flex justify-between items-center w-full">
             <h1 className="text-2xl md:text-3xl font-semibold">
@@ -269,6 +265,7 @@ function Breadcrumb({
         );
 
       case "/admin/inventory":
+      case "/account/inventory":
         return (
           <div className="flex justify-between items-center w-full">
             <h1 className="text-2xl md:text-3xl font-semibold">Inventory</h1>
@@ -347,9 +344,7 @@ function Breadcrumb({
       case "/admin/cashout":
         return (
           <div className="flex justify-between items-center w-full">
-            <h1 className="text-2xl md:text-3xl font-semibold">
-              Cashout
-            </h1>
+            <h1 className="text-2xl md:text-3xl font-semibold">Cashout</h1>
             <div className="flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-48 md:w-72  flex items-center gap-2">
                 <Search className="text-gray-500" size={20}></Search>
@@ -370,15 +365,14 @@ function Breadcrumb({
             </div>
           </div>
         );
-      
+
       case "/admin/transactions":
+      case "/account/transactions":
         return (
           <div className="flex justify-between items-center w-full">
-            <h1 className="text-2xl md:text-3xl font-semibold">
-              Transactions
-            </h1>
+            <h1 className="text-2xl md:text-3xl font-semibold">Transactions</h1>
             <div className="flex items-center gap-2">
-            <select
+              <select
                 onChange={(e) => setSelectedBranch(e.target.value)}
                 value={selectedBranch}
                 className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none"
@@ -390,21 +384,73 @@ function Breadcrumb({
                   </option>
                 ))}
               </select>
-              <select 
-              value={selectedTransactions}
-              onChange={(e)=>setSelectedTransactions(e.target.value)}
-              className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none">
-                <option value={''}>All Transaction</option>
-                <option value={'customer_rent'}>Rent</option>
-                <option value={'employee_salary'}>Salary</option>
-                <option value={'monthly_bill'}>Monthly Bill</option>
-                <option value={'inventory_purchase'}>Inventory</option>
-                <option value={'cash_given'}>Cashout</option>
+              <select
+                value={selectedTransactions}
+                onChange={(e) => setSelectedTransactions(e.target.value)}
+                className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none"
+              >
+                <option value={""}>All Transaction</option>
+                <option value={"customer_rent"}>Rent</option>
+                <option value={"employee_salary"}>Salary</option>
+                <option value={"monthly_bill"}>Monthly Bill</option>
+                <option value={"inventory_purchase"}>Inventory</option>
+                <option value={"cash_given"}>Cashout</option>
               </select>
             </div>
           </div>
-        )
+        );
 
+      case "/account/branches":
+        return (
+          <div className="flex justify-between items-center w-full">
+            <h1 className="text-2xl md:text-3xl font-semibold">Branches</h1>
+            <div className="flex items-center gap-2">
+              <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-48 md:w-72  flex items-center gap-2">
+                <Search className="text-gray-500" size={20}></Search>
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  type="text"
+                  className="flex-1 outline-none"
+                  placeholder="Search branch"
+                ></input>
+              </div>
+            </div>
+          </div>
+        );
+
+      case "/account/monthlybill":
+        return (
+          <div className="flex justify-between items-center w-full">
+            <h1 className="text-2xl md:text-3xl font-semibold">
+              Monthly Bills
+            </h1>
+            <div className="flex items-center gap-2">
+              <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-48 md:w-72  flex items-center gap-2">
+                <Search className="text-gray-500" size={20}></Search>
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  type="text"
+                  className="flex-1 outline-none"
+                  placeholder="Search bill"
+                ></input>
+              </div>
+              <select
+                onChange={(e) => setSelectedBranch(e.target.value)}
+                value={selectedBranch}
+                className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none"
+              >
+                <option value={""}>All Branch</option>
+                {branch.map((item, index) => (
+                  <option key={index} value={item._id}>
+                    {item.branch_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        );
     }
   };
 

@@ -111,7 +111,7 @@ export const validateToken = async (req, res, next) =>{
 
 export const signupUser = async (req, res, next) =>{
     try{
-        const {full_name, email, password, contactno, pgname,address} = req.body
+        const {full_name, email, password, contactno, pgname, address} = req.body
 
         if(!full_name || !email || !password || !contactno || !pgname || !address) return res.status(400).json({message:"Please provide all required fields."})
 
@@ -179,4 +179,4 @@ export const logoutPortal = async (req, res, next) =>{
     } catch (err) {
       next(err);
     }
-  }
+}

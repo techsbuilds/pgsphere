@@ -1,5 +1,5 @@
 import express from 'express'
-import { createBankAccount, getAllBankAccount } from '../controller/bankAccountController.js'
+import { createBankAccount, getAllBankAccount, updateBankAccount } from '../controller/bankAccountController.js'
 import { verifyToken, verifyAdmin } from '../middleware/verifyUser.js'
 
 const app = express.Router()
@@ -9,6 +9,9 @@ const app = express.Router()
 app.post('/',verifyToken, verifyAdmin, createBankAccount)
 
 //For get all bank accounts
-app.get('/', verifyToken, getAllBankAccount)
+app.get('/', verifyToken, verifyAdmin, getAllBankAccount)
+
+//For update bank account
+app.put('/:accountId', verifyToken, updateBankAccount)
 
 export default app

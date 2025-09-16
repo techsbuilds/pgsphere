@@ -4,10 +4,14 @@ import BRANCH from "../models/BRANCH.js"
 import CUSTOMER from "../models/CUSTOMER.js"
 import EMPLOYEE from "../models/EMPLOYEE.js"
 import ACCOUNT from "../models/ACCOUNT.js"
+import ADMIN from "../models/ADMIN.js"
+import LOGINMAPPING from "../models/LOGINMAPPING.js"
+import bcryptjs from 'bcryptjs'
 import { getMonthShortNames } from "../helper.js"
 
 export const getDashboardSummery = async (req, res, next) =>{
     try{
+        const {pgcode} = req 
         const currentYear = new Date().getFullYear()
 
         const totalEmployees = await EMPLOYEE.find({status:true}).countDocuments()
@@ -15,7 +19,7 @@ export const getDashboardSummery = async (req, res, next) =>{
         const totalBranch = await BRANCH.find().countDocuments()
         
 
-        const transactions = await TRANSACTION.find()
+        const transactions = await TRANSACTION.find({pgcode})
         .populate('refId')
         .populate('bank_account')
 
@@ -71,7 +75,7 @@ export const getDashboardSummery = async (req, res, next) =>{
         }
 
         //Get BANK ACCOUNTS
-        const accounts = await BANKACCOUNT.find();
+        const accounts = await BANKACCOUNT.find({pgcode});
 
         const accountsData = accounts.map(acc => {
             const accTx = transactions.filter(t => 
@@ -117,6 +121,7 @@ export const getDashboardSummery = async (req, res, next) =>{
 
 export const getDashboardSearch = async (req, res, next) =>{
     try{
+        const {pgcode} = req 
         const {searchQuery} = req.query
 
         const {role} = req.params
@@ -131,6 +136,7 @@ export const getDashboardSearch = async (req, res, next) =>{
                   { customer_name: { $regex: searchQuery, $options: 'i' } },
                   { mobile_no: { $regex: searchQuery, $options: 'i' } }
                 ],
+                pgcode,
                 status:true
               }).populate('room').populate('branch')
             }
@@ -142,6 +148,7 @@ export const getDashboardSearch = async (req, res, next) =>{
                   { employee_name: { $regex: searchQuery, $options: 'i' } },
                   { mobile_no: { $regex: searchQuery, $options: 'i' } }
                 ],
+                pgcode,
                 status:true
                }).populate('branch')
             }   
@@ -164,6 +171,111 @@ export const getDashboardSearch = async (req, res, next) =>{
         }
 
         return res.status(200).json({message:"All search query results retrived successfully.",data:results,success:true})
+
+    }catch(err){
+        next(err)
+    }
+}
+
+
+
+export const getAdminDetails = async (req, res, next) =>{
+    try{
+       const {mongoid} = req 
+
+       const admin = await ADMIN.findById(mongoid)
+
+       return res.status(200).json({message:"Admin details retrival successfully.",data:admin,success:true})
+
+    }catch(err){
+        next(err)
+    }
+}
+
+export const uploadLogo = async (req, res, next) => {
+    try{
+        const {mongoid} = req 
+        
+        const admin = await ADMIN.findById(mongoid) 
+
+        if(!admin){
+           await removeFile(path.join('uploads',"branch", req.file.filename))
+           return res.status(404).json({message:"Admin not found.",success:false})
+        } 
+
+        if(admin.pglogo){
+           const filePath = admin.pglogo.replace(process.env.DOMAIN, "")
+           await removeFile(filePath)
+        }
+
+        let imageUrl = null 
+        
+        imageUrl = `${process.env.DOMAIN}/uploads/logo/${req.file.filename}`
+
+        admin.pglogo = imageUrl 
+
+        await admin.save()
+
+        return res.status(200).json({message:"Logo uploaded successfully.",success:true})
+        
+    }catch(err){
+        next(err)
+    }
+}
+
+export const updateAdminDetails = async (req, res, next) =>{
+    try{
+        const {mongoid} = req  
+
+        const admin = await ADMIN.findById(mongoid) 
+
+        if(!admin) return res.status(404).json({message:"Admin not found.",success:false})
+
+        const {full_name, email} = req.body 
+    
+        if(email && admin.email !== email) {
+          const existUser = await LOGINMAPPING.findOne({email})
+
+          if(existUser) return res.status(409).json({message:"User is already exist with same email address.",success:false})
+        }
+
+        await LOGINMAPPING.findOneAndUpdate({mongoid}, {$set:{email:email}})
+
+        admin.full_name = full_name 
+        admin.email = email 
+
+        await admin.save() 
+
+        return res.status(200).json({message:"Admin details updated successfully.",success:true})
+
+    }catch(err){
+        next(err)
+    }
+}
+
+
+export const changePassword = async (req, res, next) =>{
+    try{
+       const {mongoid} = req 
+
+       const {password, current_password} = req.body 
+
+       if(!password || !current_password) return res.status(400).json({message:"Please provide all required fields.",success:false})
+
+       const loginmapping = await LOGINMAPPING.findOne({mongoid})
+
+       if(!loginmapping) return res.status(404).json({message:"Admin not found.",success:false})
+ 
+       const isMatch = await bcryptjs.compare(current_password, loginmapping.password) 
+       if(!isMatch) return res.status(401).json({message:"Current password is incorrect.",success:false})
+
+       const salt = await bcryptjs.genSalt(10);
+       const hashedPassword = await bcryptjs.hash(password, salt);
+
+       loginmapping.password = hashedPassword
+       await loginmapping.save() 
+
+       return res.status(200).json({message:"Password changed successfully.",success:true})
 
     }catch(err){
         next(err)

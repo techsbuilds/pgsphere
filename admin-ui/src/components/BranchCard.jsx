@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 //Importing icons
 import { Image } from 'lucide-react';
@@ -9,9 +10,10 @@ import { SquarePen } from 'lucide-react';
 
 function BranchCard({openForm,item}) {
   const navigate = useNavigate()
+  const {auth} = useAuth()
 
   const handleClick = (item) =>{
-    navigate('/admin/branches/preview',{state:item._id})
+    navigate(auth.user.userType === 'Admin' ?  '/admin/branches/preview' : '/account/branches/preview',{state:item._id})
   }
 
   return (
@@ -19,13 +21,16 @@ function BranchCard({openForm,item}) {
       onClick={()=>handleClick(item)}
       className="rounded-2xl relative hover:scale-[1.02] transition-all duration-300 overflow-hidden shadow-sm border cursor-pointer border-neutral-300"
     >
-      <div className="absolute p-1 right-2 top-2 hover:bg-black/80 transition-all duration-300 bg-black/40 backdrop-blur-sm rounded-md">
+{
+        auth.user.userType === "Admin" && 
+        <div className="absolute p-1 right-2 top-2 hover:bg-black/80 transition-all duration-300 bg-black/40 backdrop-blur-sm rounded-md">
          <SquarePen 
          onClick={(e)=>{
           e.stopPropagation()
           openForm(item)
         }} size={18} className="text-white"></SquarePen>
-      </div>
+       </div> 
+      }
       {item.branch_image ? (
         <img className="h-48 object-cover w-full" src={item.branch_image}></img>
       ) : (

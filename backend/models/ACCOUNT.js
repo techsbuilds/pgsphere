@@ -22,10 +22,11 @@ const accountSchema = new mongoose.Schema({
           'Please fill a valid email address'
         ]
     },
-    branch: {
+    branch:[ {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Branch'
-    },
+    }],
+    
     added_by:{
       type:mongoose.Schema.Types.ObjectId,
       ref:'Admin'

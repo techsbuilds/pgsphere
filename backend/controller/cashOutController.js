@@ -4,12 +4,12 @@ import CASHOUT from "../models/CASHOUT.js";
 
 export const getAllCashOutTransaction = async (req, res, next) =>{
     try{
+        const {pgcode} = req 
         const {searchQuery} = req.query
-
-        console.log(searchQuery)
         
         const filter = {
-            type:'cash_given'
+            type:'cash_given',
+            pgcode
         }
 
         let cashoutIds = []
