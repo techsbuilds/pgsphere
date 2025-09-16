@@ -45,7 +45,10 @@ const corsOptions = {
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:5173",
-        "https://app.pgsphere.com"
+        "https://app.pgsphere.com",
+        "http://app.pgsphere.com",
+        "https://pgsphere.com",
+        "http://pgsphere.com",
       ];
       // Allow requests with no origin (like mobile apps or CURL)
       if (!origin || allowedOrigins.includes(origin)) {
