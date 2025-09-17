@@ -1,6 +1,6 @@
 import CONTACTFORM from "../models/CONTACTFORM.js"
 
-export const addContact = async(req,res) =>{
+export const addContact = async(req,res,next) =>{
     try {
         const {name, email, mobile_no, message} = req.body
 
@@ -22,7 +22,7 @@ export const addContact = async(req,res) =>{
     }
 }
 
-export const getAllContacts = async(req,res) =>{
+export const getAllContacts = async(req,res,next) =>{
     try {
         const contacts = await CONTACTFORM.find()
 
