@@ -65,17 +65,21 @@ function Login() {
       try{
         const data = await login(formData)
       }catch(err){
-        console.log(err.message)
-        toast.error(err?.message)
+         throw err
       }
   }
 
   const onSendOtp = async (formData) =>{
     setLoading(true)
-    await handleSendOtp()
-    setEmailForOtp(formData?.email || "")
-    setCurrentStep((prev)=> prev + 1)
-    setResendSeconds(60)
+    try{
+      await handleSendOtp()
+      setEmailForOtp(formData?.email || "")
+      setCurrentStep((prev)=> prev + 1)
+      setResendSeconds(60)
+    }catch(err){
+      console.log(err)
+      toast.error(err?.message)
+    }    
     setLoading(false)
   }
 
