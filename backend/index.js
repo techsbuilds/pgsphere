@@ -35,6 +35,9 @@ const port = process.env.PORT || 8020;
 
 const app = express();
 
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', true);
+}
 
 // Serve static files from the uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -61,7 +64,7 @@ const corsOptions = {
     credentials: true,
 };
 
-app.options(/^.*$/, cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // Middleware for using CORS
 app.use(cors(corsOptions));
