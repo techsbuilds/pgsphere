@@ -1,6 +1,5 @@
 import express from 'express'
 import mongoose from 'mongoose'
-import cors from 'cors'
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import path from "path";
@@ -43,32 +42,6 @@ if (process.env.NODE_ENV === 'production') {
 // Serve static files from the uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-const corsOptions = {
-    origin: (origin, callback) => {
-      const allowedOrigins = [
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:5173",
-        "https://app.pgsphere.com",
-        "http://app.pgsphere.com",
-        "https://pgsphere.com",
-        "http://pgsphere.com",
-      ];
-      // Allow requests with no origin (like mobile apps or CURL)
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
-    credentials: true,
-};
-
-app.options(/^.*$/, cors(corsOptions));
-
-// Middleware for using CORS
-app.use(cors(corsOptions));
 
 // Middleware to parse JSON
 app.use(express.json({limit:"50mb"}));
