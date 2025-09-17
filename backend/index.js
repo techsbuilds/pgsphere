@@ -37,13 +37,13 @@ const app = express();
 
 
 // Debugging middleware
-app.use((req, res, next) => {
-  console.log("📥 Incoming Request:");
-  console.log("Method:", req.method);
-  console.log("URL:", req.url);
-  console.log("Headers:", req.headers);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log("📥 Incoming Request:");
+//   console.log("Method:", req.method);
+//   console.log("URL:", req.url);
+//   console.log("Headers:", req.headers);
+//   next();
+// });
 
 
 if (process.env.NODE_ENV === 'production') {
