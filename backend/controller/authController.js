@@ -155,7 +155,6 @@ export const signupUser = async (req, res, next) =>{
         if(!hasSentEmail) {
           return res.status(500).json({message:"Error in sending registration email. Please try again.",success:false})
         }
-        
 
         return res.status(200).json({message:`Your Account created successfully. A Dashboard Link and Pgcode has been sent to your email.`,success:true,data:newUser})
 
