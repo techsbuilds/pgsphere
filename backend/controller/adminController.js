@@ -16,9 +16,9 @@ export const getDashboardSummery = async (req, res, next) =>{
 
         const totalEmployees = await EMPLOYEE.find({status:true}).countDocuments()
         const totalCustomers = await CUSTOMER.find({status:true}).countDocuments()
-        const totalBranch = await BRANCH.find().countDocuments()
-        
+        const totalAcmanagers = await LOGINMAPPING.find({pgcode,status:true,userType:'Account'}).countDocuments()
 
+        const totalBranch = await BRANCH.find().countDocuments()
         const transactions = await TRANSACTION.find({pgcode})
         .populate('refId')
         .populate('bank_account')
@@ -109,6 +109,7 @@ export const getDashboardSummery = async (req, res, next) =>{
             total_current_year_expenditure: totalCurrentYearExpenditure,
             accounts: accountsData,
             totalBranch,
+            totalAcmanagers,
             totalCustomers,
             totalEmployees
         },message:"Dashboard summery retrived successfully.",success:true})

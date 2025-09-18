@@ -1,6 +1,8 @@
 import ACCOUNT from "../models/ACCOUNT.js";
 import LOGINMAPPING from "../models/LOGINMAPPING.js";
 import bcryptjs from 'bcryptjs'
+import CUSTOMER from "../models/CUSTOMER.js";
+import EMPLOYEE from "../models/EMPLOYEE.js";
 
 export const createAccountManager = async (req, res, next) => {
     try {
@@ -176,5 +178,65 @@ export const changeAcmanagerStatus = async (req, res, next) => {
 
     } catch (err) {
         next(err)
+    }
+}
+
+export const getDashboardSearchAcmanger = async (req, res, next) => {
+    try {
+        const { pgcode, mongoid } = req
+        const { searchQuery } = req.query
+
+        if (!searchQuery) return res.status(200).json({ message: "Please provide search query.", success: true, data: [] })
+
+        const { role } = req.params
+        let results = []
+
+        const acmanager = await ACCOUNT.findById(mongoid)
+
+        if (!acmanager) {
+            return res.status(404).json({ message: "Acmanager not Found.", success: false })
+        }
+
+        let branches = acmanager.branch
+
+        switch (role) {
+            case 'Customers': {
+
+                results = await CUSTOMER.find({
+                    $or: [
+                        { customer_name: { $regex: searchQuery, $options: 'i' } },
+                        { mobile_no: { $regex: searchQuery, $options: 'i' } }
+                    ],
+                    pgcode,
+                    branch: { $in: branches },
+                    status: true
+                }).populate('room').populate('branch')
+
+            }
+                break;
+
+            case 'Employees': {
+
+                results = await EMPLOYEE.find({
+                    $or: [
+                        { employee_name: { $regex: searchQuery, $options: 'i' } },
+                        { mobile_no: { $regex: searchQuery, $options: 'i' } }
+                    ],
+                    pgcode,
+                    branch: branches,
+                    status: true
+                }).populate('branch')
+
+            }
+                break;
+
+            default: {
+                return res.status(400).json({ message: "Invalid role.", success: false })
+            }
+        }
+        return res.status(200).json({ message: "All Search query Results Retrived By Acmanager Successfully.", data: results, success: true })
+
+    } catch (error) {
+        next(error)
     }
 }
