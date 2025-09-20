@@ -5,6 +5,7 @@ import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext'
 import { ToastContainer } from 'react-toastify'
 
+
 createRoot(document.getElementById('root')).render(
    <AuthProvider>
      <StrictMode>
