@@ -539,7 +539,7 @@ function Breadcrumb({
               </select>
               <button
                 onClick={() => onClick()}
-                className="md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-2xl text-white"
+                className="md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
               >
                 <span className="hidden md:block">Create Bill</span>
               </button>
