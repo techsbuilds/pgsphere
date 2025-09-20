@@ -5,6 +5,7 @@ import TRANSACTION from "../models/TRANSACTION.js";
 import ACCOUNT from "../models/ACCOUNT.js";
 import { getMonthYearList } from "../helper.js";
 import mongoose from "mongoose";
+import ExcelJS from "exceljs";
 
 export const createCustomer = async (req, res, next) =>{
     try{
@@ -517,3 +518,73 @@ export const getPendingCustomerRentList = async (req, res, next) =>{
         next(err)
     }
 }
+
+export const exportCustomersToExcel = async (req, res, next) => {
+  try {
+    const { pgcode, mongoid, userType } = req;
+    const { branch } = req.query;
+    let filter = { pgcode };
+
+    if (userType === "Account") {
+      const account = await ACCOUNT.findById(mongoid);
+
+      if (!account) return res.status(404).json({ message: "Account manager not found.", success: false });
+
+      if (branch) {
+        if (!account.branch.includes(branch)) {
+          return res.status(403).json({ message: "You are not authorized to view customers in this branch.", success: false });
+        }
+        filter.branch = branch;
+      } else {
+        filter.branch = { $in: account.branch };
+      }
+    }
+
+    // Admin gets all customers for the PG (no branch filter)
+    // Account gets filtered by branch(s)
+
+    const customers = await CUSTOMER.find(filter)
+      .populate("branch", "branch_name")
+      .populate("room", "room_id");
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Customers");
+
+    worksheet.columns = [
+      { header: "Customer Name", key: "customer_name", width: 25 },
+      { header: "Mobile No", key: "mobile_no", width: 15 },
+      { header: "Deposit Amount", key: "deposite_amount", width: 15 },
+      { header: "Rent Amount", key: "rent_amount", width: 15 },
+      { header: "Branch", key: "branch", width: 20 },
+      { header: "Room", key: "room", width: 10 },
+      { header: "Status", key: "status", width: 10 },
+      { header: "Joining Date", key: "joining_date", width: 20 },
+    ];
+
+    customers.forEach((c) => {
+      worksheet.addRow({
+        customer_name: c.customer_name,
+        mobile_no: c.mobile_no,
+        deposite_amount: c.deposite_amount,
+        rent_amount: c.rent_amount,
+        branch: c.branch ? c.branch.branch_name : "-",
+        room: c.room ? c.room.room_id : "-",
+        status: c.status ? "Active" : "Inactive",
+        joining_date: c.joining_date ? c.joining_date.toLocaleDateString() : "-",
+      });
+    });
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=customers.xlsx"
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    next(err);
+  }
+};
