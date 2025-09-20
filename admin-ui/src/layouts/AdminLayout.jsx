@@ -11,13 +11,16 @@ function AdminLayout() {
     const handleResize = () => {
       if (window.innerWidth < 768) {
         setShowSideBar(false)
+      } else {
+        setShowSideBar(true) // Keep sidebar open on desktop
       }
-      // Don't force open on desktop - let user control it
     }
 
-    // Set initial state only for mobile
+    // Set initial state based on screen size
     if (window.innerWidth < 768) {
-      setShowSideBar(false)
+      setShowSideBar(false) // Closed on mobile
+    } else {
+      setShowSideBar(true) // Open on desktop
     }
     
     // Listen for resize events

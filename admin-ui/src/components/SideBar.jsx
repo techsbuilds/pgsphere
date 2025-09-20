@@ -143,11 +143,13 @@ function SideBar({showSideBar, setShowSideBar, type}) {
   return (
     <div className={`w-64 bg-[#202947] border-r border-neutral-200 fixed top-0 ${showSideBar ? "left-0" : "-left-64"} bottom-0 z-20 transition-transform duration-300 ease-in-out`}>
        {/* Logo */}
-       <div className='h-16 relative w-full flex border-b border-[#383e59] gap-1 justify-center items-center p-4'>
-         <div className='flex rounded-2xl bg-white justify-center items-center'>
-           <img className='w-12 h-12' src={LOGO}></img>
+       <div className='h-16 relative w-full flex border-b border-[#383e59] justify-start items-center p-4'>
+         <div className='flex items-center gap-4'>
+           <div className='flex rounded-2xl bg-white justify-center items-center'>
+             <img className='w-12 h-12' src={LOGO}></img>
+           </div>
+           <h1 className='text-white text-xl font-semibold'>Pgsphere</h1>
          </div>
-         <h1 className='text-white text-xl font-semibold'>Pgsphere</h1>
          <button 
            onClick={() => setShowSideBar(false)}
            className='p-1 right-1 absolute hover:bg-gray-100 rounded-md'
