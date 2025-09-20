@@ -7,9 +7,9 @@ import ROOM from "../models/ROOM.js";
 export const createRoom = async (req, res, next) => {
     try {
         const { mongoid, userType, pgcode } = req
-        const { room_id, capacity, branch, remark } = req.body
+        const { room_id, capacity, branch, remark, floor_id, room_type, service_type } = req.body
 
-        if (!room_id || !capacity || !branch) return res.status(400).json({ message: "Please provide all required fields.", success: false })
+        if (!room_id || !capacity || !branch || !floor_id || !room_type || !service_type) return res.status(400).json({ message: "Please provide all required fields.", success: false })
 
         const existRoom = await ROOM.findOne({ room_id, branch, pgcode })
 
@@ -34,6 +34,9 @@ export const createRoom = async (req, res, next) => {
 
         const newRoom = await ROOM({
             room_id,
+            floor_id,
+            room_type,
+            service_type,
             capacity,
             branch,
             remark,
@@ -179,6 +182,36 @@ export const getRoomById = async (req, res, next) => {
             }
         }
         return res.status(200).json({ message: "Room details retrived successfully.", success: true, data: room })
+
+    } catch (err) {
+        next(err)
+    }
+}
+
+export const getRoomByFloorId = async (req, res, next) => {
+    try {
+        const { floorId } = req.params
+        const { mongoid, userType, pgcode } = req
+
+        if (!floorId) return res.status(400).json({ message: "Please provide floor id.", success: false })
+
+        const floor = await FLOOR.findOne({ _id: floorId, pgcode })
+
+        if (!floor) return res.status(404).json({ message: "Floor not found.", success: false })
+            
+        if (userType === 'Account') {
+            const acmanager = await ACCOUNT.findById(mongoid)
+
+            if (!acmanager) {
+                return res.status(404).json({ message: "Account manager not Found.", success: false })
+            }
+            if (!acmanager.branch.includes(floor.branch._id)) {
+                return res.status(403).json({ message: "You are not Autherized to get Room in this Branch.", success: false })
+            }
+        }
+        const rooms = await ROOM.find({ floor_id: floorId, pgcode }).populate('branch')
+
+        return res.status(200).json({ message: "Room details retrived successfully.", success: true, data: rooms })
 
     } catch (err) {
         next(err)
