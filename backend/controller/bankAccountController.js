@@ -3,6 +3,7 @@ import TRANSACTION from "../models/TRANSACTION.js";
 
 export const createBankAccount = async (req, res, next) =>{
     try{
+        const {pgcode} = req 
         const {account_holdername} = req.body
 
         if(!account_holdername) return res.status(400).json({message:"Please provide account holder name.",success:false})
@@ -12,7 +13,8 @@ export const createBankAccount = async (req, res, next) =>{
         if(existBankAccount) return res.status(409).json({message:"Account is already exist.",success:false})
 
         const newBankAccount = new BANKACCOUNT({
-            account_holdername
+            account_holdername,
+            pgcode
         })
 
         await newBankAccount.save()

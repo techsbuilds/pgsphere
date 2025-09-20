@@ -20,6 +20,6 @@ app.post('/monthly-payment', verifyToken, createTransactionForMonthlyPayment)
 app.post('/cashout-pay', verifyToken, createTransactionForCashout)
 
 //For get all transactions
-app.get('/', verifyToken, verifyAdmin, getAllTransactions)
+app.get('/', verifyToken, getAllTransactions)
 
 export default app

@@ -20,6 +20,7 @@ import bankaccountRoute from './routes/bankaccount.js'
 import cashoutRoute from './routes/cashout.js'
 import adminRoute from './routes/admin.js'
 import contactRoute from './routes/contact.js'
+import dailyUpdateRoute from './routes/dailyupdate.js'
 
 // Get the current file's path
 const __filename = fileURLToPath(import.meta.url);
@@ -36,6 +37,10 @@ const port = process.env.PORT || 8020;
 const app = express();
 
 
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', true);
+}
+
 // Serve static files from the uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -45,6 +50,10 @@ const corsOptions = {
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:5173",
+        "https://app.pgsphere.com",
+        "http://app.pgsphere.com",
+        "https://pgsphere.com",
+        "http://pgsphere.com",
       ];
       // Allow requests with no origin (like mobile apps or CURL)
       if (!origin || allowedOrigins.includes(origin)) {
@@ -57,10 +66,12 @@ const corsOptions = {
     credentials: true,
 };
 
-app.options(/^.*$/, cors(corsOptions));
+// Handle preflight requests for all routes
+app.options('*', cors(corsOptions));
 
 // Middleware for using CORS
 app.use(cors(corsOptions));
+
 
 // Middleware to parse JSON
 app.use(express.json({limit:"50mb"}));
@@ -108,6 +119,7 @@ app.use('/api/bankaccount', bankaccountRoute)
 app.use('/api/cashout', cashoutRoute)
 app.use('/api/admin', adminRoute)
 app.use('/api/contact',contactRoute)
+app.use('/api/dailyupdate', dailyUpdateRoute)
 
  // Middleware to catch errors
  app.use((err, req, res, next) => {

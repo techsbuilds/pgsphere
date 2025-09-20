@@ -12,7 +12,16 @@ export const createAcManager = async (acmanagerData) =>{
        throw new Error(errMessage)
     }
 }
-
+export const getDashboardSearchbyAcmanager = async (role, searchQuery) =>{  
+   try{
+      const response = await api.get(`/acmanager/dashboard-summery/${role}?searchQuery=${searchQuery}`)
+      return response.data.data
+   } catch(err){
+      console.log(err)
+      const errMessage = err?.response?.data?.message
+      throw new Error(errMessage)
+   }
+}
 //For get all acmanager 
 export const getAllAcmanager = async (searchQuery="", branch="") =>{
    try{

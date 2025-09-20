@@ -35,3 +35,13 @@ export const verifyOtp = async (data) =>{
     throw new Error(errMessage)
    }
 }
+
+export const logout = async ()=>{
+   try{
+     const response = await api.get('/auth/logout')
+     return response.data.data
+   }catch(err){
+    const errMessage = err?.response?.data?.message
+    throw new Error(errMessage)
+   }
+}

@@ -4,6 +4,9 @@ import BRANCH from "../models/BRANCH.js"
 import CUSTOMER from "../models/CUSTOMER.js"
 import EMPLOYEE from "../models/EMPLOYEE.js"
 import ACCOUNT from "../models/ACCOUNT.js"
+import ADMIN from "../models/ADMIN.js"
+import LOGINMAPPING from "../models/LOGINMAPPING.js"
+import bcryptjs from 'bcryptjs'
 import { getMonthShortNames } from "../helper.js"
 import ADMIN from "../models/ADMIN.js"
 import LOGINMAPPING from "../models/LOGINMAPPING.js"
@@ -16,9 +19,9 @@ export const getDashboardSummery = async (req, res, next) =>{
 
         const totalEmployees = await EMPLOYEE.find({status:true}).countDocuments()
         const totalCustomers = await CUSTOMER.find({status:true}).countDocuments()
-        const totalBranch = await BRANCH.find().countDocuments()
-        
+        const totalAcmanagers = await LOGINMAPPING.find({pgcode,status:true,userType:'Account'}).countDocuments()
 
+        const totalBranch = await BRANCH.find().countDocuments()
         const transactions = await TRANSACTION.find({pgcode})
         .populate('refId')
         .populate('bank_account')
@@ -109,6 +112,7 @@ export const getDashboardSummery = async (req, res, next) =>{
             total_current_year_expenditure: totalCurrentYearExpenditure,
             accounts: accountsData,
             totalBranch,
+            totalAcmanagers,
             totalCustomers,
             totalEmployees
         },message:"Dashboard summery retrived successfully.",success:true})

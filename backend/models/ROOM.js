@@ -6,6 +6,21 @@ const roomSchema = new mongoose.Schema({
         required:true,
         trim:true
     },
+    room_type:{
+        type:String,
+        required:true,
+        enum : ['Hall','Room']
+    },
+    floor_id : {
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Floor',
+        required:true
+    },
+    service_type:{
+        type:String,
+        required:true,
+        enum : ['AC','Non-AC']
+    },
     capacity:{
         type:Number,
         required:true,

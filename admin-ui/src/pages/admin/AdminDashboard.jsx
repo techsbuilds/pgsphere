@@ -53,7 +53,7 @@ function AdminDashboard() {
       <Breadcrumb></Breadcrumb>
 
       {/* State Card */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="p-3 sm:p-4 bg-white border border-neutral-300 rounded-md flex items-center">
           <div className="flex flex-col gap-2 sm:gap-4">
             <span className="text-[#7E7E85] text-sm sm:text-base">Total Branches</span>
@@ -75,7 +75,7 @@ function AdminDashboard() {
         <div className="p-3 sm:p-4 bg-white border border-neutral-300 rounded-md flex items-center">
           <div className="flex flex-col gap-2 sm:gap-4">
             <span className="text-[#7E7E85] text-sm sm:text-base">Total Account Manager</span>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold">4</h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold">{dashboardData.totalAcmanagers}</h1>
           </div>
         </div>
       </div>

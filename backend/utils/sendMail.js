@@ -24,7 +24,7 @@ export const sendOtopEmail = async (to, otp) => {
         await sendEmail({
             to,
             subject: 'Your OTP Code',
-            html: `<p>Your OTP code is: <strong>${otp}</strong></p><p>This code will expire in 3 minutes.</p>`,
+            html: ⁠ <p>Your OTP code is: <strong>${otp}</strong></p><p>This code will expire in 3 minutes.</p> ⁠,
         });
     } catch (error) {
         console.error('Error sending OTP email:', error);
@@ -81,69 +81,75 @@ export const sendRegistrationEmail = async (to, pgcode, dashboard_url) => {
     return true;
 };
 
-export const sendContctEmail = async (data) => {
+export const sendContactDetailstoEmail = async (data) => {
     try {
         const { name, email, mobile_no, message } = data;
 
         await sendEmail({
-            to:"techsbuilds@gmail.com",
-            subject: "New Contact Form Details from Pgsphere Website",
+            to: process.env.CONTACTEMAIL,
+            subject: "New Contact Message Received",
             html: `
-            < !DOCTYPE html>
-            <html lang="en">
+            <html>
                 <head>
                     <meta charset="UTF-8" />
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                    <title>New Contact Form Submission</title>
                 </head>
-                <body style="font-family: Arial, sans-serif; background-color: #f4f6f9; padding: 20px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 10px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); overflow: hidden;">
+                <body style="background-color:#f4f7fa; font-family: Arial, sans-serif; margin:0; padding:20px;">
+
+                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="600"
+                        style="background-color:#ffffff; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); overflow:hidden;">
+
+                        <!-- Header -->
                         <tr>
-                            <td style="background: #4f46e5; padding: 20px; text-align: center; color: white; font-size: 20px; font-weight: bold;">
-                                📩 New Contact Details From Pgsphere-Website
+                            <td align="center" style="background-color:#4f46e5; padding:20px; color:#ffffff; font-size:20px; font-weight:bold;">
+                                📩 New Contact Form Submission
                             </td>
                         </tr>
-                        <tr>
-                            <td style="padding: 20px; color: #333;">
-                                <p style="font-size: 16px;">You have received a new contact form submission. Here are the details:</p>
 
-                                <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse: collapse; margin-top: 10px;">
-                                    <tr style="background: #f9fafb;">
-                                        <td style="font-weight: bold; width: 120px;">👤 Name:</td>
-                                        <td> ${name} </td>
+                        <!-- Body -->
+                        <tr>
+                            <td style="padding:20px; color:#374151; font-size:15px; line-height:1.6;">
+                                <p>You have received a new contact form submission. Here are the details:</p>
+
+                                <table width="100%" cellpadding="8" cellspacing="0" style="font-size:14px; color:#111827;">
+                                    <tr style="background-color:#f9fafb;">
+                                        <td style="width:25%; font-weight:bold;">👤 Name : </td>
+                                        <td>${name}</td>
                                     </tr>
                                     <tr>
-                                        <td style="font-weight: bold;">📧 Email:</td>
-                                        <td>${email}</td>
+                                        <td style="font-weight:bold;">📧 Email : </td>
+                                        <td><a href="mailto:{{email}}" style="color:#2563eb; text-decoration:none;">${email}</a></td>
                                     </tr>
-                                    <tr style="background: #f9fafb;">
-                                        <td style="font-weight: bold;">📱 Mobile:</td>
+                                    <tr style="background-color:#f9fafb;">
+                                        <td style="font-weight:bold;">📱 Mobile : </td>
                                         <td>${mobile_no}</td>
                                     </tr>
                                     <tr>
-                                        <td style="font-weight: bold;">💬 Message:</td>
+                                        <td style="font-weight:bold;">💬 Message : </td>
                                         <td>${message}</td>
                                     </tr>
                                 </table>
 
-                                <p style="margin-top: 20px; font-size: 14px; color: #666;">
+                                <p style="margin-top:20px; font-size:14px; color:#6b7280;">
                                     🚀 This message was automatically generated by your website’s contact form.
                                 </p>
                             </td>
                         </tr>
+
+                        <!-- Footer -->
                         <tr>
-                            <td style="background: #f3f4f6; padding: 15px; text-align: center; font-size: 12px; color: #888;">
-                                © 2025 Your Company. All rights reserved.
+                            <td align="center" style="padding:15px; font-size:12px; color:#9ca3af; border-top:1px solid #e5e7eb;">
+                                ©️ 2025 Your Company. All rights reserved.
                             </td>
                         </tr>
                     </table>
+
                 </body>
             </html>`
 
         })
     } catch (error) {
-        console.error("Error sending contact email:", error);
-        return false
+        console.error("Error sending contact details email:", error);
+        return false;
     }
-    return true
+    return true;
 }

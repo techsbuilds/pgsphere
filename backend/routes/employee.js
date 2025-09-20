@@ -1,6 +1,6 @@
 import express from 'express'
 import {verifyToken } from '../middleware/verifyUser.js'
-import { changeEmployeeStatus, createEmployee, getAllEmployee, getEmployeePendingSalaries, updateEmployee } from '../controller/employeeController.js'
+import { changeEmployeeStatus, createEmployee, getAllEmployee, getEmployeePendingSalaries, updateEmployee, exportEmployeeToExcel } from '../controller/employeeController.js'
 
 const app = express.Router()
 
@@ -18,5 +18,7 @@ app.put('/status/:employeeId', verifyToken, changeEmployeeStatus)
 
 //For get employee salary details
 app.get('/salary-details', verifyToken, getEmployeePendingSalaries)
+
+app.get('/export/excel', verifyToken, exportEmployeeToExcel);
 
 export default app
