@@ -3,6 +3,7 @@ import { getMonthYearList } from "../helper.js";
 import TRANSACTION from "../models/TRANSACTION.js";
 import ACCOUNT from "../models/ACCOUNT.js";
 import mongoose from "mongoose";
+import ExcelJS from "exceljs";
 
 export const createEmployee = async (req, res, next) => {
   try {
@@ -310,6 +311,78 @@ export const getEmployeePendingSalaries = async (req, res, next) => {
       success: true,
       data: result,
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const exportEmployeeToExcel = async (req, res, next) => {
+  try {
+    const { pgcode, mongoid, userType } = req;
+    const { branch, searchQuery } = req.query;
+    let filter = { pgcode };
+
+    if (userType === "Account") {
+      const account = await ACCOUNT.findById(mongoid);
+      if (!account) return res.status(404).json({ message: "Account manager not found.", success: false });
+
+      if (branch) {
+        if (!account.branch.includes(branch)) {
+          return res.status(403).json({ message: "You are not authorized to view employees in this branch.", success: false });
+        }
+        filter.branch = branch;
+      } else {
+        filter.branch = { $in: account.branch };
+      }
+    } else {
+      if (branch) filter.branch = branch;
+    }
+
+    if (searchQuery) {
+      filter.employee_name = { $regex: searchQuery, $options: "i" };
+    }
+
+    const employees = await EMPLOYEE.find(filter)
+      .populate("branch", "branch_name")
+      .populate("added_by", "email full_name")
+      .sort({ createdAt: -1 });
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Employees");
+
+    worksheet.columns = [
+      { header: "Employee Name", key: "employee_name", width: 25 },
+      { header: "Mobile No", key: "mobile_no", width: 15 },
+      { header: "Salary", key: "salary", width: 12 },
+      { header: "Employee Type", key: "employee_type", width: 15 },
+      { header: "Branch", key: "branch", width: 20 },
+      { header: "Status", key: "status", width: 10 },
+      { header: "Added By", key: "added_by", width: 25 },
+    ];
+
+    employees.forEach((e) => {
+      worksheet.addRow({
+        employee_name: e.employee_name,
+        mobile_no: e.mobile_no,
+        salary: e.salary,
+        employee_type: e.employee_type,
+        branch: e.branch ? e.branch.branch_name : "-",
+        status: e.status ? "Active" : "Inactive",
+        added_by: e.added_by?.full_name || "-"
+      });
+    });
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=employees.xlsx"
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
   } catch (err) {
     next(err);
   }
