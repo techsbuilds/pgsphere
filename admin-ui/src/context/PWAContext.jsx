@@ -123,6 +123,7 @@ export const PWAProvider = ({ children }) => {
 
   const dismissBanner = () => {
     setShowInstallBanner(false);
+    setIsInstallable(false); // Also hide install button when banner is dismissed
     // Store in localStorage to not show again for this session
     localStorage.setItem('pwa-banner-dismissed', Date.now().toString());
   };
