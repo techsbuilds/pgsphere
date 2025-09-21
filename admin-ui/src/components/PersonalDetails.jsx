@@ -84,50 +84,100 @@ function PersonalDetails() {
 
 
   return (
-  <div className='p-4 border border-neutral-200 bg-white rounded-md flex gap-12 items-center'>
+  <div className='p-3 sm:p-4 border border-neutral-200 bg-white rounded-md'>
     {openProfileForm && <ProfileForm onClose={handleCloseProfileForm} userDetails={userDetails} ></ProfileForm>}
     {openPasswordForm && <ChangePassword onClose={handleClosePasswordForm}></ChangePassword>}
-    <div className='flex p-2 flex-col gap-2 items-center'>
-       <div className='relative'>
-         {preview && <div className='bg-red-500 rounded-full -right-2 absolute hover:bg-red-600  -top-1 p-1 flex justify-center items-center'><X onClick={handleRemoveFile} size={18} className=" text-white cursor-pointer"></X></div>}
-         <img src={preview ? preview : userDetails?.pglogo ? userDetails?.pglogo : USER} alt='profile' className='w-36 h-36 border border-neutral-300 rounded-full'></img>
-       </div>
-       {
-         preview ? 
+    
+    {/* Mobile Layout */}
+    <div className='block sm:hidden'>
+      <div className='flex flex-col gap-4'>
+        <div className='flex flex-col items-center gap-3'>
+          <div className='relative'>
+            {preview && <div className='bg-red-500 rounded-full -right-2 absolute hover:bg-red-600 -top-1 p-1 flex justify-center items-center'><X onClick={handleRemoveFile} size={16} className="text-white cursor-pointer"></X></div>}
+            <img src={preview ? preview : userDetails?.pglogo ? userDetails?.pglogo : USER} alt='profile' className='w-24 h-24 border border-neutral-300 rounded-full'></img>
+          </div>
+          {
+            preview ? 
+            <button onClick={()=>handleUploadLogo()} disabled={logoLoader} className='px-3 py-1 text-white rounded-md text-sm flex justify-center items-center bg-green-500 hover:bg-green-600 cursor-pointer'>
+              {
+                logoLoader ? 
+                <LoaderCircle className='animate-spin' size={16}></LoaderCircle>
+                :"Upload Logo"
+              }
+            </button>
+            : <label htmlFor='logo' className='px-3 py-1 transition-all duration-300 bg-[#2b80ff] hover:bg-blue-600 text-white rounded-md text-sm text-center cursor-pointer'>Add Logo</label>
+          }
+          <input ref={logoInputRef} onChange={handleFileChange} type='file' className='hidden' id='logo'></input>
+        </div>
+        
+        <div className='flex flex-col gap-3'>
+          <div className='flex flex-col gap-2'>
+            <label className='text-gray-600 text-sm'>Full Name</label>
+            <input value={userDetails?.full_name} type='text' readOnly className='p-2 border rounded-md outline-none border-neutral-300 text-sm'></input>
+          </div>
+          <div className='flex flex-col gap-2'>
+            <label className='text-gray-600 text-sm'>Email Address</label>
+            <input value={userDetails?.email} type='text' readOnly className='p-2 border rounded-md outline-none border-neutral-300 text-sm'></input>
+          </div>
+        </div>
+        
+        <div className='flex flex-col gap-2'>
+          <button onClick={()=>setOpenProfileForm(true)} className='p-2 cursor-pointer bg-gray-50 hover:bg-gray-100 rounded-md w-full justify-center border border-neutral-300 flex items-center gap-2'>
+            <Pencil size={16}></Pencil>
+            <span className='text-sm'>Edit Profile</span>
+          </button> 
+          <button onClick={()=>setOpenPasswordForm(true)} className='p-2 cursor-pointer bg-gray-50 hover:bg-gray-100 rounded-md w-full justify-center border border-neutral-300 flex items-center gap-2'>
+            <Lock size={16}></Lock>
+            <span className='text-sm'>Change Password</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {/* Desktop Layout */}
+    <div className='hidden sm:flex gap-8 lg:gap-12 items-center'>
+      <div className='flex p-2 flex-col gap-2 items-center'>
+        <div className='relative'>
+          {preview && <div className='bg-red-500 rounded-full -right-2 absolute hover:bg-red-600 -top-1 p-1 flex justify-center items-center'><X onClick={handleRemoveFile} size={18} className="text-white cursor-pointer"></X></div>}
+          <img src={preview ? preview : userDetails?.pglogo ? userDetails?.pglogo : USER} alt='profile' className='w-36 h-36 border border-neutral-300 rounded-full'></img>
+        </div>
+        {
+          preview ? 
           <button onClick={()=>handleUploadLogo()} disabled={logoLoader} className='p-1 text-white rounded-md w-32 flex justify-center items-center bg-green-500 hover:bg-green-600 cursor-pointer'>
             {
-               logoLoader ? 
-               <LoaderCircle className='animate-spin'></LoaderCircle>
-               :"Upload Logo"
+              logoLoader ? 
+              <LoaderCircle className='animate-spin'></LoaderCircle>
+              :"Upload Logo"
             }
           </button>
-         : <label htmlFor='logo' className='p-1 transition-all duration-300 bg-[#2b80ff] hover:bg-blue-600 text-white rounded-md w-36 text-center cursor-pointer'>Add Logo</label>
-       }
-       <input ref={logoInputRef} onChange={handleFileChange} type='file' className='hidden' id='logo'></input>
-    </div>
-    <div className='flex-1 flex justify-between flex-col gap-8'>
-         <div className='grid grid-cols-2 gap-4 items-center'>
-            <div className='flex flex-col gap-2'>
-                <label className='text-gray-600'>Full Name</label>
-                <input value={userDetails?.full_name} type='text' readOnly className='p-2 border rounded-md outline-none border-neutral-300'></input>
-            </div>
-            <div className='flex flex-col gap-2'>
-                <label className='text-gray-600'>Email Address</label>
-                <input value={userDetails?.email} type='text' readOnly className='p-2 border rounded-md outline-none border-neutral-300'></input>
-            </div>
-         </div>
-         <div className='flex place-content-end'>
-            <div className='flex items-center gap-4'>
-                 <button onClick={()=>setOpenProfileForm(true)} className='p-2 cursor-pointer bg-gray-50 hover:bg-gray-100 rounded-md w-48 justify-center border border-neutral-300 flex items-center gap-2'>
-                    <Pencil size={18}></Pencil>
-                    <span className='text-sm'>Edit Profile</span>
-                   </button> 
-                <button onClick={()=>setOpenPasswordForm(true)} className='p-2 cursor-pointer bg-gray-50 hover:bg-gray-100 rounded-md w-48 justify-center border border-neutral-300 flex items-center gap-2'>
-                    <Lock size={18}></Lock>
-                    <span className='text-sm'>Change Password</span>
-                </button>
-            </div>
-         </div>
+          : <label htmlFor='logo' className='p-1 transition-all duration-300 bg-[#2b80ff] hover:bg-blue-600 text-white rounded-md w-36 text-center cursor-pointer'>Add Logo</label>
+        }
+        <input ref={logoInputRef} onChange={handleFileChange} type='file' className='hidden' id='logo'></input>
+      </div>
+      <div className='flex-1 flex justify-between flex-col gap-8'>
+        <div className='grid grid-cols-2 gap-4 items-center'>
+          <div className='flex flex-col gap-2'>
+            <label className='text-gray-600'>Full Name</label>
+            <input value={userDetails?.full_name} type='text' readOnly className='p-2 border rounded-md outline-none border-neutral-300'></input>
+          </div>
+          <div className='flex flex-col gap-2'>
+            <label className='text-gray-600'>Email Address</label>
+            <input value={userDetails?.email} type='text' readOnly className='p-2 border rounded-md outline-none border-neutral-300'></input>
+          </div>
+        </div>
+        <div className='flex place-content-end'>
+          <div className='flex items-center gap-4'>
+            <button onClick={()=>setOpenProfileForm(true)} className='p-2 cursor-pointer bg-gray-50 hover:bg-gray-100 rounded-md w-48 justify-center border border-neutral-300 flex items-center gap-2'>
+              <Pencil size={18}></Pencil>
+              <span className='text-sm'>Edit Profile</span>
+            </button> 
+            <button onClick={()=>setOpenPasswordForm(true)} className='p-2 cursor-pointer bg-gray-50 hover:bg-gray-100 rounded-md w-48 justify-center border border-neutral-300 flex items-center gap-2'>
+              <Lock size={18}></Lock>
+              <span className='text-sm'>Change Password</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   )
