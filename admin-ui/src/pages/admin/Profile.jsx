@@ -6,8 +6,8 @@ import BankAccount from '../../components/BankAccount';
 
 function Profile() {
   return (
-    <div className='flex h-full flex-col gap-4'>
-        <h1 className='text-3xl font-semibold'>Profile Details</h1>
+    <div className='flex flex-col px-2 sm:px-4 lg:px-8 gap-4 sm:gap-6 lg:gap-8 h-full'>
+        <h1 className='text-2xl sm:text-3xl font-semibold'>Profile Details</h1>
         <PersonalDetails></PersonalDetails>
         <BankAccount></BankAccount>
     </div>
