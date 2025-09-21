@@ -199,7 +199,7 @@ export const genLink = async (req, res, next) => {
       if (!branches.includes(branch)) {
         return res.status(400).json({ Message: "You are Not Autherized to Genrate-Link.", success: false })
       }
-
+      
     }
     console.log("branch:",branch)
     

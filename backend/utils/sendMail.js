@@ -24,7 +24,7 @@ export const sendOtopEmail = async (to, otp) => {
         await sendEmail({
             to,
             subject: 'Your OTP Code',
-            html: `<p>Your OTP code is: <strong>${otp}</strong></p><p>This code will expire in 3 minutes.</p>`,
+            html: `<p>Your OTP code is: <strong>${otp}</strong></p><p>This code will expire in 3 minutes.</p> ⁠`,
         });
     } catch (error) {
         console.error('Error sending OTP email:', error);
@@ -138,7 +138,7 @@ export const sendContactDetailstoEmail = async (data) => {
                         <!-- Footer -->
                         <tr>
                             <td align="center" style="padding:15px; font-size:12px; color:#9ca3af; border-top:1px solid #e5e7eb;">
-                                © 2025 Your Company. All rights reserved.
+                                ©️ 2025 Your Company. All rights reserved.
                             </td>
                         </tr>
                     </table>

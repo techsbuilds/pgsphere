@@ -153,7 +153,7 @@ export const createTransactionForInventory = async (req, res, next) =>{
       const newTransaction = new TRANSACTION({
          transactionType:'expense',
          type:'inventory_purchase',
-         refModel:'Inventorypurchase',
+         refModel:'Inventorypurch',
          refId:newInventoryPurchaseRecipt,
          payment_mode,
          branch,

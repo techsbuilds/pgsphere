@@ -3,6 +3,12 @@ import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './utils/ProtectedRoute';
 import Loader from './components/Loader';
 
+// PWA Components
+import { PWAProvider } from './context/PWAContext';
+import InstallBanner from './components/InstallBanner';
+import InstallButton from './components/InstallButton';
+import IOSInstallInstructions from './components/IOSInstallInstructions';
+
 //Importing general components
 import Login from './pages/Login';
 
@@ -39,49 +45,60 @@ function App() {
   }
 
   return (
-    <Router>
-      <Routes>
+    <PWAProvider>
+      <Router>
+        {/* PWA Install Banner */}
+        <InstallBanner />
+        
+        <Routes>
 
-        <Route path='/login' element={<Login></Login>}></Route>
- 
-        {/* Admin Routes */}
-        <Route path='/admin' element={<ProtectedRoute allowed={['Admin']}><AdminLayout></AdminLayout></ProtectedRoute>}
-        >
-          <Route index element={<AdminDashboard></AdminDashboard>}></Route>
-          <Route path='branches' element={<Branch></Branch>}></Route>
-          <Route path='branches/preview' element={<BranchPreview></BranchPreview>}></Route>
-          <Route path='customers' element={<Customer></Customer>}></Route>
-          <Route path='employees' element={<Employee></Employee>}></Route>
-          <Route path='accountmanagers' element={<Accountmanager></Accountmanager>}></Route>
-          <Route path='branches/room/preview' element={<RoomPreview></RoomPreview>}></Route>
-          <Route path='rents' element={<CustomerRent></CustomerRent>}></Route>
-          <Route path='salary' element={<EmployeeSalary></EmployeeSalary>}></Route>
-          <Route path='inventory' element={<Inventory></Inventory>}></Route>
-          <Route path='monthlybill' element={<MonthlyBill></MonthlyBill>}></Route>
-          <Route path='cashout' element={<CashOut></CashOut>}></Route>
-          <Route path='transactions' element={<Transaction></Transaction>}></Route>
-          <Route path='profile' element={<Profile></Profile>}></Route>
-        </Route>
+          <Route path='/login' element={<Login></Login>}></Route>
    
-       {/* Account Routes */}
-       <Route path='/account' element={<ProtectedRoute allowed={['Account']}><AccountLayout></AccountLayout></ProtectedRoute>}>
-          <Route index element={<AccountDashboard></AccountDashboard>}></Route>
-          <Route path='branches' element={<Branch></Branch>}></Route>
-          <Route path='branches/preview' element={<BranchPreview></BranchPreview>}></Route>
-          <Route path='branches/room/preview' element={<RoomPreview></RoomPreview>}></Route>
-          <Route path='customers' element={<Customer></Customer>}></Route>
-          <Route path='employees' element={<Employee></Employee>}></Route>
-          <Route path='rents' element={<Customer></Customer>}></Route>
-          <Route path='salary' element={<EmployeeSalary></EmployeeSalary>}></Route>
-          <Route path='inventory' element={<Inventory></Inventory>}></Route>
-          <Route path='monthlybill' element={<MonthlyBill></MonthlyBill>}></Route>
-          <Route path='transactions' element={<Transaction></Transaction>}></Route>
-       </Route>
+          {/* Admin Routes */}
+          <Route path='/admin' element={<ProtectedRoute allowed={['Admin']}><AdminLayout></AdminLayout></ProtectedRoute>}
+          >
+            <Route index element={<AdminDashboard></AdminDashboard>}></Route>
+            <Route path='branches' element={<Branch></Branch>}></Route>
+            <Route path='branches/preview' element={<BranchPreview></BranchPreview>}></Route>
+            <Route path='customers' element={<Customer></Customer>}></Route>
+            <Route path='employees' element={<Employee></Employee>}></Route>
+            <Route path='accountmanagers' element={<Accountmanager></Accountmanager>}></Route>
+            <Route path='branches/room/preview' element={<RoomPreview></RoomPreview>}></Route>
+            <Route path='rents' element={<CustomerRent></CustomerRent>}></Route>
+            <Route path='salary' element={<EmployeeSalary></EmployeeSalary>}></Route>
+            <Route path='inventory' element={<Inventory></Inventory>}></Route>
+            <Route path='monthlybill' element={<MonthlyBill></MonthlyBill>}></Route>
+            <Route path='cashout' element={<CashOut></CashOut>}></Route>
+            <Route path='transactions' element={<Transaction></Transaction>}></Route>
+            <Route path='profile' element={<Profile></Profile>}></Route>
+          </Route>
+     
+         {/* Account Routes */}
+         <Route path='/account' element={<ProtectedRoute allowed={['Account']}><AccountLayout></AccountLayout></ProtectedRoute>}>
+            <Route index element={<AccountDashboard></AccountDashboard>}></Route>
+            <Route path='branches' element={<Branch></Branch>}></Route>
+            <Route path='branches/preview' element={<BranchPreview></BranchPreview>}></Route>
+            <Route path='branches/room/preview' element={<RoomPreview></RoomPreview>}></Route>
+            <Route path='customers' element={<Customer></Customer>}></Route>
+            <Route path='employees' element={<Employee></Employee>}></Route>
+            <Route path='rents' element={<Customer></Customer>}></Route>
+            <Route path='salary' element={<EmployeeSalary></EmployeeSalary>}></Route>
+            <Route path='inventory' element={<Inventory></Inventory>}></Route>
+            <Route path='monthlybill' element={<MonthlyBill></MonthlyBill>}></Route>
+            <Route path='transactions' element={<Transaction></Transaction>}></Route>
+         </Route>
 
-       <Route path="*" element={<Navigate to={auth?.user?.userType === 'Admin' ? '/admin' : '/account'} />} />
+         <Route path="*" element={<Navigate to={auth?.user?.userType === 'Admin' ? '/admin' : '/account'} />} />
 
-      </Routes>
-    </Router>
+        </Routes>
+        
+        {/* PWA Install Button */}
+        <InstallButton />
+        
+        {/* iOS Install Instructions Modal */}
+        <IOSInstallInstructions />
+      </Router>
+    </PWAProvider>
   )
 }
 
