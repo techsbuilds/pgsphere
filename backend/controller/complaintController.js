@@ -1,6 +1,6 @@
-import ACCOUNT from "../models/ACCOUNT"
-import COMPLAINT from "../models/COMPLAINT"
-import CUSTOMER from "../models/CUSTOMER"
+import ACCOUNT from "../models/ACCOUNT.js"
+import COMPLAINT from "../models/COMPLAINT.js"
+import CUSTOMER from "../models/CUSTOMER.js"
 
 
 export const addComplaint = async (req, res, next) => {
@@ -68,7 +68,7 @@ export const getAllComplaints = async (req, res, next) => {
         filter.pgcode = pgcode
 
         if (userType === "Account") {
-            const acmanager = await ACCOUNT.findOneOn({mongoid,pgcode})
+            const acmanager = await ACCOUNT.findOneOn({_id:mongoid,pgcode})
 
             if (!acmanager) {
                 return res.status(404).json({ message: "Acmanager Not Found", success: false })
@@ -112,7 +112,7 @@ export const closeComplaints = async (req, res, next) => {
         const branch = complaint.branch
 
         if (userType === 'Account') {
-            const acmanager = await ACCOUNT.findOne({mongoid,pgcode})
+            const acmanager = await ACCOUNT.findOne({_id:mongoid,pgcode})
 
             if (!acmanager) {
                 return res.status(404).json({ message: "Acmanager Not Found.", success: false })
