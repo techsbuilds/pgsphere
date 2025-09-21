@@ -3,10 +3,16 @@ import { usePWA } from '../context/PWAContext';
 import logo from '../assets/logo1.png';
 
 const InstallButton = () => {
-  const { isInstallable, isInstalled, installApp, isIOSSafari } = usePWA();
+  const { isInstallable, isInstalled, installApp, isIOSSafari, showInstallBanner } = usePWA();
 
-  // Don't show if already installed or not installable
-  if (isInstalled || (!isInstallable && !isIOSSafari)) return null;
+  // Don't show if already installed
+  if (isInstalled) return null;
+  
+  // For iOS Safari, always show button (unless banner was dismissed)
+  if (isIOSSafari && !showInstallBanner) return null;
+  
+  // For other browsers, show only if installable
+  if (!isIOSSafari && !isInstallable) return null;
 
   return (
     <div className="fixed bottom-6 right-6 z-50">

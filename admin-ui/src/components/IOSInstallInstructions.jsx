@@ -8,8 +8,14 @@ const IOSInstallInstructions = () => {
   if (!showIOSInstructions) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white bg-opacity-10 p-4">
-      <div className="bg-white rounded-xl max-w-sm w-full shadow-2xl">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white bg-opacity-10 p-4 sm:p-6"
+      onClick={dismissIOSInstructions}
+    >
+      <div 
+        className="bg-white rounded-xl max-w-sm w-full shadow-2xl mx-2 sm:mx-4 my-4"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
