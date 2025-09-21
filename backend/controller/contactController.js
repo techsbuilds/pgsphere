@@ -1,16 +1,12 @@
 import CONTACTFORM from "../models/CONTACTFORM.js"
-
-import { sendContctEmail } from "../utils/sendMail.js"
-
-
 import { sendContactDetailstoEmail } from "../utils/sendMail.js"
 
 export const addContact = async(req,res,next) =>{
     try {
-        const { name, email, mobile_no, message } = req.body
+        const {name, email, mobile_no, message} = req.body
 
-        if (!name || !email || !mobile_no) {
-            return res.status(400).json({ message: "Please provide all required fields.", success: false })
+        if(!name || !email || !mobile_no){
+            return res.status(400).json({message:"Please provide all required fields.", success:false})
         }
 
         const newContact = new CONTACTFORM({
@@ -20,14 +16,6 @@ export const addContact = async(req,res,next) =>{
             message
         })
         await newContact.save()
-
-        const sendData = { name, email, mobile_no, message }
-
-        const hasSendDetails = await sendContctEmail(sendData)
-
-        if (!hasSendDetails) return res.status(500).json({ message: "Error in sending contact details to techBuilds.", success: false })
-
-        return res.status(201).json({ message: "Contact added successfully.", success: true })
 
         const data = {name, email, mobile_no, message}
         
@@ -44,12 +32,11 @@ export const addContact = async(req,res,next) =>{
     }
 }
 
-
 export const getAllContacts = async(req,res,next) =>{
     try {
         const contacts = await CONTACTFORM.find()
 
-        return res.status(200).json({ message: "All contacts retrived successfully.", success: true, data: contacts })
+        return res.status(200).json({message:"All contacts retrived successfully.", success:true, data:contacts})
     } catch (error) {
         next(error)
     }
