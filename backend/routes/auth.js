@@ -1,5 +1,6 @@
 import express from 'express'
-import { loginUser, logoutPortal, signupUser, validateToken, verifyOtp } from '../controller/authController.js'
+import { genLink, loginUser, logoutPortal, signupUser, validateToken, verifyOtp,verifyCustomerRegister } from '../controller/authController.js'
+import { verifyToken } from '../middleware/verifyUser.js'
 
 const app = express.Router()
 
@@ -18,5 +19,10 @@ app.get('/logout',logoutPortal)
 // verify otp
 app.post('/verify-otp',verifyOtp)
 
+//Genrate-Link
+app.get('/link/:branch',verifyToken,genLink)
+
+//get Branch-details
+app.get('/:token',verifyCustomerRegister)
 
 export default app
