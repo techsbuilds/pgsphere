@@ -20,7 +20,12 @@ export const createBranch = async (req, res, next) => {
 
     const branchCount = await BRANCH.countDocuments({pgcode})
 
-    if (branchCount >= admin.plan.branchCount) return res.status(403).json({message:"You reached your plan limit. Please upgrade your plan.", success:false})
+    if (branchCount >= admin.plan.branchCount){
+      if (req.file) {
+        await removeFile(path.join("uploads", "branch", req.file.filename));
+      }
+      return res.status(403).json({message:"You reached your plan limit. Please upgrade your plan.", success:false})
+    }
 
     if (!branch_name || !branch_address) {
       if (req.file) {

@@ -21,6 +21,7 @@ import cashoutRoute from './routes/cashout.js'
 import adminRoute from './routes/admin.js'
 import contactRoute from './routes/contact.js'
 import dailyUpdateRoute from './routes/dailyupdate.js'
+import floorRoute from './routes/floor.js'
 
 // Get the current file's path
 const __filename = fileURLToPath(import.meta.url);
@@ -120,6 +121,7 @@ app.use('/api/cashout', cashoutRoute)
 app.use('/api/admin', adminRoute)
 app.use('/api/contact',contactRoute)
 app.use('/api/dailyupdate', dailyUpdateRoute)
+app.use('/api/floor', floorRoute)
 
  // Middleware to catch errors
  app.use((err, req, res, next) => {
