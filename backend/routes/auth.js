@@ -1,6 +1,7 @@
 import express from 'express'
-import { customerLogin, loginUser, logoutPortal, signUpCustomer, signupUser, validateToken, verifyOtp } from '../controller/authController.js'
+import { customerLogin, loginUser, genLink, logoutPortal, signUpCustomer, verifyCustomerRegister, signupUser, validateToken, verifyOtp } from '../controller/authController.js'
 import { aadharCardMulter } from '../middleware/upload.js'
+import { verifyToken } from '../middleware/verifyUser.js'
 
 const app = express.Router()
 
@@ -25,5 +26,10 @@ app.post('/customer/sign-up', aadharCardMulter, signUpCustomer)
 //For Customer login
 app.post('/customer/sign-in', customerLogin)
 
+//Genrate-Link
+app.get('/link/:branch',verifyToken,genLink)
+
+//get Branch-details
+app.get('/:token',verifyCustomerRegister)
 
 export default app

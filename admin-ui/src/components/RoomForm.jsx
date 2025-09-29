@@ -72,8 +72,14 @@ function RoomForm({branchId,onClose,selectedRoom}) {
 
   
   return (
-    <div className='fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center p-4'>
-        <div className='flex w-full max-w-md lg:max-w-lg flex-col gap-3 sm:gap-4 bg-white rounded-2xl p-3 sm:p-4 max-h-[90vh] overflow-y-auto'>
+    <div 
+      className='fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center p-4 sm:p-6'
+      onClick={() => onClose(false)}
+    >
+        <div 
+          className='flex w-full max-w-md lg:max-w-lg flex-col gap-3 sm:gap-4 bg-white rounded-2xl p-3 sm:p-4 max-h-[90vh] overflow-y-auto mx-2 sm:mx-4 my-4'
+          onClick={(e) => e.stopPropagation()}
+        >
             <div className='flex items-center gap-2'>
               <ChevronLeft size={24} className="sm:w-7 sm:h-7 cursor-pointer" onClick={()=>onClose(false)}></ChevronLeft>
               <h1 className='text-lg sm:text-xl lg:text-2xl font-semibold'>{selectedRoom ? "Edit Room Details" : "Add New Room"}</h1>
