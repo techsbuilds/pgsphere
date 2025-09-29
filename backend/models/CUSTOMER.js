@@ -5,6 +5,15 @@ const customerSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  email:{
+    type: String,
+        lowercase: true,
+        trim: true,
+        match: [
+          /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+$/,
+          'Please fill a valid email address'
+        ]
+  },
   mobile_no: {
     type: String,
     match: [
@@ -16,34 +25,40 @@ const customerSchema = new mongoose.Schema({
   },
   deposite_amount: {
     type: Number,
-    required: true,
     min: [0, 'Deposit amount cannot be negative']
   },
   rent_amount:{
     type:Number,
-    required:true,
     min: [0, 'Rent amount cannot be negative']
   },
   room: {
     type: mongoose.Schema.Types.ObjectId,
+    required:true,
     ref: 'Room'
   },
   branch: {
     type: mongoose.Schema.Types.ObjectId,
+    required:true,
     ref: 'Branch'
-  },
-  pgcode: {
-    type: String,
-    required: true,             // enforce PG reference
-    ref: 'Loginmapping'         // pgcode lives in Loginmapping
-  },
-  status:{
-    type:Boolean,
-    default:true
   },
   joining_date: {
     type: Date,
     default: () => new Date()
+  },
+  aadharcard_url:{
+    type:String,
+    required:true
+  },
+  ref_person_name:{
+    type:String,
+  },
+  ref_person_contact_no:{
+    type: String,
+    match: [
+      /^(?:\+91[-\s]?)?[6-9]\d{9}$/,
+      'Mobile number must be valid and can optionally start with +91'
+    ],
+    trim: true,
   },
   added_by:{
     type:mongoose.Schema.Types.ObjectId,

@@ -4,9 +4,18 @@ import fs from 'fs'
 
 const branchUploadDir = path.join(process.cwd(),'uploads','branch')
 const pgLogoDir = path.join(process.cwd(), 'uploads', 'logo')
+const aadharcardDir = path.join(process.cwd(), 'uploads', 'aadhar')
 
 if(!fs.existsSync(branchUploadDir)){
     fs.mkdirSync(branchUploadDir)
+}
+
+if(!fs.existsSync(pgLogoDir)){
+    fs.mkdirSync(pgLogoDir)
+}
+
+if(!fs.existsSync(aadharcardDir)){
+    fs.mkdirSync(aadharcardDir)
 }
 
 const branchStorage = multer.diskStorage({
@@ -23,11 +32,6 @@ const branchStorage = multer.diskStorage({
 
 const logoStorage = multer.diskStorage({
     destination:(req, file, cb) =>{
-
-        if(!fs.existsSync(pgLogoDir)){
-            fs.mkdirSync(pgLogoDir)
-        }
-
         cb(null, pgLogoDir);
     },
 
@@ -35,6 +39,19 @@ const logoStorage = multer.diskStorage({
         const uniqueSufix = Date.now() + '-' + Math.round(Math.random() + 1E9);
         const ext = path.extname(file.originalname)
         const name = file.fieldname + '-' + uniqueSufix + ext;
+        cb(null, name)
+    }
+})
+
+const aadharCardStorage = multer.diskStorage({
+    destination:(req, file, cb) => {
+        cb(null, aadharcardDir)
+    },
+
+    filename: (req, file, cb) =>{
+        const uniqueSufix = Date.now() + '-' + Math.round(Math.random() + 1E9);
+        const ext = path.extname(file.originalname)
+        const name = file.fieldname + '-' + uniqueSufix + ext; 
         cb(null, name)
     }
 })
@@ -67,5 +84,15 @@ export const uploadLogoImages = multer({
     fileFilter
 })
 
+export const uploadAadharCardImages = multer({
+    storage:aadharCardStorage,
+    limits:{
+        fileSize: 10 * 1024 * 1024,
+        files:10
+    },
+    fileFilter
+})
+
 export const branchMulter = uploadBranchImages.single('image')
 export const logoMulter = uploadLogoImages.single('logo')
+export const aadharCardMulter = uploadAadharCardImages.single('aadharcard')

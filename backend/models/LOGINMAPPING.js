@@ -21,12 +21,13 @@ const loginmappingSchema = new mongoose.Schema({
     },
     userType:{
         type:String,
-        enum:['Admin','Account'],
+        enum:['Admin','Account','Customer'],
         required:[true, 'user type is required.']
     },
     status:{
-        type:Boolean,
-        default:true
+        type:String,
+        enum:['active','pending','deleted','inactive'],
+        default:'active'
     },
     pgcode:{
         type:String,

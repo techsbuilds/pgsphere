@@ -6,6 +6,7 @@ import ACCOUNT from "../models/ACCOUNT.js";
 import { getMonthYearList } from "../helper.js";
 import mongoose from "mongoose";
 import ExcelJS from "exceljs";
+import LOGINMAPPING from "../models/LOGINMAPPING.js";
 
 export const createCustomer = async (req, res, next) =>{
     try{
@@ -62,53 +63,135 @@ export const createCustomer = async (req, res, next) =>{
     }
 }
 
+
 export const getAllCustomer = async (req, res, next) => {
-    try {
-      const { searchQuery, branch, room } = req.query;
-      const { pgcode, mongoid, userType } = req
-      const filter = { pgcode };
+  try {
+    const { searchQuery, branch, room } = req.query;
+    const { pgcode, mongoid, userType } = req;
 
-      if (userType === "Account") {
-        const account = await ACCOUNT.findById(mongoid);
+    // ✅ Step 1: account validation if userType is Account
+    let branchFilter = null;
+    if (userType === "Account") {
+      const account = await ACCOUNT.findById(mongoid);
+      if (!account) {
+        return res.status(404).json({ message: "Account manager not found.", success: false });
+      }
 
-        if (!account) return res.status(404).json({ message: "Account manager not found.", success: false });
-
-        if (branch) {
-          if (!account.branch.includes(branch)) {
-            return res.status(403).json({ message: "You are not authorized to view customers in this branch.", success: false });
-          }
-
-          filter.branch = branch;
-        }else{
-          filter.branch = { $in: account.branch };
+      if (branch) {
+        if (!account.branch.includes(branch)) {
+          return res
+            .status(403)
+            .json({ message: "You are not authorized to view customers in this branch.", success: false });
         }
-      }else{
-        // For other user types, apply branch filter if provided
-        if (branch) {
-          filter.branch = branch;
-        }
+        branchFilter = mongoose.Types.ObjectId.createFromHexString(branch);
+      } else {
+        branchFilter = {
+          $in: account.branch.map(id => mongoose.Types.ObjectId.createFromHexString(id.toString()))
+        };
       }
-
-      if (searchQuery) {
-        filter.customer_name = { $regex: searchQuery, $options: 'i' };
+    } else {
+      if (branch) {
+        branchFilter = mongoose.Types.ObjectId.createFromHexString(branch);
       }
-  
-
-      if (room) {
-        filter.room = room
-      }
-  
-      const customers = await CUSTOMER.find(filter)
-        .populate('room')
-        .populate('branch')
-        .populate('added_by') 
-        .sort({ createdAt: -1 }); 
-  
-      res.status(200).json({message:"All customer details retrived.",data:customers,success:true});
-    } catch (err) {
-      next(err);
     }
+
+    // ✅ Step 2: Build aggregation pipeline
+    const pipeline = [
+      {
+        $lookup: {
+          from: "loginmappings",
+          localField: "_id",
+          foreignField: "mongoid",
+          as: "login"
+        }
+      },
+      { $unwind: "$login" },
+      {
+        $match: {
+          "login.pgcode": pgcode,
+          "login.status": { $ne: "deleted" },
+          "login.userType": "Customer"
+        }
+      },
+      // ✅ Lookup for room
+      {
+        $lookup: {
+          from: "rooms", // collection name for Room model
+          localField: "room",
+          foreignField: "_id",
+          as: "room"
+        }
+      },
+      { $unwind: "$room" },
+      // ✅ Lookup for branch
+      {
+        $lookup: {
+          from: "branches", // collection name for Branch model
+          localField: "branch",
+          foreignField: "_id",
+          as: "branch"
+        }
+      },
+      { $unwind: "$branch" }
+    ];
+
+    // ✅ Step 3: Apply optional filters
+    if (searchQuery) {
+      pipeline.push({
+        $match: { customer_name: { $regex: searchQuery, $options: "i" } }
+      });
+    }
+
+    if (room) {
+      pipeline.push({
+        $match: { "room._id": mongoose.Types.ObjectId.createFromHexString(room) }
+      });
+    }
+
+    if (branchFilter) {
+      pipeline.push({
+        $match: { "branch._id": branchFilter }
+      });
+    }
+
+    // ✅ Step 4: Sort and project fields
+    pipeline.push(
+      { $sort: { createdAt: -1 } },
+      {
+        $project: {
+          customer_name: 1,
+          email: 1,
+          mobile_no: 1,
+          deposite_amount: 1,
+          rent_amount: 1,
+          joining_date: 1,
+          aadharcard_url: 1,
+          ref_person_name: 1,
+          ref_person_contact_no: 1,
+          added_by: 1,
+          added_by_type: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          status: "$login.status", // from loginmapping
+          room: 1,   // populated room object
+          branch: 1  // populated branch object
+        }
+      }
+    );
+
+    // ✅ Step 5: Run aggregation
+    const customers = await CUSTOMER.aggregate(pipeline);
+
+    res.status(200).json({
+      message: "All customer details retrieved.",
+      data: customers,
+      success: true
+    });
+  } catch (err) {
+    next(err);
+  }
 };
+
 
 export const getCustomerByRoomId = async (req, res, next) =>{
     try{

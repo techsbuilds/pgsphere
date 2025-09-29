@@ -1,10 +1,12 @@
-import Floor from "../models/Floor";
-import ACCOUNT from "../models/ACCOUNT";
+import Floor from "../models/Floor.js";
+import ACCOUNT from "../models/ACCOUNT.js";
 
 export const createFloor = async (req, res, next) => {
     try {
         const { mongoid, userType, pgcode } = req
+
         const { floor_name, branch } = req.body
+
         if (!floor_name || !branch)  return res.status(400).json({ message: "Please provide all required fields.", success: false })
 
         if (userType === 'Account') {
