@@ -2,7 +2,6 @@ import express from 'express'
 import { verifyToken } from '../middleware/verifyUser'
 import { addComplaint, closeComplaints, getAllComplaints, getAllComplaintsbyBranch } from '../controller/complaintController'
 
-
 const app = express.Router()
 
 app.post('/',verifyToken,addComplaint)

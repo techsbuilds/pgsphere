@@ -138,6 +138,13 @@ function SideBar({showSideBar, setShowSideBar, type}) {
 
   }
 
+  const handleLinkClick = () => {
+    // Close sidebar on mobile when a link is clicked
+    if (window.innerWidth < 768) {
+      setShowSideBar(false)
+    }
+  }
+
   let routes = type === 'account' ? accountRoutes : adminRoutes
 
   return (
@@ -161,7 +168,12 @@ function SideBar({showSideBar, setShowSideBar, type}) {
        <div className='flex flex-col p-6 gap-4'>
           {
             routes.map(({link, label, icon:Icon}, index) => (
-              <Link key={index} to={link} className={`group flex p-2 px-4 items-center hover:bg-white gap-2 ${isActive(label) && "bg-white"} rounded-full`}>
+              <Link 
+                key={index} 
+                to={link} 
+                onClick={handleLinkClick}
+                className={`group flex p-2 px-4 items-center hover:bg-white gap-2 ${isActive(label) && "bg-white"} rounded-full`}
+              >
                 <Icon className={`${isActive(label) ? "text-[#202947]" : 'text-[#a2a6ba]'} group-hover:text-[#202947]`} size={20}></Icon>
                 <span className={`${isActive(label) ? "text-[#202947]" : 'text-[#a2a6ba]'} group-hover:text-[#202947] font-medium`}>{label}</span>
               </Link>

@@ -1,4 +1,5 @@
 import ACCOUNT from "../models/ACCOUNT.js"
+import CUSTOMER from "../models/CUSTOMER.js"
 import DAILYUPDATE from "../models/DAILYUPDATE.js"
 
 export const addDailyUpdate = async (req, res, next) => {
@@ -58,7 +59,7 @@ export const getAllDailyUpdate = async (req, res, next) => {
         filter.pgcode = pgcode
 
         if (userType === 'Account') {
-            const acmanager = await ACCOUNT.findOne({mongoid,pgcode})
+            const acmanager = await ACCOUNT.findOne({_id:mongoid,pgcode})
 
             if (!acmanager) {
                 return res.status(404).json({ message: "Acmanager Not Found", success: false })
