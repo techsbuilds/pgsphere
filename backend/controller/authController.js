@@ -186,19 +186,36 @@ export const signUpCustomer = async (req, res, next) =>{
 
       const existCustomer = await CUSTOMER.findOne({email,mobile_no})
 
-      if(existCustomer) return res.status(409).json({message:"User is already exist with same email address or mobile no.",success:false})
+      if(existCustomer){
+        await removeFile(path.join("uploads", "aadhar", req.file.filename))
+        return res.status(409).json({message:"User is already exist with same email address or mobile no.",success:false})
+      }
 
       const admin = await LOGINMAPPING.findOne({mongoid:added_by})
 
       const existBranch = await BRANCH.findOne({_id:branch,pgcode})
 
-      if(!existBranch) return res.status(400).json({message:"Branch not found.",success:false})
+      if(!existBranch){
+         await removeFile(path.join("uploads", "aadhar", req.file.filename))
+         return res.status(400).json({message:"Branch not found.",success:false})
+      }
 
       const existRoom = await ROOM.findOne({_id:room, pgcode})
 
-      if(!existRoom) return res.status(404).json({message:"Room is not found.",success:false})
+      if(!existRoom){
+        await removeFile(path.join("uploads", "aadhar", req.file.filename))
+        return res.status(404).json({message:"Room is not found.",success:false})
+      }
 
-      if(existRoom.branch.toString() !== branch) return res.status(400).json({message:"Requested room is not in given branch.",success:false})
+      if(existRoom.branch.toString() !== branch){
+        await removeFile(path.join("uploads", "aadhar", req.file.filename))
+        return res.status(400).json({message:"Requested room is not in given branch.",success:false})
+      }
+
+      if(existRoom.filled >= existRoom.capacity){
+        await removeFile(path.join("uploads", "aadhar", req.file.filename))
+        return res.status(400).json({message:"Room capacity full. Please select another room.",success:false})
+      } 
 
       let imageUrl = `${process.env.DOMAIN}/uploads/aadhar/${req.file.filename}`;
 
@@ -215,6 +232,7 @@ export const signUpCustomer = async (req, res, next) =>{
         added_by_type,
         ref_person_name,
         ref_person_contact_no,
+        joining_date,
         aadharcard_url:imageUrl
       })
 
