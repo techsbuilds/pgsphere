@@ -1,6 +1,6 @@
 import express from 'express'
 import { verifyToken } from '../middleware/verifyUser.js'
-import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, getPendingCustomerRentList, updateCustomerDetails, exportCustomersToExcel } from '../controller/customerController.js'
+import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, getPendingCustomerRentList, updateCustomerDetails, exportCustomersToExcel, verifyCustomer } from '../controller/customerController.js'
 
 const app = express.Router()
 
@@ -25,6 +25,10 @@ app.put('/status/:customerId', verifyToken, changeStatus)
 //For get pending customer rents
 app.get('/pending-rent', verifyToken, getPendingCustomerRentList)
 
+//For export data in excel files
 app.get('/export/excel', verifyToken, exportCustomersToExcel)
+
+//For verify customer details
+app.post('/verify-customer/:customerId', verifyToken, verifyCustomer)
 
 export default app
