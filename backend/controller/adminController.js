@@ -9,24 +9,37 @@ import LOGINMAPPING from "../models/LOGINMAPPING.js"
 import bcryptjs from 'bcryptjs'
 import { getMonthShortNames } from "../helper.js"
 
-export const getDashboardSummery = async (req, res, next) =>{
-    try{
-        const {pgcode} = req 
+export const getDashboardSummery = async (req, res, next) => {
+    try {
+        const { pgcode } = req
         const currentYear = new Date().getFullYear()
 
-        const totalEmployees = await EMPLOYEE.find({status:true}).countDocuments()
-        const totalCustomers = await CUSTOMER.find({status:true}).countDocuments()
-        const totalAcmanagers = await LOGINMAPPING.find({pgcode,status:true,userType:'Account'}).countDocuments()
+        const totalEmployees = await EMPLOYEE.find({ status: true, pgcode }).countDocuments()
+        const totalCustomers = await CUSTOMER.find({ status: true, pgcode }).countDocuments()
+        const totalAcmanagers = await LOGINMAPPING.find({ pgcode, status: true, userType: 'Account' }).countDocuments()
 
-        const totalBranch = await BRANCH.find().countDocuments()
-        const transactions = await TRANSACTION.find({pgcode})
-        .populate('refId')
-        .populate('bank_account')
+        // vacant-seat by pgcode
+        const vacantSeats = await ROOM.aggregate([
+            {
+                $match: { pgcode }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalVacant: { $sum: { $subtract: ["$capacity", "$filled"] } }
+                }
+            }
+        ])
 
-        let monthlyData = Array.from({length: 12}, (_, i)=> ({
-            month:getMonthShortNames(i + 1),
+        const totalBranch = await BRANCH.find({ pgcode }).countDocuments()
+        const transactions = await TRANSACTION.find({ pgcode })
+            .populate('refId')
+            .populate('bank_account')
+
+        let monthlyData = Array.from({ length: 12 }, (_, i) => ({
+            month: getMonthShortNames(i + 1),
             Profit: 0,
-            Expenditure:0,
+            Expenditure: 0,
         }))
 
         let yearlyMap = {};
@@ -36,37 +49,37 @@ export const getDashboardSummery = async (req, res, next) =>{
         let totalCurrentYearExpenditure = 0;
 
         transactions.forEach(tx => {
-            if(!tx.refId || !tx.refId.amount) return 
+            if (!tx.refId || !tx.refId.amount) return
             const amount = tx.refId.amount
-            const createdAt = tx.createdAt 
+            const createdAt = tx.createdAt
             const month = createdAt.getMonth() + 1
-            const year = createdAt.getFullYear() 
+            const year = createdAt.getFullYear()
 
             //Monthly
-            if(tx.transactionType === "income"){
+            if (tx.transactionType === "income") {
                 monthlyData[month - 1].Profit += amount
                 totalProfit += amount
-                if(currentYear === year) totalCurrentYearProfit += amount
-            }else if(tx.transactionType === "expense"){
-                monthlyData[month -1].Expenditure += amount
+                if (currentYear === year) totalCurrentYearProfit += amount
+            } else if (tx.transactionType === "expense") {
+                monthlyData[month - 1].Expenditure += amount
                 totalExpenditure += amount
-                if(currentYear === year) totalCurrentYearExpenditure += amount
+                if (currentYear === year) totalCurrentYearExpenditure += amount
             }
 
             //Yearly
-            if(!yearlyMap[year]){
-                yearlyMap[year] = {year, Profit:0, Expenditure:0}
+            if (!yearlyMap[year]) {
+                yearlyMap[year] = { year, Profit: 0, Expenditure: 0 }
             }
 
-            if(tx.transactionType === "income"){
+            if (tx.transactionType === "income") {
                 yearlyMap[year].Profit += amount
-            }else{
+            } else {
                 yearlyMap[year].Expenditure += amount
             }
         })
 
         let yearlyData = [];
-        for(let y = currentYear; y > currentYear - 5; y--){
+        for (let y = currentYear; y > currentYear - 5; y--) {
             yearlyData.push({
                 year: y,
                 Profit: yearlyMap[y]?.Profit || 0,
@@ -75,18 +88,18 @@ export const getDashboardSummery = async (req, res, next) =>{
         }
 
         //Get BANK ACCOUNTS
-        const accounts = await BANKACCOUNT.find({pgcode});
+        const accounts = await BANKACCOUNT.find({ pgcode });
 
         const accountsData = accounts.map(acc => {
-            const accTx = transactions.filter(t => 
-            t.bank_account && t.bank_account._id.toString() === acc._id.toString())
+            const accTx = transactions.filter(t =>
+                t.bank_account && t.bank_account._id.toString() === acc._id.toString())
 
             let balance = 0;
             accTx.forEach(tx => {
-                if(!tx.refId?.amount) return 
-                if(tx.transactionType === "income"){
+                if (!tx.refId?.amount) return
+                if (tx.transactionType === "income") {
                     balance += tx.refId.amount
-                }else{
+                } else {
                     balance -= tx.refId.amount
                 }
             });
@@ -99,186 +112,189 @@ export const getDashboardSummery = async (req, res, next) =>{
 
         const current_balance = totalProfit - totalExpenditure
 
-        return res.status(200).json({data:{
-            monthlyData,
-            yearlyData,
-            current_balance,
-            total_profit: totalProfit,
-            total_expenditure: totalExpenditure,
-            total_current_year_profit: totalCurrentYearProfit,
-            total_current_year_expenditure: totalCurrentYearExpenditure,
-            accounts: accountsData,
-            totalBranch,
-            totalAcmanagers,
-            totalCustomers,
-            totalEmployees
-        },message:"Dashboard summery retrived successfully.",success:true})
+        return res.status(200).json({
+            data: {
+                monthlyData,
+                yearlyData,
+                current_balance,
+                vacantSeats,
+                total_profit: totalProfit,
+                total_expenditure: totalExpenditure,
+                total_current_year_profit: totalCurrentYearProfit,
+                total_current_year_expenditure: totalCurrentYearExpenditure,
+                accounts: accountsData,
+                totalBranch,
+                totalAcmanagers,
+                totalCustomers,
+                totalEmployees
+            }, message: "Dashboard summery retrived successfully.", success: true
+        })
 
-    }catch(err){
+    } catch (err) {
         next(err)
     }
 }
 
 
-export const getDashboardSearch = async (req, res, next) =>{
-    try{
-        const {pgcode} = req 
-        const {searchQuery} = req.query
+export const getDashboardSearch = async (req, res, next) => {
+    try {
+        const { pgcode } = req
+        const { searchQuery } = req.query
 
-        const {role} = req.params
+        const { role } = req.params
         let results = []
 
-        if(!searchQuery) return res.status(200).json({message:"Provide searchquery to get data.",data:[],success:true})
+        if (!searchQuery) return res.status(200).json({ message: "Provide searchquery to get data.", data: [], success: true })
 
-        switch(role){
+        switch (role) {
             case 'Customers': {
-              results = await CUSTOMER.find({
-                $or: [
-                  { customer_name: { $regex: searchQuery, $options: 'i' } },
-                  { mobile_no: { $regex: searchQuery, $options: 'i' } }
-                ],
-                pgcode,
-                status:true
-              }).populate('room').populate('branch')
+                results = await CUSTOMER.find({
+                    $or: [
+                        { customer_name: { $regex: searchQuery, $options: 'i' } },
+                        { mobile_no: { $regex: searchQuery, $options: 'i' } }
+                    ],
+                    pgcode,
+                    status: true
+                }).populate('room').populate('branch')
             }
-            break;
+                break;
 
             case 'Employees': {
-               results = await EMPLOYEE.find({
-                $or: [
-                  { employee_name: { $regex: searchQuery, $options: 'i' } },
-                  { mobile_no: { $regex: searchQuery, $options: 'i' } }
-                ],
-                pgcode,
-                status:true
-               }).populate('branch')
-            }   
-            break;      
+                results = await EMPLOYEE.find({
+                    $or: [
+                        { employee_name: { $regex: searchQuery, $options: 'i' } },
+                        { mobile_no: { $regex: searchQuery, $options: 'i' } }
+                    ],
+                    pgcode,
+                    status: true
+                }).populate('branch')
+            }
+                break;
 
             case 'Ac Managers': {
-               results = await ACCOUNT.find({
-                $or: [
-                  { full_name: { $regex: searchQuery, $options: 'i' } },
-                  { contact_no: { $regex: searchQuery, $options: 'i' } },
-                  { email: { $regex: searchQuery, $options: 'i' } }
-                ],
-            }).populate('branch')
-            }   
-            break;
+                results = await ACCOUNT.find({
+                    $or: [
+                        { full_name: { $regex: searchQuery, $options: 'i' } },
+                        { contact_no: { $regex: searchQuery, $options: 'i' } },
+                        { email: { $regex: searchQuery, $options: 'i' } }
+                    ],
+                }).populate('branch')
+            }
+                break;
 
             default: {
-                return res.status(400).json({data:null,message:"Invalid role.",success:false})
+                return res.status(400).json({ data: null, message: "Invalid role.", success: false })
             }
         }
 
-        return res.status(200).json({message:"All search query results retrived successfully.",data:results,success:true})
+        return res.status(200).json({ message: "All search query results retrived successfully.", data: results, success: true })
 
-    }catch(err){
+    } catch (err) {
         next(err)
     }
 }
 
 
 
-export const getAdminDetails = async (req, res, next) =>{
-    try{
-       const {mongoid} = req 
+export const getAdminDetails = async (req, res, next) => {
+    try {
+        const { mongoid } = req
 
-       const admin = await ADMIN.findById(mongoid)
+        const admin = await ADMIN.findById(mongoid)
 
-       return res.status(200).json({message:"Admin details retrival successfully.",data:admin,success:true})
+        return res.status(200).json({ message: "Admin details retrival successfully.", data: admin, success: true })
 
-    }catch(err){
+    } catch (err) {
         next(err)
     }
 }
 
 export const uploadLogo = async (req, res, next) => {
-    try{
-        const {mongoid} = req 
-        
-        const admin = await ADMIN.findById(mongoid) 
+    try {
+        const { mongoid } = req
 
-        if(!admin){
-           await removeFile(path.join('uploads',"branch", req.file.filename))
-           return res.status(404).json({message:"Admin not found.",success:false})
-        } 
+        const admin = await ADMIN.findById(mongoid)
 
-        if(admin.pglogo){
-           const filePath = admin.pglogo.replace(process.env.DOMAIN, "")
-           await removeFile(filePath)
+        if (!admin) {
+            await removeFile(path.join('uploads', "branch", req.file.filename))
+            return res.status(404).json({ message: "Admin not found.", success: false })
         }
 
-        let imageUrl = null 
-        
+        if (admin.pglogo) {
+            const filePath = admin.pglogo.replace(process.env.DOMAIN, "")
+            await removeFile(filePath)
+        }
+
+        let imageUrl = null
+
         imageUrl = `${process.env.DOMAIN}/uploads/logo/${req.file.filename}`
 
-        admin.pglogo = imageUrl 
+        admin.pglogo = imageUrl
 
         await admin.save()
 
-        return res.status(200).json({message:"Logo uploaded successfully.",success:true})
-        
-    }catch(err){
+        return res.status(200).json({ message: "Logo uploaded successfully.", success: true })
+
+    } catch (err) {
         next(err)
     }
 }
 
-export const updateAdminDetails = async (req, res, next) =>{
-    try{
-        const {mongoid} = req  
+export const updateAdminDetails = async (req, res, next) => {
+    try {
+        const { mongoid } = req
 
-        const admin = await ADMIN.findById(mongoid) 
+        const admin = await ADMIN.findById(mongoid)
 
-        if(!admin) return res.status(404).json({message:"Admin not found.",success:false})
+        if (!admin) return res.status(404).json({ message: "Admin not found.", success: false })
 
-        const {full_name, email} = req.body 
-    
-        if(email && admin.email !== email) {
-          const existUser = await LOGINMAPPING.findOne({email})
+        const { full_name, email } = req.body
 
-          if(existUser) return res.status(409).json({message:"User is already exist with same email address.",success:false})
+        if (email && admin.email !== email) {
+            const existUser = await LOGINMAPPING.findOne({ email })
+
+            if (existUser) return res.status(409).json({ message: "User is already exist with same email address.", success: false })
         }
 
-        await LOGINMAPPING.findOneAndUpdate({mongoid}, {$set:{email:email}})
+        await LOGINMAPPING.findOneAndUpdate({ mongoid }, { $set: { email: email } })
 
-        admin.full_name = full_name 
-        admin.email = email 
+        admin.full_name = full_name
+        admin.email = email
 
-        await admin.save() 
+        await admin.save()
 
-        return res.status(200).json({message:"Admin details updated successfully.",success:true})
+        return res.status(200).json({ message: "Admin details updated successfully.", success: true })
 
-    }catch(err){
+    } catch (err) {
         next(err)
     }
 }
 
 
-export const changePassword = async (req, res, next) =>{
-    try{
-       const {mongoid} = req 
+export const changePassword = async (req, res, next) => {
+    try {
+        const { mongoid } = req
 
-       const {password, current_password} = req.body 
+        const { password, current_password } = req.body
 
-       if(!password || !current_password) return res.status(400).json({message:"Please provide all required fields.",success:false})
+        if (!password || !current_password) return res.status(400).json({ message: "Please provide all required fields.", success: false })
 
-       const loginmapping = await LOGINMAPPING.findOne({mongoid})
+        const loginmapping = await LOGINMAPPING.findOne({ mongoid })
 
-       if(!loginmapping) return res.status(404).json({message:"Admin not found.",success:false})
- 
-       const isMatch = await bcryptjs.compare(current_password, loginmapping.password) 
-       if(!isMatch) return res.status(401).json({message:"Current password is incorrect.",success:false})
+        if (!loginmapping) return res.status(404).json({ message: "Admin not found.", success: false })
 
-       const salt = await bcryptjs.genSalt(10);
-       const hashedPassword = await bcryptjs.hash(password, salt);
+        const isMatch = await bcryptjs.compare(current_password, loginmapping.password)
+        if (!isMatch) return res.status(401).json({ message: "Current password is incorrect.", success: false })
 
-       loginmapping.password = hashedPassword
-       await loginmapping.save() 
+        const salt = await bcryptjs.genSalt(10);
+        const hashedPassword = await bcryptjs.hash(password, salt);
 
-       return res.status(200).json({message:"Password changed successfully.",success:true})
+        loginmapping.password = hashedPassword
+        await loginmapping.save()
 
-    }catch(err){
+        return res.status(200).json({ message: "Password changed successfully.", success: true })
+
+    } catch (err) {
         next(err)
     }
 }

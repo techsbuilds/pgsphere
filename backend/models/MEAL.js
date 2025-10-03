@@ -33,7 +33,7 @@ export const mealSchema = new mongoose.Schema({
         ref: 'Loginmapping'         // pgcode lives in Loginmapping
     },
     branch: [{
-        type: mongoose.Schema.Types, ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Branch'
     }],
     added_by: {
