@@ -12,7 +12,7 @@ export const addComplaint = async (req, res, next) => {
             return res.status(400).json({ message: "Please Provided All Fields", success: false })
         }
 
-        const customer = await CUSTOMER.findOne({ _id: mongoid, pgcode ,status:true })
+        const customer = await CUSTOMER.findOne({ _id: mongoid, pgcode })
 
         if (!customer) {
             return res.status(404).json({ message: "Sorry You Are Not Autherized to Add Complaints,", success: false })
@@ -42,7 +42,7 @@ export const getAllComplaintsbyBranch = async (req, res, next) => {
     try {
         const { pgcode, mongoid } = req
 
-        const customer = await CUSTOMER.findOne({ _id: mongoid,pgcode, status: true })
+        const customer = await CUSTOMER.findOne({ _id: mongoid, pgcode })
 
         if (!customer) {
             return res.status(404).json({ message: "Customer Not Found.", success: false })
@@ -68,7 +68,7 @@ export const getAllComplaints = async (req, res, next) => {
         filter.pgcode = pgcode
 
         if (userType === "Account") {
-            const acmanager = await ACCOUNT.findOneOn({_id:mongoid,pgcode})
+            const acmanager = await ACCOUNT.findById(mongoid)
 
             if (!acmanager) {
                 return res.status(404).json({ message: "Acmanager Not Found", success: false })
@@ -101,9 +101,9 @@ export const closeComplaints = async (req, res, next) => {
     try {
 
         const { com_id } = req.params
-        const { userType, mongoid,pgcode } = req
+        const { userType, mongoid, pgcode } = req
 
-        const complaint = await COMPLAINT.findOne({ _id: com_id, pgcode , status: 'Open' })
+        const complaint = await COMPLAINT.findOne({ _id: com_id, pgcode, status: 'Open' })
 
         if (!complaint) {
             return res.status(200).json({ message: "Complaint Already Solved ", success: true })
@@ -112,7 +112,7 @@ export const closeComplaints = async (req, res, next) => {
         const branch = complaint.branch
 
         if (userType === 'Account') {
-            const acmanager = await ACCOUNT.findOne({_id:mongoid,pgcode})
+            const acmanager = await ACCOUNT.findById(mongoid)
 
             if (!acmanager) {
                 return res.status(404).json({ message: "Acmanager Not Found.", success: false })
@@ -130,7 +130,7 @@ export const closeComplaints = async (req, res, next) => {
         complaint.close_by = mongoid
         complaint.close_by_type = userType
 
-        complaint.save()
+        await complaint.save()
 
         return res.status(200).json({ message: "Complaint Solve !.", success: true })
 

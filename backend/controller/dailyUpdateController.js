@@ -59,7 +59,7 @@ export const getAllDailyUpdate = async (req, res, next) => {
         filter.pgcode = pgcode
 
         if (userType === 'Account') {
-            const acmanager = await ACCOUNT.findOne({_id:mongoid,pgcode})
+            const acmanager = await ACCOUNT.findById(mongoid)
 
             if (!acmanager) {
                 return res.status(404).json({ message: "Acmanager Not Found", success: false })

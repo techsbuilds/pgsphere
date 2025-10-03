@@ -253,72 +253,130 @@ export const getAllCustomer = async (req, res, next) => {
 };
 
 
-export const getCustomerByRoomId = async (req, res, next) =>{
-    try{
-        const { pgcode, mongoid, userType } = req;
+export const getCustomerByRoomId = async (req, res, next) => {
+  try {
+    const { pgcode, mongoid, userType } = req;
 
-        const {roomId} = req.params
+    const { roomId } = req.params
 
-        if(!roomId) return res.status(400).json({message:"Please provide room id.",success:false})
- 
-        const room = await ROOM.findById(roomId)
+    if (!roomId) return res.status(400).json({ message: "Please provide room id.", success: false })
 
-        if(!room) return res.status(404).json({message:"Room not found.",success:false})
+    const room = await ROOM.findById(roomId)
 
-        if(userType === "Account"){
-            const account = await ACCOUNT.findById(mongoid)
-  
-            if(!account) return res.status(404).json({message:"Account manager not found.",success:false})
-  
-            if(!account.branch.includes(room.branch)) return res.status(403).json({message:"You are not authorized to view customers in this room.",success:false})
-        }
+    if (!room) return res.status(404).json({ message: "Room not found.", success: false })
 
-        const {searchQuery} = req.query
+    if (userType === "Account") {
+      const account = await ACCOUNT.findById(mongoid)
 
-        const filter = { pgcode, room: roomId };
-        if (searchQuery) filter.customer_name = { $regex: searchQuery, $options: "i" };
+      if (!account) return res.status(404).json({ message: "Account manager not found.", success: false })
 
-        const customers = await CUSTOMER.find(filter).sort({createdAt: -1});
-
-        return res.status(200).json({message:"All customer details retrived by room id",success:true,data:customers})
-
-    }catch(err){
-        next(err)
+      if (!account.branch.includes(room.branch)) return res.status(403).json({ message: "You are not authorized to view customers in this room.", success: false })
     }
+
+    const { searchQuery } = req.query
+
+    // const filter = { pgcode, room: roomId };
+    // if (searchQuery) filter.customer_name = { $regex: searchQuery, $options: "i" };
+
+    // const customers = await CUSTOMER.find(filter).sort({createdAt: -1});
+
+    const customers = await CUSTOMER.aggregate([
+      {
+        $match: {
+          pgcode,
+          room: new mongoose.Types.ObjectId(roomId),
+          ...(searchQuery ? { customer_name: { $regex: searchQuery, $options: "i" } } : {})
+        }
+      },
+      {
+        $lookup: {
+          from: "loginmappings",
+          localField: "_id",
+          foreignField: "mongoid",
+          as: "loginDetails"
+        }
+      },
+      {
+        $unwind: "$loginDetails"
+      },
+      {
+        $match: {
+          "loginDetails.status": { $in: ["active", "inactive"] }
+        }
+      },
+      {
+        $sort: { createdAt: -1 }
+      }
+    ])
+
+    return res.status(200).json({ message: "All customer details retrived by room id", success: true, data: customers })
+
+  } catch (err) {
+    next(err)
+  }
 }
 
-export const getCustomerByBranchId = async (req, res, next) =>{
-    try{
-       const {branchId} = req.params
-       const { pgcode, mongoid, userType } = req;
+export const getCustomerByBranchId = async (req, res, next) => {
+  try {
+    const { branchId } = req.params
+    const { pgcode, mongoid, userType } = req;
 
-       if(!branchId) return res.status(400).json({message:"Please provide branch id.",success:false})
+    if (!branchId) return res.status(400).json({ message: "Please provide branch id.", success: false })
 
-       const branch = await BRANCH.findById(branchId)
+    const branch = await BRANCH.findById(branchId)
 
-       if(!branch) return res.status(404).json({message:"Branch not found.",success:false})
+    if (!branch) return res.status(404).json({ message: "Branch not found.", success: false })
 
-       if(userType === "Account"){
-          const account = await ACCOUNT.findById(mongoid)
+    if (userType === "Account") {
+      const account = await ACCOUNT.findById(mongoid)
 
-          if(!account) return res.status(404).json({message:"Account manager not found.",success:false})
+      if (!account) return res.status(404).json({ message: "Account manager not found.", success: false })
 
-          if(!account.branch.includes(branchId)) return res.status(403).json({message:"You are not authorized to view customers in this branch.",success:false})
-       }
-
-       const {searchQuery} = req.query
-
-       const filter = { pgcode, branch: branchId };
-
-       if (searchQuery) filter.customer_name = { $regex: searchQuery, $options: "i" };
-
-       const customers = await CUSTOMER.find(filter).sort({createdAt:-1});
-
-       return res.status(200).json({message:"All customer details retrived by branch id.",success:true,data:customers})
-
-    }catch(err){
-        next(err)
+      if (!account.branch.includes(branchId)) return res.status(403).json({ message: "You are not authorized to view customers in this branch.", success: false })
     }
+
+    const { searchQuery } = req.query
+
+    // const filter = { pgcode, branch: branchId };
+
+    // if (searchQuery) filter.customer_name = { $regex: searchQuery, $options: "i" };
+
+    // const customers = await CUSTOMER.find(filter).sort({ createdAt: -1 });
+
+    const customers = await CUSTOMER.aggregate([
+      {
+        $match: {
+          pgcode,
+          branch: new mongoose.Types.ObjectId(branchId),
+          ...(searchQuery ? { customer_name: { $regex: searchQuery, $options: "i" } } : {})
+        }
+      },
+      {
+        $lookup: {
+          from: "loginmappings",
+          localField: "_id",
+          foreignField: "mongoid",
+          as: "loginDetails"
+        }
+      },
+      {
+        $unwind: "$loginDetails"
+      },
+      {
+        $match: {
+          "loginDetails.status": { $in: ["active", "inactive"] }
+        }
+      },
+      {
+        $sort: { createdAt: -1 }
+      }
+    ])
+
+    return res.status(200).json({ message: "All customer details retrived by branch id.", success: true, data: customers })
+
+  } catch (err) {
+    next(err)
+  }
 }
 
 export const updateCustomerDetails = async (req, res, next) => {
@@ -327,7 +385,7 @@ export const updateCustomerDetails = async (req, res, next) => {
 
   try {
     const { customerId } = req.params;
-    const {userType, mongoid, pgcode} = req 
+    const { userType, mongoid, pgcode } = req
     const {
       customer_name,
       mobile_no,
@@ -344,26 +402,33 @@ export const updateCustomerDetails = async (req, res, next) => {
       return res.status(400).json({ message: "Please provide customer id.", success: false });
     }
 
-    const customer = await CUSTOMER.findOne({_id:customerId, pgcode}).session(session);
+    const customer = await CUSTOMER.findOne({ _id: customerId, pgcode }).populate({
+
+      path: "loginDetails",
+      model: "LOGINMAPPING",
+      match: { status: { $in: ["active", "inactive"] } }
+
+    }).session(session);
+
     if (!customer) {
       await session.abortTransaction();
       session.endSession();
       return res.status(404).json({ message: "Customer not found.", success: false });
     }
 
-    if(userType === "Account"){
+    if (userType === "Account") {
       const account = await ACCOUNT.findById(mongoid)
 
-      if(!account) {
+      if (!account) {
         await session.abortTransaction();
         session.endSession();
-        return res.status(404).json({message:"Account manager not found.",success:false})
+        return res.status(404).json({ message: "Account manager not found.", success: false })
       }
 
-      if(!account.branch.includes(customer.branch.toString())) {
+      if (!account.branch.includes(customer.branch.toString())) {
         await session.abortTransaction();
         session.endSession();
-        return res.status(403).json({message:"You are not authorized to update customer details in this branch.",success:false})
+        return res.status(403).json({ message: "You are not authorized to update customer details in this branch.", success: false })
       }
     }
 
@@ -447,7 +512,7 @@ export const changeStatus = async (req, res, next) => {
     const { pgcode } = req;
     const { customerId } = req.params;
     const { status } = req.body;
-    const {mongoid, userType} = req
+    const { mongoid, userType } = req
 
     if (!customerId || status === undefined) {
       await session.abortTransaction();
@@ -456,8 +521,10 @@ export const changeStatus = async (req, res, next) => {
     }
 
     // normalize requested status to boolean
-    const desiredStatus =
-      typeof status === "string" ? status.toLowerCase() === "true" : Boolean(status);
+    // const desiredStatus =
+    //   typeof status === "string" ? status.toLowerCase() === "true" : Boolean(status);
+
+    const desiredStatus = status
 
     // ensure the customer belongs to this PG
     const customer = await CUSTOMER.findOne({ _id: customerId, pgcode }).session(session);
@@ -467,27 +534,43 @@ export const changeStatus = async (req, res, next) => {
       return res.status(404).json({ message: "Customer not found.", success: false });
     }
 
-    if(userType === "Account"){
+    if (userType === "Account") {
       const account = await ACCOUNT.findById(mongoid)
 
-      if(!account) {
+      if (!account) {
         await session.abortTransaction();
         session.endSession();
-        return res.status(404).json({message:"Account manager not found.",success:false})
+        return res.status(404).json({ message: "Account manager not found.", success: false })
       }
 
-      if(!account.branch.includes(customer.branch.toString())) {
+      if (!account.branch.includes(customer.branch.toString())) {
         await session.abortTransaction();
         session.endSession();
-        return res.status(403).json({message:"You are not authorized to change customer status in this branch.",success:false})
+        return res.status(403).json({ message: "You are not authorized to change customer status in this branch.", success: false })
       }
     }
 
     // if no change needed
-    if (customer.status === desiredStatus) {
+    // if (customer.status === desiredStatus) {
+    //   await session.abortTransaction();
+    //   session.endSession();
+    //   return res.status(200).json({ message: "No change in status.", success: true, data: customer });
+    // }
+
+    // check customer in loginmapping
+    const loginmapping = await LOGINMAPPING.findOne({ mongoid: customerId }).session(session)
+
+    if(!loginmapping){
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ message: "Customer not found in Loginmapping.", success: false});
+
+    }
+    if (loginmapping.status === desiredStatus) {
       await session.abortTransaction();
       session.endSession();
       return res.status(200).json({ message: "No change in status.", success: true, data: customer });
+
     }
 
     // ensure room belongs to same PG
@@ -500,7 +583,7 @@ export const changeStatus = async (req, res, next) => {
 
     let updatedRoom;
 
-    if (desiredStatus) {
+    if (desiredStatus === "active") {
       // ACTIVATE: false -> true
       if (room.filled >= room.capacity) {
         await session.abortTransaction();
@@ -514,9 +597,13 @@ export const changeStatus = async (req, res, next) => {
         { new: true, session }
       );
 
-      customer.status = true;
-      await customer.save({ session });
-    } else {
+      loginmapping.status = "active";
+      await loginmapping.save({ session });
+
+    }
+
+    // for inactive customers
+    if (desiredStatus === "inactive") {
       // DEACTIVATE: true -> false
       if (room.filled > 0) {
         updatedRoom = await ROOM.findByIdAndUpdate(
@@ -533,15 +620,15 @@ export const changeStatus = async (req, res, next) => {
         );
       }
 
-      customer.status = false;
-      await customer.save({ session });
+      loginmapping.status = "inactive";
+      await loginmapping.save({ session });
     }
 
     await session.commitTransaction();
     session.endSession();
 
     return res.status(200).json({
-      message: desiredStatus ? "Customer activated" : "Customer deactivated",
+      message: desiredStatus === "active" ? "Customer activated" : "Customer deactivated",
       success: true,
       data: { customer, room: updatedRoom },
     });
@@ -551,115 +638,115 @@ export const changeStatus = async (req, res, next) => {
     next(err);
   }
 };
- 
-export const getPendingCustomerRentList = async (req, res, next) =>{
-    try{
-        const { pgcode, userType, mongoid } = req;
-        const {searchQuery, branch} = req.query
-        let filter = {
-            pgcode,
-            status:true
-        }
 
-        if(userType === "Account"){
-          const account = await ACCOUNT.findById(mongoid) 
-
-          if(!account) return res.status(404).json({message:"Account manager not found.",success:false})
-
-          if(branch){
-            if(!account.branch.includes(branch)) return res.status(403).json({message:"You are not authorized to view customers in this branch.",success:false})
-            filter.branch = branch
-          }else{
-            filter.branch = { $in: account.branch }
-          }
-        }else{
-          // For other user types, apply branch filter if provided
-          if (branch) {
-            filter.branch = branch;
-          }
-        }
-
-        if(searchQuery){
-            filter.customer_name = { $regex: searchQuery, $options: 'i' };
-        }
-        
-        const customers = await CUSTOMER.find(filter)
-        .populate('branch')
-        .populate('room')
-
-        const result = []
- 
-        for (const customer of customers){
-           const monthList = getMonthYearList(customer.joining_date)
-
-           const rentTransaction = await TRANSACTION.find({
-             transactionType:'income',
-             type:'customer_rent',
-             refModel:'Customerrent',
-             branch:customer.branch._id,
-             pgcode,
-           }).populate({
-             path:'refId',
-             model:'Customerrent',
-             match: {customer:customer._id}
-           })
-
-           const paidRentMap = {}
-
-           for (const tx of rentTransaction) {
-               const entry = tx.refId;
-               if(!entry) continue;
-
-               const key = `${entry.month}-${entry.year}`;
-               if(!paidRentMap[key]){
-                paidRentMap[key] = 0
-               }
-
-               paidRentMap[key] += entry.amount;
-           }
-
-           const pendingRent = [];
-
-           for(const {month, year} of monthList){
-             const key = `${month}-${year}`
-             const paid = paidRentMap[key] || 0
-             const pending = Math.max(customer.rent_amount-paid, 0)
-
-             if(pending > 0){
-                const today = new Date();
-                const currentMonth = today.getMonth() + 1;
-                const currentYear = today.getFullYear()
-
-                const isRequired = !(month === currentMonth && year === currentYear)
-
-                pendingRent.push({
-                    month,
-                    year,
-                    pending,
-                    required: isRequired
-                })
-             }
-          }
-
-          if(pendingRent.length > 0) {
-             result.push({
-                customerId:customer._id,
-                customer_name:customer.customer_name,
-                branch:customer.branch,
-                room:customer.room,
-                mobile_no:customer.mobile_no,
-                rent_amount:customer.rent_amount,
-                pending_rent:pendingRent
-             })
-          }
-
-        } 
-
-        return res.status(200).json({message:"Pending customer list fetched successfully.",success:true,data:result})
-
-    }catch(err){
-        next(err)
+export const getPendingCustomerRentList = async (req, res, next) => {
+  try {
+    const { pgcode, userType, mongoid } = req;
+    const { searchQuery, branch } = req.query
+    let filter = {
+      pgcode,
+      status: true
     }
+
+    if (userType === "Account") {
+      const account = await ACCOUNT.findById(mongoid)
+
+      if (!account) return res.status(404).json({ message: "Account manager not found.", success: false })
+
+      if (branch) {
+        if (!account.branch.includes(branch)) return res.status(403).json({ message: "You are not authorized to view customers in this branch.", success: false })
+        filter.branch = branch
+      } else {
+        filter.branch = { $in: account.branch }
+      }
+    } else {
+      // For other user types, apply branch filter if provided
+      if (branch) {
+        filter.branch = branch;
+      }
+    }
+
+    if (searchQuery) {
+      filter.customer_name = { $regex: searchQuery, $options: 'i' };
+    }
+
+    const customers = await CUSTOMER.find(filter)
+      .populate('branch')
+      .populate('room')
+
+    const result = []
+
+    for (const customer of customers) {
+      const monthList = getMonthYearList(customer.joining_date)
+
+      const rentTransaction = await TRANSACTION.find({
+        transactionType: 'income',
+        type: 'customer_rent',
+        refModel: 'Customerrent',
+        branch: customer.branch._id,
+        pgcode,
+      }).populate({
+        path: 'refId',
+        model: 'Customerrent',
+        match: { customer: customer._id }
+      })
+
+      const paidRentMap = {}
+
+      for (const tx of rentTransaction) {
+        const entry = tx.refId;
+        if (!entry) continue;
+
+        const key = `${entry.month}-${entry.year}`;
+        if (!paidRentMap[key]) {
+          paidRentMap[key] = 0
+        }
+
+        paidRentMap[key] += entry.amount;
+      }
+
+      const pendingRent = [];
+
+      for (const { month, year } of monthList) {
+        const key = `${month}-${year}`
+        const paid = paidRentMap[key] || 0
+        const pending = Math.max(customer.rent_amount - paid, 0)
+
+        if (pending > 0) {
+          const today = new Date();
+          const currentMonth = today.getMonth() + 1;
+          const currentYear = today.getFullYear()
+
+          const isRequired = !(month === currentMonth && year === currentYear)
+
+          pendingRent.push({
+            month,
+            year,
+            pending,
+            required: isRequired
+          })
+        }
+      }
+
+      if (pendingRent.length > 0) {
+        result.push({
+          customerId: customer._id,
+          customer_name: customer.customer_name,
+          branch: customer.branch,
+          room: customer.room,
+          mobile_no: customer.mobile_no,
+          rent_amount: customer.rent_amount,
+          pending_rent: pendingRent
+        })
+      }
+
+    }
+
+    return res.status(200).json({ message: "Pending customer list fetched successfully.", success: true, data: result })
+
+  } catch (err) {
+    next(err)
+  }
 }
 
 export const exportCustomersToExcel = async (req, res, next) => {
