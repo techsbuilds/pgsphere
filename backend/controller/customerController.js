@@ -4,64 +4,123 @@ import ROOM from "../models/ROOM.js";
 import TRANSACTION from "../models/TRANSACTION.js";
 import ACCOUNT from "../models/ACCOUNT.js";
 import { getMonthYearList } from "../helper.js";
+import { removeFile } from "../utils/removeFile.js";
 import mongoose from "mongoose";
 import ExcelJS from "exceljs";
+import path from "path";
 import LOGINMAPPING from "../models/LOGINMAPPING.js";
+import bcryptjs from "bcryptjs";
+import ADMIN from "../models/ADMIN.js";
+import { sendCustomerWelcomeEmail } from "../utils/sendMail.js";
+import dotenv from "dotenv";
 
+dotenv.config()
 
-export const createCustomer = async (req, res, next) => {
-  try {
-    const { mongoid, userType, pgcode } = req
-    const { customer_name, mobile_no, deposite_amount, rent_amount, room, branch, joining_date } = req.body
+export const createCustomer = async (req, res, next) =>{
+    try{
+        const {mongoid, userType, pgcode} = req
+        const {customer_name, email, ref_person_name, ref_person_contact_no, mobile_no, deposite_amount, rent_amount, room, branch, joining_date} = req.body 
 
-    if (!customer_name || !mobile_no || !deposite_amount || !rent_amount || !room || !branch || !joining_date) return res.status(400).json({ message: "Please provide all required fields.", success: false })
+        const adminLogin = await LOGINMAPPING.findOne({pgcode, userType:'Admin', status:'active'})
+        if(!adminLogin) return res.status(400).json({message:"Your PG is not active. Please contact support.",success:false})
 
-    if (userType === "Account") {
-      const account = await ACCOUNT.findById(mongoid)
+        const admin = await ADMIN.findById(adminLogin.mongoid)  
+        if(!admin) return res.status(400).json({message:"Your PG is not active. Please contact support.",success:false})
 
-      if (!account) return res.status(404).json({ message: "Account manager is not found.", success: false })
+        if(!req.file) return res.status(400).json({message:"Please upload aadharcard image.",success:false})
+      
+        if(!customer_name || !email || !mobile_no || !deposite_amount || !rent_amount || !room || !branch || !joining_date){
+           await removeFile(path.join('uploads', 'aadhar', req.file.filename))
+           return res.status(400).json({message:"Please provide all required fields.",success:false})
+        }
 
-      if (!account.branch.includes(branch)) return res.status(403).json({ message: "You are not authorized to add customer in this branch.", success: false })
+        if(userType=== "Account"){
+           const account = await ACCOUNT.findById(mongoid)
 
+           if(!account) return res.status(404).json({message:"Account manager is not found.",success:false})
+
+           if(!account.branch.includes(branch)) return res.status(403).json({message:"You are not authorized to add customer in this branch.",success:false})
+
+        }
+
+        const existCustomer = await CUSTOMER.findOne({mobile_no, email})
+
+        if(existCustomer){
+           await removeFile(path.join('uploads', 'aadhar', req.file.filename))
+           return res.status(409).json({message:"Customer is already exist with same email or mobile no.",success:false})
+        }
+
+        const existRoom = await ROOM.findById(room)
+
+        if(!existRoom){
+          await removeFile(path.join('uploads', 'aadhar', req.file.filename))
+          return res.status(404).json({message:"Room not found.",success:false})
+        }
+
+        const existBranch = await BRANCH.findById(branch)
+
+        if(!existBranch){
+          await removeFile(path.join('uploads', 'aadhar', req.file.filename))
+          return res.status(404).json({message:"Branch is not found",success:false})
+        }
+
+        if(existRoom.branch.toString() !== branch){
+          await removeFile(path.join('uploads', 'aadhar', req.file.filename))
+          return res.status(400).json({message:"Room does not belong to this branch.",success:false})
+        }
+
+        if(existRoom.filled >= existRoom.capacity){
+          await removeFile(path.join('uploads', 'aadhar', req.file.filename))
+          return res.status(400).json({message:"Room is already full. Cannot add more customers.",success:false})
+        }
+
+        const saltRounds = 10;
+        const hashedPassword = await bcryptjs.hash(pgcode, saltRounds);
+
+        const newCustomer = await CUSTOMER({
+            customer_name,
+            mobile_no,
+            deposite_amount,
+            rent_amount,
+            room,
+            joining_date,
+            branch,
+            pgcode,
+            ref_person_contact_no,
+            ref_person_name,
+            added_by:mongoid,
+            added_by_type:userType
+        })
+
+        const newLogin = await LOGINMAPPING({ 
+          mongoid: newCustomer._id,
+          email,
+          password: hashedPassword,
+          userType:"Customer",
+          pgcode,
+          status:'active'
+        })
+
+        existRoom.filled = existRoom.filled + 1
+
+        //Send mail to customer
+        await sendCustomerWelcomeEmail(
+          email,
+          customer_name,
+          admin.pgname,
+          existBranch.branch_name,
+          process.env.CUSTOMER_PORTAL_URL
+        )
+
+        await newLogin.save()
+        await existRoom.save()
+        await newCustomer.save()
+
+        return res.status(200).json({message:"New customer created successfully.",success:true,data:newCustomer})
+
+    }catch(err){
+        next(err)
     }
-
-    const existCustomer = await CUSTOMER.findOne({ mobile_no })
-
-    if (existCustomer) return res.status(409).json({ message: "Customer is already exist same mobile no.", success: false })
-
-    const existRoom = await ROOM.findById(room)
-
-    if (!existRoom) return res.status(404).json({ message: "Room not found.", success: false })
-
-    const existBranch = await BRANCH.findById(branch)
-
-    if (!existBranch) return res.status(404).json({ message: "Branch is not found", success: false })
-
-    if (existRoom.filled >= existRoom.capacity) return res.status(400).json({ message: "Room is already full. Cannot add more customers.", success: false })
-
-    const newCustomer = await CUSTOMER({
-      customer_name,
-      mobile_no,
-      deposite_amount,
-      rent_amount,
-      room,
-      joining_date,
-      branch,
-      pgcode,
-      added_by: mongoid,
-      added_by_type: userType
-    })
-
-    existRoom.filled = existRoom.filled + 1
-
-    await existRoom.save()
-    await newCustomer.save()
-
-    return res.status(200).json({ message: "New customer created successfully.", success: true, data: newCustomer })
-
-  } catch (err) {
-    next(err)
-  }
 }
 
 
@@ -759,3 +818,38 @@ export const exportCustomersToExcel = async (req, res, next) => {
     next(err);
   }
 };
+
+
+export const verifyCustomer = async (req, res, next) =>{
+  try{
+    const {pgcode} = req
+    const {customerId} = req.params
+    const {deposite_amount,rent_amount } = req.body 
+
+    console.log(pgcode)
+
+    if(!customerId) return res.status(400).json({message:"Please provide customer id.",success:false})
+
+    if(!deposite_amount || !rent_amount) return res.status(400).json({message:"Please provide all required fields.",success:false})
+
+    const customer = await CUSTOMER.findById(customerId)
+
+    if(!customer) return res.status(404).json({message:"Customer not found.",success:false})
+
+    const customerLogin = await LOGINMAPPING.findOne({mongoid:customerId, pgcode})
+
+    if(!customerLogin) return res.status(404).json({message:"Customer not found.",success:false})
+
+    customer.rent_amount = rent_amount
+    customer.deposite_amount = deposite_amount 
+
+    customerLogin.status = 'active'
+
+    await customer.save()
+    await customerLogin.save()
+
+    return res.status(200).json({message:"Customer verified successfully.",success:true})
+  }catch(err){
+
+  }
+}

@@ -174,70 +174,88 @@ export const signupUser = async (req, res, next) => {
 }
 
 //For customer side
-export const signUpCustomer = async (req, res, next) => {
-  try {
-    const { customer_name, pgcode, email, password, mobile_no, room, branch, ref_person_name, ref_person_contact_no, joining_date, added_by, added_by_type } = req.body
+export const signUpCustomer = async (req, res, next) =>{
+   try{
+      const {customer_name, pgcode, email, password, mobile_no, room, branch, ref_person_name, ref_person_contact_no, joining_date, added_by, added_by_type} = req.body
 
-    if (!customer_name || !pgcode || !email || !password || !mobile_no || !room || !branch || !joining_date || !added_by || !added_by_type) {
-      await removeFile(path.join("uploads", "aadhar", req.file.filename))
-      return res.status(400).json({ message: "Please provide required fields.", success: false })
-    }
+      if(!customer_name || !pgcode || !email || !password || !mobile_no || !room || !branch || !joining_date || !added_by || !added_by_type){
+         await removeFile(path.join("uploads", "aadhar", req.file.filename))
+         return res.status(400).json({message:"Please provide required fields.",success:false})
+      }
 
-    if (!req.file) return res.status(400).json({ message: "Please upload aadhar card.", success: false })
+      if(!req.file) return res.status(400).json({message:"Please upload aadhar card.",success:false})
 
-    const existCustomer = await CUSTOMER.findOne({ email, mobile_no })
+      const existCustomer = await CUSTOMER.findOne({email,mobile_no})
 
-    if (existCustomer) return res.status(409).json({ message: "User is already exist with same email address or mobile no.", success: false })
+      if(existCustomer){
+        await removeFile(path.join("uploads", "aadhar", req.file.filename))
+        return res.status(409).json({message:"User is already exist with same email address or mobile no.",success:false})
+      }
 
-    const admin = await LOGINMAPPING.findOne({ mongoid: added_by })
+      const admin = await LOGINMAPPING.findOne({mongoid:added_by})
 
-    const existBranch = await BRANCH.findOne({ _id: branch, pgcode })
+      const existBranch = await BRANCH.findOne({_id:branch,pgcode})
 
-    if (!existBranch) return res.status(400).json({ message: "Branch not found.", success: false })
+      if(!existBranch){
+         await removeFile(path.join("uploads", "aadhar", req.file.filename))
+         return res.status(400).json({message:"Branch not found.",success:false})
+      }
 
-    const existRoom = await ROOM.findOne({ _id: room, pgcode })
+      const existRoom = await ROOM.findOne({_id:room, pgcode})
 
-    if (!existRoom) return res.status(404).json({ message: "Room is not found.", success: false })
+      if(!existRoom){
+        await removeFile(path.join("uploads", "aadhar", req.file.filename))
+        return res.status(404).json({message:"Room is not found.",success:false})
+      }
 
-    if (existRoom.branch.toString() !== branch) return res.status(400).json({ message: "Requested room is not in given branch.", success: false })
+      if(existRoom.branch.toString() !== branch){
+        await removeFile(path.join("uploads", "aadhar", req.file.filename))
+        return res.status(400).json({message:"Requested room is not in given branch.",success:false})
+      }
 
-    let imageUrl = `${process.env.DOMAIN}/uploads/aadhar/${req.file.filename}`;
+      if(existRoom.filled >= existRoom.capacity){
+        await removeFile(path.join("uploads", "aadhar", req.file.filename))
+        return res.status(400).json({message:"Room capacity full. Please select another room.",success:false})
+      } 
 
-    const saltRounds = 10;
-    const hashedPassword = await bcryptjs.hash(password, saltRounds);
+      let imageUrl = `${process.env.DOMAIN}/uploads/aadhar/${req.file.filename}`;
 
-    const newCustomer = await CUSTOMER({
-      customer_name,
-      mobile_no,
-      email,
-      room,
-      branch,
-      added_by,
-      added_by_type,
-      ref_person_name,
-      ref_person_contact_no,
-      aadharcard_url: imageUrl
-    })
+      const saltRounds = 10;
+      const hashedPassword = await bcryptjs.hash(password, saltRounds);
+      
+      const newCustomer = await CUSTOMER({
+        customer_name,
+        mobile_no,
+        email,
+        room,
+        branch,
+        added_by,
+        added_by_type,
+        ref_person_name,
+        ref_person_contact_no,
+        joining_date,
+        aadharcard_url:imageUrl
+      })
 
-    const newLoginMapping = await LOGINMAPPING({
-      mongoid: newCustomer._id,
-      email,
-      password: hashedPassword,
-      userType: 'Customer',
-      status: 'pending',
-      pgcode,
-      expiry: admin.expiry,
-      plan: admin.plan
-    })
+      const newLoginMapping = await LOGINMAPPING({
+        mongoid:newCustomer._id,
+        email,
+        password:hashedPassword,
+        userType:'Customer',
+        status:'pending',
+        pgcode,
+        expiry:admin.expiry,
+        plan:admin.plan
+      })
 
-    await newCustomer.save()
-    await newLoginMapping.save()
+      await newCustomer.save() 
+      await newLoginMapping.save()
 
-    return res.status(200).json({ message: "New customer account created successfully.", success: true })
+      return res.status(200).json({message:"New customer account created successfully.",success:true})
 
-  } catch (err) {
-    next(err)
-  }
+   }catch(err){
+      next(err)
+   }
 }
 
 //For customer login
