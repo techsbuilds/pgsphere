@@ -153,3 +153,42 @@ export const sendContactDetailstoEmail = async (data) => {
     }
     return true;
 }
+
+export const sendCustomerWelcomeEmail = async (to, customerName, pgName, branchName, dashboard_url) => {
+    try {
+        await sendEmail({
+            to,
+            subject: "🎉 Welcome to " + pgName + " 🎉",
+            html: `
+            <div style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width:600px;margin:auto;background:#ffffff;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+                    <tr>
+                        <td style="text-align:center;padding:20px;background:#4f46e5;border-top-left-radius:10px;border-top-right-radius:10px;">
+                            <h1 style="color:#ffffff;margin:0;font-size:24px;">Welcome to ${pgName} 🎉</h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:30px 20px;text-align:left;color:#333333;">
+                            <p style="font-size:16px;">Hello ${customerName},</p>
+                            <p style="font-size:16px;">We're thrilled to have you join us at ${pgName}, ${branchName} branch! We're committed to providing you with a comfortable and enjoyable living experience.</p>
+                            <p style="font-size:16px;">You can access your customer dashboard by clicking the button below:</p>
+                            <div style="text-align:center;margin:25px 0;">
+                                <a href="${dashboard_url}" style="background:#10b981;color:#ffffff;padding:12px 24px;text-decoration:none;font-size:16px;border-radius:8px;font-weight:bold;">
+                                    Go to Your App
+                                </a>
+                            </div>
+                            <p style="font-size:14px;color:#666666;">If the button above doesn’t work, copy and paste this link into your browser:</p>
+                            <p style="word-break:break-all;color:#4f46e5;font-size:14px;">${dashboard_url}</p>
+                            <hr style="border:none;border-top:1px solid #eeeeee;margin:30px 0;">
+                            <p style="font-size:12px;color:#888888;text-align:center;">This is an automated message. Please do not reply.</p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            `,
+        });
+    }catch (error) {
+        console.error("Error sending customer welcome email:", error);
+        return false;
+    }
+}

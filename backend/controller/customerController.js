@@ -4,17 +4,24 @@ import ROOM from "../models/ROOM.js";
 import TRANSACTION from "../models/TRANSACTION.js";
 import ACCOUNT from "../models/ACCOUNT.js";
 import { getMonthYearList } from "../helper.js";
+import { removeFile } from "../utils/removeFile.js";
 import mongoose from "mongoose";
 import ExcelJS from "exceljs";
+import path from "path";
 import LOGINMAPPING from "../models/LOGINMAPPING.js";
+import bcryptjs from "bcryptjs";
+import ADMIN from "../models/ADMIN.js";
+import { sendCustomerWelcomeEmail } from "../utils/sendMail.js";
+import dotenv from "dotenv";
 
+dotenv.config()
 
-export const createCustomer = async (req, res, next) => {
-  try {
-    const { mongoid, userType, pgcode } = req
-    const { customer_name, mobile_no, deposite_amount, rent_amount, room, branch, joining_date } = req.body
-
-    if (!customer_name || !mobile_no || !deposite_amount || !rent_amount || !room || !branch || !joining_date) return res.status(400).json({ message: "Please provide all required fields.", success: false })
+export const createCustomer = async (req, res, next) =>{
+    try{
+        const {mongoid, userType, pgcode} = req
+        const {customer_name, mobile_no, deposite_amount, rent_amount, room, branch, joining_date} = req.body 
+      
+        if(!customer_name || !mobile_no || !deposite_amount || !rent_amount || !room || !branch || !joining_date) return res.status(400).json({message:"Please provide all required fields.",success:false})
 
     if (userType === "Account") {
       const account = await ACCOUNT.findById(mongoid)
@@ -25,37 +32,37 @@ export const createCustomer = async (req, res, next) => {
 
     }
 
-    const existCustomer = await CUSTOMER.findOne({ mobile_no })
+        const existCustomer = await CUSTOMER.findOne({mobile_no})
 
-    if (existCustomer) return res.status(409).json({ message: "Customer is already exist same mobile no.", success: false })
+        if(existCustomer) return res.status(409).json({message:"Customer is already exist same mobile no.",success:false})
 
     const existRoom = await ROOM.findById(room)
 
-    if (!existRoom) return res.status(404).json({ message: "Room not found.", success: false })
+        if(!existRoom) return res.status(404).json({message:"Room not found.",success:false})
 
     const existBranch = await BRANCH.findById(branch)
 
-    if (!existBranch) return res.status(404).json({ message: "Branch is not found", success: false })
+        if(!existBranch) return res.status(404).json({message:"Branch is not found",success:false})
 
-    if (existRoom.filled >= existRoom.capacity) return res.status(400).json({ message: "Room is already full. Cannot add more customers.", success: false })
+        if(existRoom.filled >= existRoom.capacity) return res.status(400).json({message:"Room is already full. Cannot add more customers.",success:false})
 
-    const newCustomer = await CUSTOMER({
-      customer_name,
-      mobile_no,
-      deposite_amount,
-      rent_amount,
-      room,
-      joining_date,
-      branch,
-      pgcode,
-      added_by: mongoid,
-      added_by_type: userType
-    })
+        const newCustomer = await CUSTOMER({
+            customer_name,
+            mobile_no,
+            deposite_amount,
+            rent_amount,
+            room,
+            joining_date,
+            branch,
+            pgcode,
+            added_by:mongoid,
+            added_by_type:userType
+        })
 
     existRoom.filled = existRoom.filled + 1
 
-    await existRoom.save()
-    await newCustomer.save()
+        await existRoom.save()
+        await newCustomer.save()
 
     return res.status(200).json({ message: "New customer created successfully.", success: true, data: newCustomer })
 
@@ -759,3 +766,38 @@ export const exportCustomersToExcel = async (req, res, next) => {
     next(err);
   }
 };
+
+
+export const verifyCustomer = async (req, res, next) =>{
+  try{
+    const {pgcode} = req
+    const {customerId} = req.params
+    const {deposite_amount,rent_amount } = req.body 
+
+    console.log(pgcode)
+
+    if(!customerId) return res.status(400).json({message:"Please provide customer id.",success:false})
+
+    if(!deposite_amount || !rent_amount) return res.status(400).json({message:"Please provide all required fields.",success:false})
+
+    const customer = await CUSTOMER.findById(customerId)
+
+    if(!customer) return res.status(404).json({message:"Customer not found.",success:false})
+
+    const customerLogin = await LOGINMAPPING.findOne({mongoid:customerId, pgcode})
+
+    if(!customerLogin) return res.status(404).json({message:"Customer not found.",success:false})
+
+    customer.rent_amount = rent_amount
+    customer.deposite_amount = deposite_amount 
+
+    customerLogin.status = 'active'
+
+    await customer.save()
+    await customerLogin.save()
+
+    return res.status(200).json({message:"Customer verified successfully.",success:true})
+  }catch(err){
+
+  }
+}

@@ -187,37 +187,37 @@ export const signUpCustomer = async (req, res, next) => {
 
     const existCustomer = await CUSTOMER.findOne({ email, mobile_no })
 
-    if (existCustomer) return res.status(409).json({ message: "User is already exist with same email address or mobile no.", success: false })
+      if(existCustomer) return res.status(409).json({message:"User is already exist with same email address or mobile no.",success:false})
 
     const admin = await LOGINMAPPING.findOne({ mongoid: added_by })
 
     const existBranch = await BRANCH.findOne({ _id: branch, pgcode })
 
-    if (!existBranch) return res.status(400).json({ message: "Branch not found.", success: false })
+      if(!existBranch) return res.status(400).json({message:"Branch not found.",success:false})
 
     const existRoom = await ROOM.findOne({ _id: room, pgcode })
 
-    if (!existRoom) return res.status(404).json({ message: "Room is not found.", success: false })
+      if(!existRoom) return res.status(404).json({message:"Room is not found.",success:false})
 
-    if (existRoom.branch.toString() !== branch) return res.status(400).json({ message: "Requested room is not in given branch.", success: false })
+      if(existRoom.branch.toString() !== branch) return res.status(400).json({message:"Requested room is not in given branch.",success:false})
 
     let imageUrl = `${process.env.DOMAIN}/uploads/aadhar/${req.file.filename}`;
 
-    const saltRounds = 10;
-    const hashedPassword = await bcryptjs.hash(password, saltRounds);
-
-    const newCustomer = await CUSTOMER({
-      customer_name,
-      mobile_no,
-      email,
-      room,
-      branch,
-      added_by,
-      added_by_type,
-      ref_person_name,
-      ref_person_contact_no,
-      aadharcard_url: imageUrl
-    })
+      const saltRounds = 10;
+      const hashedPassword = await bcryptjs.hash(password, saltRounds);
+      
+      const newCustomer = await CUSTOMER({
+        customer_name,
+        mobile_no,
+        email,
+        room,
+        branch,
+        added_by,
+        added_by_type,
+        ref_person_name,
+        ref_person_contact_no,
+        aadharcard_url:imageUrl
+      })
 
     const newLoginMapping = await LOGINMAPPING({
       mongoid: newCustomer._id,
