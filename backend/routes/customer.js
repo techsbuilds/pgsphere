@@ -1,11 +1,12 @@
 import express from 'express'
 import { verifyToken } from '../middleware/verifyUser.js'
 import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, getPendingCustomerRentList, updateCustomerDetails, exportCustomersToExcel, verifyCustomer } from '../controller/customerController.js'
+import { aadharCardMulter } from '../middleware/upload.js'
 
 const app = express.Router()
 
 //For create new customer
-app.post('/', verifyToken, createCustomer)
+app.post('/', verifyToken, aadharCardMulter, createCustomer)
 
 //For get all customer
 app.get('/',verifyToken, getAllCustomer)
