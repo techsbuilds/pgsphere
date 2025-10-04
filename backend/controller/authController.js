@@ -327,6 +327,38 @@ export const genLink = async (req, res, next) => {
   }
 }
 
+export const verifyCustomerSignup = async (req, res, next) =>{
+   try{
+    const {token} = req.params 
+
+    if(!token) return res.status(400).json({message:"Please provide token",success:false})
+
+    const decoded = jwt.verify(token, process.env.JWT)
+    
+    const {mongoid, userType, branch, pgcode } = decoded
+
+    const admin = await ADMIN.findById(mongoid) 
+
+    if(!admin) return res.status(404).json({message:"Your pg is not found.",success:false})
+
+    const branchDetails = await BRANCH.findById(branch)
+
+    if(!branchDetails) return res.status(404).json({message:"Branch is not found.",success:false})
+
+    return res.status(200).json({message:"All details retrived successfully.",success:true, data:{
+      branch:branchDetails,
+      pgDetails:admin,
+      pgcode,
+      added_by:mongoid,
+      added_by_type:userType
+    }})
+
+   }catch(err){
+    next(err)
+   }
+}
+
+
 export const logoutPortal = async (req, res, next) => {
   try {
     res.clearCookie("pgtoken", {
