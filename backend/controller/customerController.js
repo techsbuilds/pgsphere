@@ -3,7 +3,6 @@ import CUSTOMER from "../models/CUSTOMER.js";
 import ROOM from "../models/ROOM.js";
 import TRANSACTION from "../models/TRANSACTION.js";
 import ACCOUNT from "../models/ACCOUNT.js";
-import { getMonthYearList } from "../helper.js";
 import { removeFile } from "../utils/removeFile.js";
 import mongoose from "mongoose";
 import ExcelJS from "exceljs";
@@ -95,18 +94,28 @@ export const createCustomer = async (req, res, next) => {
     if (userType === "Account") {
       const account = await ACCOUNT.findById(mongoid);
 
-      if (!account)
+      if (!account){
+        if(req.file){
+          await removeFile(path.join("uploads", "aadhar", req.file.filename));
+        }
         return res
-          .status(404)
-          .json({ message: "Account manager is not found.", success: false });
+        .status(404)
+        .json({ message: "Account manager is not found.", success: false });
+      }
+        
 
-      if (!account.branch.includes(branch))
+      if (!account.branch.includes(branch)){
+        if(req.file){
+          await removeFile(path.join("uploads", "aadhar", req.file.filename));
+        }
         return res
-          .status(403)
-          .json({
-            message: "You are not authorized to add customer in this branch.",
-            success: false,
-          });
+        .status(403)
+        .json({
+          message: "You are not authorized to add customer in this branch.",
+          success: false,
+        });
+      }
+        
     }
 
     const existCustomer = await CUSTOMER.findOne({ mobile_no, email });
@@ -159,6 +168,8 @@ export const createCustomer = async (req, res, next) => {
         });
     }
 
+    let imageUrl = `${process.env.DOMAIN}/uploads/aadhar/${req.file.filename}`;
+
     const saltRounds = 10;
     const hashedPassword = await bcryptjs.hash(pgcode, saltRounds);
 
@@ -175,6 +186,7 @@ export const createCustomer = async (req, res, next) => {
       ref_person_name,
       added_by: mongoid,
       added_by_type: userType,
+      aadharcard_url:imageUrl
     });
 
     const newLogin = await LOGINMAPPING({
@@ -194,8 +206,8 @@ export const createCustomer = async (req, res, next) => {
       rent_amount,
       paid_amount: 0,
       status: "Pending",
-      month: new Date(joining_date).getMonth() + 1,
-      year: new Date(joining_date).getFullYear(),
+      month: new Date().getMonth() + 1,
+      year: new Date().getFullYear(),
     });
 
     //Create deposite amount
@@ -215,6 +227,8 @@ export const createCustomer = async (req, res, next) => {
       branch,
       pgcode,
       bank_account: bank_account,
+      added_by:mongoid,
+      added_by_type:userType
     });
 
     //Send mail to customer
@@ -1065,7 +1079,7 @@ export const exportCustomersToExcel = async (req, res, next) => {
 
 export const verifyCustomer = async (req, res, next) => {
   try {
-    const { pgcode } = req;
+    const { pgcode, mongoid, userType } = req;
     const { customerId } = req.params;
     const { deposite_amount, rent_amount, payment_mode, bank_account } =
       req.body;
@@ -1132,6 +1146,8 @@ export const verifyCustomer = async (req, res, next) => {
       branch: customer.branch,
       pgcode,
       bank_account: bank_account,
+      added_by:mongoid,
+      added_by_type:userType
     });
 
     await customer.save();
