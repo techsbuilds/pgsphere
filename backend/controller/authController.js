@@ -345,12 +345,15 @@ export const verifyCustomerSignup = async (req, res, next) =>{
 
     if(!branchDetails) return res.status(404).json({message:"Branch is not found.",success:false})
 
+    const rooms = await ROOM.find({branch,pgcode})
+
     return res.status(200).json({message:"All details retrived successfully.",success:true, data:{
       branch:branchDetails,
       pgDetails:admin,
       pgcode,
       added_by:mongoid,
-      added_by_type:userType
+      added_by_type:userType,
+      rooms
     }})
 
    }catch(err){
