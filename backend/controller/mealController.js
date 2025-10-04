@@ -23,8 +23,6 @@ export const addMeal = async (req, res, next) => {
             branch = [branch]
         }
 
-        console.log("Acmanger-id:", mongoid)
-
         if (userType === 'Account') {
             const acmanager = await ACCOUNT.findById(mongoid)
 

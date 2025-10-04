@@ -1,3 +1,4 @@
+import mongoose from "mongoose"
 import ACCOUNT from "../models/ACCOUNT.js"
 import COMPLAINT from "../models/COMPLAINT.js"
 import CUSTOMER from "../models/CUSTOMER.js"
@@ -12,7 +13,7 @@ export const addComplaint = async (req, res, next) => {
             return res.status(400).json({ message: "Please Provided All Fields", success: false })
         }
 
-        const customer = await CUSTOMER.findOne({ _id: mongoid, pgcode })
+        const customer = await CUSTOMER.findById(mongoid)
 
         if (!customer) {
             return res.status(404).json({ message: "Sorry You Are Not Autherized to Add Complaints,", success: false })
@@ -42,7 +43,7 @@ export const getAllComplaintsbyBranch = async (req, res, next) => {
     try {
         const { pgcode, mongoid } = req
 
-        const customer = await CUSTOMER.findOne({ _id: mongoid, pgcode })
+        const customer = await CUSTOMER.findOne({ _id: mongoid })
 
         if (!customer) {
             return res.status(404).json({ message: "Customer Not Found.", success: false })
@@ -103,11 +104,21 @@ export const closeComplaints = async (req, res, next) => {
         const { com_id } = req.params
         const { userType, mongoid, pgcode } = req
 
-        const complaint = await COMPLAINT.findOne({ _id: com_id, pgcode, status: 'Open' })
+        const complaint = await COMPLAINT.findById(com_id)
 
         if (!complaint) {
+            return res.status(404).json({ message: "Complaint Not Found.", success: false })
+        }
+
+        if (complaint.pgcode !== pgcode) {
+            return res.status(400).json({ message: "You are Not Autherized to Close this Complaint", success: false })
+        }
+
+        if (complaint.status === "Close") {
             return res.status(200).json({ message: "Complaint Already Solved ", success: true })
         }
+
+
 
         const branch = complaint.branch
 
