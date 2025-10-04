@@ -10,13 +10,44 @@ const customerrentSchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'Customer'
     },
-    branch:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'Branch',
-
+    rent_amount:{
+        type:Number,        
+        required:true,
+        min:[0,'Rent amount cannot be negative']
     },
-    month:Number,
-    year:Number,
+    paid_amount:{
+        type:Number,
+        required:true,
+        min:[0,'Paid amount cannot be negative']
+    },
+    status:{
+        type:String,
+        enum:['Paid','Pending'],
+        default:'pending'
+    },
+    setteled:{
+        type:Boolean,
+        default:false
+    },
+    skipped:{
+        type:Boolean,
+        default:false
+    },
+    is_deposite:{
+        type:Boolean,
+        default:false
+    },
+    month:{
+        type:Number,
+        required:true,
+        min:1,
+        max:12
+    },
+    year:{
+        type:Number,
+        required:true,
+    },
+    extraChargeSchemas:[extraChargeSchema],
     
 },{timestamps:true})
 
