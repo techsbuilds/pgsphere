@@ -17,7 +17,7 @@ const complaintSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["Opne", "Close"],
+        enum: ["Open", "Close"],
         default: "Open",
         required: true
     },
