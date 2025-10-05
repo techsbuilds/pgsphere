@@ -30,9 +30,13 @@ export const addDailyUpdate = async (req, res, next) => {
 
 export const getAllDailyUpdatesbyBranch = async (req, res, next) => {
     try {
-        const { pgcode } = req
+        const { pgcode, mongoid, userType } = req
 
-        const customer = await CUSTOMER.findOne({ _id: mongoid, status: true })
+        if (userType !== 'Customer') {
+            return res.status(404).json({ message: "You are Not Autherized to Access this data" })
+        }
+
+        const customer = await CUSTOMER.findById(mongoid)
 
         if (!customer) {
             return res.status(404).json({ message: "Customer Not Found.", success: false })

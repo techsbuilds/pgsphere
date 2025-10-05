@@ -1,42 +1,52 @@
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
 import LOGINMAPPING from '../models/LOGINMAPPING.js'
+import CUSTOMER from '../models/CUSTOMER.js'
 
 dotenv.config()
 
 
-export const verifyToken = async (req, res, next) =>{
+export const verifyToken = async (req, res, next) => {
     const token = req.cookies.pgtoken
 
-    if(!token) return res.status(401).json({message:'Access denied. No token provided.',success:false})
+    if (!token) return res.status(401).json({ message: 'Access denied. No token provided.', success: false })
 
-    try{
+    try {
 
         const decoded = jwt.verify(token, process.env.JWT)
- 
+
         req.mongoid = decoded.mongoid
         req.userType = decoded.userType
         req.pgcode = decoded.pgcode;
 
-        if(req.userType === "Account"){
-            let isActiveAccount = await LOGINMAPPING.findOne({mongoid:req.mongoid, pgcode:req.pgcode, status:true}) 
+        if (req.userType === "Account") {
+            let isActiveAccount = await LOGINMAPPING.findOne({ mongoid: req.mongoid, pgcode: req.pgcode, status: true })
 
-            if(!isActiveAccount) return res.status(403).json({message:"Your account is not active.",success:false})
+            if (!isActiveAccount) return res.status(403).json({ message: "Your account is not active.", success: false })
+        }
+        if (userType === 'Customer') {
+            let customer = await CUSTOMER.findById(mongoid)
+
+            if(!customer){
+                return res.status(404).json({message:"Customer Not Fount.",success:false})
+            }
+
+            req.branch = customer.branch
         }
 
         next()
 
-    }catch(err){
-        return res.status(400).json({message:"Invalid token.",success:false})
+    } catch (err) {
+        return res.status(400).json({ message: "Invalid token.", success: false })
     }
-} 
+}
 
-export const verifyAdmin = async (req, res, next) =>{
+export const verifyAdmin = async (req, res, next) => {
     const userType = req.userType
 
-    if(userType && userType==='Admin'){
+    if (userType && userType === 'Admin') {
         next()
-    }else{
-        return res.status(400).json({message:"You are not Autherized to Perform this Task",success:false})
+    } else {
+        return res.status(400).json({ message: "You are not Autherized to Perform this Task", success: false })
     }
 }
