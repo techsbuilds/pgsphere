@@ -119,22 +119,23 @@ export const updateStatusByCustomer = async (req, res, next) => {
 export const getMealDetailsbyWeekly = async (req, res, next) => {
     try {
 
-        console.log("In Weekly-Meal details")
-
         const { pgcode, userType, mongoid } = req
         let { branch } = req.params
 
-        if (!branch) {
-            return res.status(400).json({ message: "Please Provide Branch !", success: false })
+        if (userType !== "Customer") {
+
+            if (!branch) {
+                return res.status(400).json({ message: "Please Provide Branch !", success: false })
+            }
+
+            if (!Array.isArray(branch)) {
+                branch = [branch]
+            }
         }
 
         let filter = {}
 
         filter.pgcode = pgcode
-
-        if (!Array.isArray(branch)) {
-            branch = [branch]
-        }
 
         const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
@@ -221,8 +222,16 @@ export const getMealDetailsbyDay = async (req, res, next) => {
         const { mongoid, userType, pgcode } = req
         const { date, branch } = req.params
 
-        if (!date || !branch) {
-            return res.status(400).json({ message: "Please Provide All Required Fields.", success: false })
+        if (!date) {
+            return res.status(400).json({ message: "Please Provide Date ", success: false })
+        }
+
+        if (userType !== "Customer") {
+
+            if (!branch) {
+                return res.status(400).json({ message: "please provide Branch.", success: false })
+            }
+
         }
 
         let filter = {}

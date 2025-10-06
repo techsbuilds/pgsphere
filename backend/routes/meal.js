@@ -5,8 +5,8 @@ import { addMeal, getMealDetailsbyWeekly, updateStatusByCustomer,getMealDetailsb
 const app = express.Router()
 
 app.post('/',verifyToken,addMeal)
-app.get('/weekly/:branch',verifyToken,getMealDetailsbyWeekly)
-app.get('/:date/:branch',verifyToken,getMealDetailsbyDay)
+app.get('/weekly/:branch?',verifyToken,getMealDetailsbyWeekly)
+app.get('/:date/:branch?',verifyToken,getMealDetailsbyDay)
 app.put('/',verifyToken,updateStatusByCustomer)
 
 export default app

@@ -24,14 +24,15 @@ export const verifyToken = async (req, res, next) => {
 
             if (!isActiveAccount) return res.status(403).json({ message: "Your account is not active.", success: false })
         }
-        if (userType === 'Customer') {
-            let customer = await CUSTOMER.findById(mongoid)
+        if (req.userType === 'Customer') {
+            let customer = await CUSTOMER.findById(req.mongoid)
 
             if(!customer){
                 return res.status(404).json({message:"Customer Not Fount.",success:false})
             }
 
             req.branch = customer.branch
+
         }
 
         next()
