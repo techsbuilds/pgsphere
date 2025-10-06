@@ -154,7 +154,7 @@ export const sendContactDetailstoEmail = async (data) => {
     return true;
 }
 
-export const sendCustomerWelcomeEmail = async (to, customerName, pgName, branchName, dashboard_url) => {
+export const sendCustomerWelcomeEmail = async (to, customerName, pgName, branchName, dashboard_url, pgcode) => {
     try {
         await sendEmail({
             to,
@@ -171,6 +171,12 @@ export const sendCustomerWelcomeEmail = async (to, customerName, pgName, branchN
                         <td style="padding:30px 20px;text-align:left;color:#333333;">
                             <p style="font-size:16px;">Hello ${customerName},</p>
                             <p style="font-size:16px;">We're thrilled to have you join us at ${pgName}, ${branchName} branch! We're committed to providing you with a comfortable and enjoyable living experience.</p>
+                            Dashboard credentials:  
+                            <div style="text-align:center;margin:20px 0;">
+                                <span style="display:inline-block;padding:12px 24px;background:#4f46e5;color:#ffffff;font-size:20px;border-radius:8px;font-weight:bold;">
+                                    ${pgcode}
+                                </span>
+                            </div>
                             <p style="font-size:16px;">You can access your customer dashboard by clicking the button below:</p>
                             <div style="text-align:center;margin:25px 0;">
                                 <a href="${dashboard_url}" style="background:#10b981;color:#ffffff;padding:12px 24px;text-decoration:none;font-size:16px;border-radius:8px;font-weight:bold;">

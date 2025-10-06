@@ -1,5 +1,5 @@
 import express from 'express'
-import { customerLogin, loginUser, genLink, logoutPortal, signUpCustomer, signupUser, validateToken, verifyOtp } from '../controller/authController.js'
+import { customerLogin, loginUser, genLink, logoutPortal, signUpCustomer, signupUser, validateToken, verifyOtp, verifyCustomerSignup } from '../controller/authController.js'
 import { aadharCardMulter } from '../middleware/upload.js'
 import { verifyToken } from '../middleware/verifyUser.js'
 
@@ -28,6 +28,10 @@ app.post('/customer/sign-in', customerLogin)
 
 //Genrate-Link
 app.get('/link/:branch',verifyToken,genLink)
+
+//For verify customer generate token
+app.get('/verify/customer/signup/:token', verifyCustomerSignup)
+
 
 // //get Branch-details
 // app.get('/:token',verifyCustomerRegister)
