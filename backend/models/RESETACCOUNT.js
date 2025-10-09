@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const ResetAccountSchema = new mongoose.Schema({
     bankaccount: {
         type: [mongoose.Schema.Types.ObjectId],
-        ref: 'BankAccount',
+        ref: 'Bankaccount',
         required: true
     },
     pgcode: {

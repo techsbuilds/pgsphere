@@ -24,6 +24,7 @@ import dailyUpdateRoute from './routes/dailyupdate.js'
 import floorRoute from './routes/floor.js'
 import mealRoute from './routes/meal.js'
 import complaintRoute from './routes/compliant.js'
+import scannerRoute from './routes/scanner.js'
 
 // Get the current file's path
 const __filename = fileURLToPath(import.meta.url);
@@ -126,6 +127,7 @@ app.use('/api/dailyupdate', dailyUpdateRoute)
 app.use('/api/floor', floorRoute)
 app.use('/api/meal',mealRoute)
 app.use('/api/complaint',complaintRoute)
+app.use('/api/scanner',scannerRoute)
 
  // Middleware to catch errors
  app.use((err, req, res, next) => {

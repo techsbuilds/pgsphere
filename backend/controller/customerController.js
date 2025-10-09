@@ -94,28 +94,28 @@ export const createCustomer = async (req, res, next) => {
     if (userType === "Account") {
       const account = await ACCOUNT.findById(mongoid);
 
-      if (!account){
-        if(req.file){
+      if (!account) {
+        if (req.file) {
           await removeFile(path.join("uploads", "aadhar", req.file.filename));
         }
         return res
-        .status(404)
-        .json({ message: "Account manager is not found.", success: false });
+          .status(404)
+          .json({ message: "Account manager is not found.", success: false });
       }
-        
 
-      if (!account.branch.includes(branch)){
-        if(req.file){
+
+      if (!account.branch.includes(branch)) {
+        if (req.file) {
           await removeFile(path.join("uploads", "aadhar", req.file.filename));
         }
         return res
-        .status(403)
-        .json({
-          message: "You are not authorized to add customer in this branch.",
-          success: false,
-        });
+          .status(403)
+          .json({
+            message: "You are not authorized to add customer in this branch.",
+            success: false,
+          });
       }
-        
+
     }
 
     const existCustomer = await CUSTOMER.findOne({ mobile_no, email });
@@ -186,7 +186,7 @@ export const createCustomer = async (req, res, next) => {
       ref_person_name,
       added_by: mongoid,
       added_by_type: userType,
-      aadharcard_url:imageUrl
+      aadharcard_url: imageUrl
     });
 
     const newLogin = await LOGINMAPPING({
@@ -227,8 +227,8 @@ export const createCustomer = async (req, res, next) => {
       branch,
       pgcode,
       bank_account: bank_account,
-      added_by:mongoid,
-      added_by_type:userType
+      added_by: mongoid,
+      added_by_type: userType
     });
 
     //Send mail to customer
@@ -959,23 +959,23 @@ export const getPendingCustomerRentList = async (req, res, next) => {
     const result = [];
 
     for (const customer of customers) {
-      const pendingRents = await CUSTOMERRENT.find({customer:customer._id, status:'Pending'})
+      const pendingRents = await CUSTOMERRENT.find({ customer: customer._id, status: 'Pending' })
 
-      const pendingRentMap = [] 
+      const pendingRentMap = []
 
-      for(const customerRent of pendingRents){
+      for (const customerRent of pendingRents) {
         const isRequired = !(customerRent.month === (new Date().getMonth() + 1) && customerRent.year === new Date().getFullYear())
         pendingRentMap.push({
-          month:customerRent.month,
-          year:customerRent.year,
-          pending:customerRent.rent_amount - customerRent.paid_amount,
-          required:isRequired
+          month: customerRent.month,
+          year: customerRent.year,
+          pending: customerRent.rent_amount - customerRent.paid_amount,
+          required: isRequired
         })
       }
 
-      if(pendingRentMap.length > 0){
+      if (pendingRentMap.length > 0) {
         result.push({
-          customerId:customer._id,
+          customerId: customer._id,
           customer_name: customer.customer_name,
           branch: customer.branch,
           room: customer.room,
@@ -1146,8 +1146,8 @@ export const verifyCustomer = async (req, res, next) => {
       branch: customer.branch,
       pgcode,
       bank_account: bank_account,
-      added_by:mongoid,
-      added_by_type:userType
+      added_by: mongoid,
+      added_by_type: userType
     });
 
     await customer.save();
@@ -1163,3 +1163,33 @@ export const verifyCustomer = async (req, res, next) => {
     next(err);
   }
 };
+
+export const getCustomerDetailsForCustomer = async (req, res, next) => {
+  try {
+
+    const { userType, mongoid } = req
+
+    if (userType !== 'Customer') {
+      return res.status(403).json({ message: "You are not Autherized to access This Data.", success: false })
+    }
+
+    // find Customer
+    const customer = await CUSTOMER.findById(mongoid)
+      .populate('branch')
+      .populate({
+        path: 'room',
+        populate: {
+          path: 'floor_id'
+        }
+      }).lean()
+
+    if (!customer) {
+      return res.status(404).json({ message: "Customer Not Found.", success: false })
+    }
+
+    return res.status(200).json({ message: "Customer Data Recieved Successfully", data: customer, success: true })
+
+  } catch (error) {
+    next(error)
+  }
+}
