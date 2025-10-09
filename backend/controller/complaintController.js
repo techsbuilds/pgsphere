@@ -43,7 +43,7 @@ export const getAllComplaintsbyBranch = async (req, res, next) => {
     try {
         const { pgcode, mongoid } = req
 
-        const customer = await CUSTOMER.findOne({ _id: mongoid })
+        const customer = await CUSTOMER.findById(mongoid)
 
         if (!customer) {
             return res.status(404).json({ message: "Customer Not Found.", success: false })
@@ -117,8 +117,6 @@ export const closeComplaints = async (req, res, next) => {
         if (complaint.status === "Close") {
             return res.status(200).json({ message: "Complaint Already Solved ", success: true })
         }
-
-
 
         const branch = complaint.branch
 

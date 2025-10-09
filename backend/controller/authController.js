@@ -279,7 +279,7 @@ export const customerLogin = async (req, res, next) => {
 
     if (!isPasswordMatched) return res.status(401).json({ message: "Password is incorrect.", success: false })
 
-    const token = jwt.sign({ mongoid: user.mongoid, userType: user.userType, pgcode: user.pgcode }, process.env.JWT, { expiresIn: '30d' })
+    const token = jwt.sign({ mongoid: user.mongoid, userType: user.userType, pgcode: user.pgcode , branch:user.branch }, process.env.JWT, { expiresIn: '30d' })
 
     res.cookie('pgtoken', token, {
       expires: new Date(Date.now() + 2592000000),
