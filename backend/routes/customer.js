@@ -1,6 +1,6 @@
 import express from 'express'
 import { verifyToken } from '../middleware/verifyUser.js'
-import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, getPendingCustomerRentList, updateCustomerDetails, exportCustomersToExcel, verifyCustomer } from '../controller/customerController.js'
+import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, getCustomerDetailsForCustomer, getPendingCustomerRentList, updateCustomerDetails, exportCustomersToExcel, verifyCustomer, updateCustomerByCustomer } from '../controller/customerController.js'
 import { aadharCardMulter } from '../middleware/upload.js'
 
 const app = express.Router()
@@ -9,7 +9,7 @@ const app = express.Router()
 app.post('/', verifyToken, aadharCardMulter, createCustomer)
 
 //For get all customer
-app.get('/',verifyToken, getAllCustomer)
+app.get('/', verifyToken, getAllCustomer)
 
 //For get customer by room id
 app.get('/room/:roomId', verifyToken, getCustomerByRoomId)
@@ -17,8 +17,8 @@ app.get('/room/:roomId', verifyToken, getCustomerByRoomId)
 //For get customer by branch id
 app.get('/branch/:branchId', verifyToken, getCustomerByBranchId)
 
-//For update customer details
-app.put('/:customerId', verifyToken, updateCustomerDetails)
+//For get customer by customer
+app.get('/me', verifyToken, getCustomerDetailsForCustomer)
 
 //For change customer status
 app.put('/status/:customerId', verifyToken, changeStatus)
@@ -32,4 +32,9 @@ app.get('/export/excel', verifyToken, exportCustomersToExcel)
 //For verify customer details
 app.post('/verify-customer/:customerId', verifyToken, verifyCustomer)
 
+//For update customer details by customer
+app.put('/me', verifyToken, updateCustomerByCustomer)
+
+//For update customer details
+app.put('/:customerId', verifyToken, updateCustomerDetails)
 export default app
