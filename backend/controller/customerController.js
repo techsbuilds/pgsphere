@@ -1233,7 +1233,7 @@ export const updateCustomerByCustomer = async (req, res, next) => {
       customer.customer_name = name
     }
 
-    if (mobile) {
+    if (mobile && mobile !== customer.mobile_no) {
       const existCustomer = await CUSTOMER.findOne({ mobile_no: mobile, _id: { $ne: mongoid }  }).session(session)
 
       if (existCustomer) {
@@ -1247,7 +1247,7 @@ export const updateCustomerByCustomer = async (req, res, next) => {
       customer.mobile_no = mobile
     }
 
-    if (email) {
+    if (email && email !== customer.email) {
       const customerLogin = await LOGINMAPPING.findOne({mongoid, pgcode}).session(session)
       
       const existCustomer = await CUSTOMER.findOne({ email: email, _id: { $ne: mongoid } }).session(session)
