@@ -1234,7 +1234,7 @@ export const updateCustomerByCustomer = async (req, res, next) => {
     }
 
     if (mobile) {
-      const existCustomer = await CUSTOMER.findOne({ mobile_no: mobile }).session(session)
+      const existCustomer = await CUSTOMER.findOne({ mobile_no: mobile, _id: { $ne: mongoid }  }).session(session)
 
       if (existCustomer) {
 
@@ -1248,21 +1248,14 @@ export const updateCustomerByCustomer = async (req, res, next) => {
     }
 
     if (email) {
-      const existLogin = await LOGINMAPPING.findOne({ email, pgcode }).session(session)
+      const customerLogin = await LOGINMAPPING.findOne({mongoid, pgcode}).session(session)
+      
+      const existCustomer = await CUSTOMER.findOne({ email: email, _id: { $ne: mongoid } }).session(session)
 
-      const customerLogin = await LOGINMAPPING.findOne({ mongoid, pgcode }).session(session)
-
-      if (!customerLogin) {
-
+      if (!existCustomer) {
         await session.abortTransaction();
         session.endSession();
-        return res.status(404).json({ message: "Customer Login Details Not Found.", success: false })
-      }
-
-      if (existLogin) {
-        await session.abortTransaction();
-        session.endSession();
-        return res.status(409).json({ message: "Customer already exists with same email.", success: false })
+        return res.status(409).json({ message: "Customer already exists with same mobile no.", success: false })
       }
 
       customerLogin.email = email
