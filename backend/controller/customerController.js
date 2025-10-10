@@ -761,10 +761,7 @@ export const changeStatus = async (req, res, next) => {
     const desiredStatus = status;
 
     // ensure the customer belongs to this PG
-    const customer = await CUSTOMER.findOne({
-      _id: customerId,
-      pgcode,
-    }).session(session);
+    const customer = await CUSTOMER.findById(customerId).session(session);
     if (!customer) {
       await session.abortTransaction();
       session.endSession();
@@ -1190,6 +1187,100 @@ export const getCustomerDetailsForCustomer = async (req, res, next) => {
     return res.status(200).json({ message: "Customer Data Recieved Successfully", data: customer, success: true })
 
   } catch (error) {
+    next(error)
+  }
+}
+
+export const updateCustomerByCustomer = async (req, res, next) => {
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    let { name, email, mobile } = req.body
+    const { userType, mongoid, pgcode } = req
+
+    if (userType !== 'Customer') {
+
+      await session.abortTransaction();
+      session.endSession();
+
+      return res.status(403).json({ message: "You are not Autherized to access This Data.", success: false })
+    }
+
+    let customer = await CUSTOMER.findById(mongoid).session(session)
+
+    if (!customer) {
+
+      await session.abortTransaction();
+      session.endSession();
+
+      return res.status(404).json({ message: "Customer Not Found.", success: false })
+    }
+
+    if (name) {
+
+      const existCustomer = await CUSTOMER.findOne({ customer_name: name }).session(session)
+
+      if (existCustomer) {
+
+        await session.abortTransaction();
+        session.endSession();
+
+        return res.status(409).json({ message: "Customer already exists with same name.", success: false })
+      }
+
+      customer.customer_name = name
+    }
+
+    if (mobile) {
+      const existCustomer = await CUSTOMER.findOne({ mobile_no: mobile }).session(session)
+
+      if (existCustomer) {
+
+        await session.abortTransaction();
+        session.endSession();
+
+        return res.status(409).json({ message: "Customer already exists with same mobile no.", success: false })
+      }
+
+      customer.mobile_no = mobile
+    }
+
+    if (email) {
+      const existLogin = await LOGINMAPPING.findOne({ email, pgcode }).session(session)
+
+      const customerLogin = await LOGINMAPPING.findOne({ mongoid, pgcode }).session(session)
+
+      if (!customerLogin) {
+
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(404).json({ message: "Customer Login Details Not Found.", success: false })
+      }
+
+      if (existLogin) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(409).json({ message: "Customer already exists with same email.", success: false })
+      }
+
+      customerLogin.email = email
+      await customerLogin.save({ session })
+      customer.email = email
+    }
+
+
+    await customer.save({ session })
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return res.status(200).json({ message: "Customer Details Update Successfully by Customer.", success: true })
+
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     next(error)
   }
 }
