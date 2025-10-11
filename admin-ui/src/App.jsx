@@ -28,6 +28,7 @@ import MonthlyBill from './pages/admin/MonthlyBill';
 import CashOut from './pages/admin/CashOut';
 import Transaction from './pages/admin/Transaction';
 import Profile from './pages/admin/Profile';
+import RentPreview from './pages/admin/RentPreview';
 
 //Import Account components
 import AccountLayout from './layouts/AccountLayout';
@@ -65,6 +66,7 @@ function App() {
             <Route path='accountmanagers' element={<Accountmanager></Accountmanager>}></Route>
             <Route path='branches/room/preview' element={<RoomPreview></RoomPreview>}></Route>
             <Route path='rents' element={<CustomerRent></CustomerRent>}></Route>
+            <Route path='rent-preview' element={<RentPreview></RentPreview>}></Route>
             <Route path='salary' element={<EmployeeSalary></EmployeeSalary>}></Route>
             <Route path='inventory' element={<Inventory></Inventory>}></Route>
             <Route path='monthlybill' element={<MonthlyBill></MonthlyBill>}></Route>

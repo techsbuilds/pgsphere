@@ -17,6 +17,7 @@ const rentAttemptSchema = new mongoose.Schema({
     rent_amount:{
         type:Number,        
         required:true,
+        default:0,
         min:[0,'Rent amount cannot be negative']
     },
     other_charges:{

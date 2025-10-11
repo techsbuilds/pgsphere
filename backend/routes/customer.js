@@ -1,6 +1,6 @@
 import express from 'express'
 import { verifyToken } from '../middleware/verifyUser.js'
-import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, getPendingCustomerRentList, updateCustomerDetails, exportCustomersToExcel, verifyCustomer } from '../controller/customerController.js'
+import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, getPendingCustomerRentList, updateCustomerDetails, exportCustomersToExcel, verifyCustomer, getCustomerPendingRentListById } from '../controller/customerController.js'
 import { aadharCardMulter } from '../middleware/upload.js'
 
 const app = express.Router()
@@ -31,5 +31,8 @@ app.get('/export/excel', verifyToken, exportCustomersToExcel)
 
 //For verify customer details
 app.post('/verify-customer/:customerId', verifyToken, verifyCustomer)
+
+//For get pending customer rent list by id
+app.get('/pending-rent/:customerId', verifyToken, getCustomerPendingRentListById)
 
 export default app
