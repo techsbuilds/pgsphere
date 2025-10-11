@@ -43,7 +43,7 @@ export const getAllComplaintsbyBranch = async (req, res, next) => {
     try {
         const { pgcode, mongoid } = req
 
-        const customer = await CUSTOMER.findOne({ _id: mongoid })
+        const customer = await CUSTOMER.findById(mongoid)
 
         if (!customer) {
             return res.status(404).json({ message: "Customer Not Found.", success: false })
@@ -78,6 +78,9 @@ export const getAllComplaints = async (req, res, next) => {
             const branches = acmanager.branch
 
             if (branch) {
+                if (!branches.includes(branch)) {
+                    return res.status(403).json({ message: "You are not Autherized to access this Data.", success: false })
+                }
                 filter.branch = branch
             } else {
                 filter.branch = { $in: branches }
@@ -117,8 +120,6 @@ export const closeComplaints = async (req, res, next) => {
         if (complaint.status === "Close") {
             return res.status(200).json({ message: "Complaint Already Solved ", success: true })
         }
-
-
 
         const branch = complaint.branch
 

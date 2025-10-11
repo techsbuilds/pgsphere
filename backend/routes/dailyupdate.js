@@ -10,6 +10,6 @@ app.post('/',verifyToken,addDailyUpdate);
 app.get('/',verifyToken,getAllDailyUpdate)
 
 //For Customer get Details
-app.get('/:branch',verifyToken,getAllDailyUpdatesbyBranch)
+app.get('/customer',verifyToken,getAllDailyUpdatesbyBranch)
 
 export default app;

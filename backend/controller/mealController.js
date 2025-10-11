@@ -2,7 +2,7 @@ import ACCOUNT from "../models/ACCOUNT.js"
 import BRANCH from "../models/BRANCH.js"
 import CUSTOMER from "../models/CUSTOMER.js"
 import MEAL from "../models/MEAL.js"
-
+import moment from "moment/moment.js"
 
 export const addMeal = async (req, res, next) => {
     try {
@@ -61,7 +61,7 @@ export const addMeal = async (req, res, next) => {
 export const updateStatusByCustomer = async (req, res, next) => {
     try {
         const { mongoid, pgcode, userType } = req
-        const { date, type } = req.body
+        let { date, type } = req.body
 
         if (userType === 'Customer') {
             const customer = await CUSTOMER.findById(mongoid)
@@ -69,15 +69,39 @@ export const updateStatusByCustomer = async (req, res, next) => {
             if (!customer) {
                 return res.status(400).json({ message: "You are Not Autherized to Chnage Meal Status", success: false })
             }
+
+            if (!date) {
+                date = moment().format("YYYY-MM-DD");
+            } else {
+                // Try parsing in multiple formats
+                const parsedDate = moment(date, ["YYYY-MM-DD", "DD-MM-YYYY", "DD/MM/YYYY", "MM-DD-YYYY", "MM/DD/YYYY"], true);
+
+                if (parsedDate.isValid()) {
+                    // Convert to standard format
+                    date = parsedDate.format("YYYY-MM-DD");
+                } else {
+                    // If invalid, fallback to today
+                    date = moment().format("YYYY-MM-DD");
+                }
+            }
+
+
             const branch = customer.branch
 
-            const mealDetails = await MEAL.findOne({ pgcode, branch, date,"meals.type": type })
+            let mealDetails = await MEAL.findOne({ pgcode, branch, date, "meals.type": type })
 
             if (!mealDetails) {
                 return res.status(404).json({ message: "Meal Not Found !", success: false })
             }
 
-            mealDetails.meals.cancelled.push(mongoid)
+            const mealObj = mealDetails.meals.find(m => m.type === type);
+            if (!mealObj) {
+                return res.status(404).json({ message: "Meal Type Not Found!", success: false });
+            }
+
+            if (!mealObj.cancelled.includes(mongoid)) {
+                mealObj.cancelled.push(mongoid);
+            }
 
             mealDetails.save()
 
@@ -95,22 +119,23 @@ export const updateStatusByCustomer = async (req, res, next) => {
 export const getMealDetailsbyWeekly = async (req, res, next) => {
     try {
 
-        console.log("In Weekly-Meal details")
-
         const { pgcode, userType, mongoid } = req
         let { branch } = req.params
 
-        if (!branch) {
-            return res.status(400).json({ message: "Please Provide Branch !", success: false })
+        if (userType !== "Customer") {
+
+            if (!branch) {
+                return res.status(400).json({ message: "Please Provide Branch !", success: false })
+            }
+
+            if (!Array.isArray(branch)) {
+                branch = [branch]
+            }
         }
 
         let filter = {}
 
         filter.pgcode = pgcode
-
-        if (!Array.isArray(branch)) {
-            branch = [branch]
-        }
 
         const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
@@ -145,7 +170,7 @@ export const getMealDetailsbyWeekly = async (req, res, next) => {
 
         }
         if (userType === 'Customer') {
-           const customer = await CUSTOMER.findById(mongoid)
+            const customer = await CUSTOMER.findById(mongoid)
 
             if (!customer) {
                 return res.status(404).json({ message: "Customer Not Found !", success: false })
@@ -197,19 +222,38 @@ export const getMealDetailsbyDay = async (req, res, next) => {
         const { mongoid, userType, pgcode } = req
         const { date, branch } = req.params
 
-        if (!date || !branch) {
-            return res.status(400).json({ message: "Please Provide All Required Fields.", success: false })
+        if (!date) {
+            return res.status(400).json({ message: "Please Provide Date ", success: false })
+        }
+
+        if (userType !== "Customer") {
+
+            if (!branch) {
+                return res.status(400).json({ message: "please provide Branch.", success: false })
+            }
+
         }
 
         let filter = {}
         filter.pgcode = pgcode
 
-        const parsedDate = new Date(date.split("-").reverse().join("-"));
+        if (!date) {
+            filter.date = moment().format("YYYY-MM-DD");
+        } else {
+            // Try parsing in multiple formats
+            const parsedDate = moment(date, ["YYYY-MM-DD", "DD-MM-YYYY", "DD/MM/YYYY", "MM-DD-YYYY", "MM/DD/YYYY"], true);
 
-        filter.date = parsedDate
+            if (parsedDate.isValid()) {
+                // Convert to standard format
+                filter.date = parsedDate.format("YYYY-MM-DD");
+            } else {
+                // If invalid, fallback to today
+                filter.date = moment().format("YYYY-MM-DD");
+            }
+        }
 
         if (userType === 'Customer') {
-            const customer = await CUSTOMER.findOne({ _id: mongoid,status: true })
+            const customer = await CUSTOMER.findById(mongoid)
 
             if (!customer) {
                 return res.status(404).json({ message: "Customer Not Found !", success: false })
@@ -226,7 +270,7 @@ export const getMealDetailsbyDay = async (req, res, next) => {
             }
 
             if (!acmanager.branch.includes(branch)) {
-                return res.status(400).json({ message: "You are Not Autherized to view Meal in This Branch",success:false })
+                return res.status(400).json({ message: "You are Not Autherized to view Meal in This Branch", success: false })
             }
 
             filter.branch = branch
