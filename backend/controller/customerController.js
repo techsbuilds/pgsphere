@@ -912,9 +912,25 @@ export const getPendingCustomerRentList = async (req, res, next) => {
   try {
     const { pgcode, userType, mongoid } = req;
     const { searchQuery, branch } = req.query;
+
+    const activeCustomerMappings = await LOGINMAPPING.find({
+       pgcode,
+       status:'active',
+       userType:'Customer'
+    }).select("mongoid")
+
+    const customerIds = activeCustomerMappings.map(mapping => mapping.mongoid);
+
+    if(!customerIds.length){
+      return res.status(200).json({
+        message:'No active customer found for this pg.',
+        success:true,
+        data:[]
+      })
+    }
+
     let filter = {
-      pgcode,
-      status: true,
+      _id: {$in: customerIds}
     };
 
     if (searchQuery) {
@@ -942,11 +958,13 @@ export const getPendingCustomerRentList = async (req, res, next) => {
       } else {
         filter.branch = { $in: account.branch };
       }
-    } else {
+    } else if(userType === 'Admin'){ 
       // For other user types, apply branch filter if provided
       if (branch) {
         filter.branch = branch;
       }
+    } else {
+      return res.status(403).json({message:'You are not authorized to view this resource.', success:false})
     }
 
     const customers = await CUSTOMER.find(filter)
@@ -960,8 +978,11 @@ export const getPendingCustomerRentList = async (req, res, next) => {
 
       const pendingRentMap = []
 
-      for (const customerRent of pendingRents) {
+      let pendingAmount = 0
+
+      for(const customerRent of pendingRents){
         const isRequired = !(customerRent.month === (new Date().getMonth() + 1) && customerRent.year === new Date().getFullYear())
+        pendingAmount += (customerRent.rent_amount - customerRent.paid_amount)
         pendingRentMap.push({
           month: customerRent.month,
           year: customerRent.year,
@@ -978,6 +999,7 @@ export const getPendingCustomerRentList = async (req, res, next) => {
           room: customer.room,
           mobile_no: customer.mobile_no,
           rent_amount: customer.rent_amount,
+          pending_amount: pendingAmount,
           pending_rent: pendingRentMap
         })
       }
@@ -1160,6 +1182,90 @@ export const verifyCustomer = async (req, res, next) => {
     next(err);
   }
 };
+
+export const getCustomerPendingRentListById = async (req, res, next) =>{
+  try{
+    const {pgcode, userType, mongoid} = req 
+    const {customerId} = req.params 
+
+    const customer = await CUSTOMER.findById(customerId)
+    .populate('branch')
+    .populate('room')
+
+    if(!customer) return res.status(404).json({message:"Customer not found.",success:false})
+
+    if(userType === 'Account'){
+      const account = await ACCOUNT.findById(mongoid)
+
+      if(!account) return res.status(404).json({message:"Account manager not found.",success:false})
+
+      if(!account.branch.includes(customer.branch.toString())){
+        return res.status(403).json({message:"You are not authorized to view customers in this branch.",success:false})
+      }
+    }
+
+    //Getting pending customer rent list 
+    const pendingRents = await CUSTOMERRENT.find({customer:customer._id, status:'Pending'})
+    
+    const pendingRentMap = [] 
+
+    for(const customerRent of pendingRents){
+      const isRequired = !(customerRent.month === (new Date().getMonth() + 1) && customerRent.year === new Date().getFullYear())
+      pendingRentMap.push({
+        month:customerRent.month,
+        year:customerRent.year,
+        pending:customerRent.rent_amount - customerRent.paid_amount,
+        required:isRequired,
+        rent_amount:customerRent.rent_amount,
+        extra_charges:customerRent.extraChargeSchemas
+      })
+    }
+
+    //Getting customer request 
+    const transactions = await TRANSACTION.find({
+      transactionType:'income',
+      type:'rent_attempt',
+      refModel:'Rentattempt',
+      pgcode,
+      added_by_type:'Customer',
+      branch:customer.branch
+    }).populate({
+      path:'refId',
+      model:'Rentattempt',
+      match:{customer: customer._id}
+    })
+
+    const customerRequest = [] 
+
+    for(const tx of transactions){
+       const entry = tx.refId 
+
+       if(!entry) continue;
+
+       customerRequest.push({
+         amount:entry.amount,
+         payment_proof:entry.payment_proof,
+         month:entry.month,
+         year:entry.year,
+         status:tx.status,
+       })
+    }
+
+    return res.status(200).json({message:"Customer pending rent list details fetched successfully.", success:true, data:{
+      customerId:customerId,
+      customer_name:customer.customer_name,
+      branch:customer.branch,
+      room:customer.room,
+      mobile_no:customer.mobile_no,
+      pendingRentMap,
+      customerRequest
+    }})
+
+
+  }catch(err){
+    next(err)
+  }
+}
 
 export const getCustomerDetailsForCustomer = async (req, res, next) => {
   try {

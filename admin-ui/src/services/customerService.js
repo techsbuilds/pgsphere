@@ -84,3 +84,15 @@ export const getCustomerPendingRents = async (searchQuery="", branch="") =>{
         throw new Error(errMessage)
     }
 }
+
+//For get customer pending rent by id 
+export const getCustomerPendingRentById = async (customerId) =>{
+    try{
+        const response = await api.get(`/customer/pending-rent/${customerId}`)
+        return response.data.data
+    }catch(err){
+        console.log(err)
+        const errMessage = err?.response?.data?.message || "Something went wrong."
+        throw new Error(errMessage)
+    }
+}

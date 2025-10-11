@@ -23,6 +23,7 @@ export const useCustomerRentTable = (handleOpenForm) =>{
         try{
            setLoading(true)
            const data = await getCustomerPendingRents(searchQuery, branch)
+           console.log(data)
            setRows(data)
         }catch(err){
             console.log(err)
@@ -107,6 +108,19 @@ export const useCustomerRentTable = (handleOpenForm) =>{
                 </div>
               </div>
             ),
+          },
+          {
+            headerName: 'Pending Amount',
+            field: 'pending_amount',
+            minWidth: 200,
+            flex: 1,
+            cellRenderer: (params) => (
+              <div className="flex items-center w-full h-full">
+                <div className="flex items-center gap-2">
+                 <span>₹{params.value}</span>
+                </div>
+              </div>
+            )
           },
           {
             headerName: 'Months',

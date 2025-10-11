@@ -18,6 +18,7 @@ const customerrentSchema = new mongoose.Schema({
     paid_amount:{
         type:Number,
         required:true,
+        default:0,
         min:[0,'Paid amount cannot be negative']
     },
     status:{
