@@ -97,8 +97,8 @@ function Breadcrumb({
           </div>
         );
 
-      case "/account/customers":
-      case "/admin/customers":
+      case "/account/customers/clist":
+      case "/admin/customers/clist":
         return (
           <>
             {/* Title Row */}
@@ -172,8 +172,8 @@ function Breadcrumb({
           </>
         );
 
-      case "/admin/employees":
-      case "/account/employees":
+      case "/admin/employees/elist":
+      case "/account/employees/elist":
         return (
           <>
             {/* Title Row */}
@@ -323,8 +323,8 @@ function Breadcrumb({
           </>
         );
 
-      case "/admin/rents":
-      case "/account/rents":
+      case "/admin/customers/rents":
+      case "/account/customers/rents":
         return (
           <>
             {/* Title Row */}
@@ -395,8 +395,8 @@ function Breadcrumb({
           </div>
         );
 
-      case "/admin/salary":
-      case "/account/salary":
+      case "/admin/employees/salary":
+      case "/account/employees/salary":
         return (
           <>
             {/* Title Row */}

@@ -1,187 +1,231 @@
-import React from 'react'
-import { Link, useLocation } from 'react-router-dom';
-
-//Importing icon
-import { House, User, X } from 'lucide-react';
-import { LayoutDashboard } from 'lucide-react';
-import { Building2 } from 'lucide-react';
-import { Users } from 'lucide-react';
-import { IdCardLanyard } from 'lucide-react';
-import { ShieldUser } from 'lucide-react';
-import { Coins } from 'lucide-react';
-import { Wallet } from 'lucide-react';
-import { Box } from 'lucide-react';
-import { BookText } from 'lucide-react';
-import { HandCoins } from 'lucide-react';
-import { ArrowLeftRight } from 'lucide-react';
-
-//Importing images
-import LOGO from '../assets/logo1.png'
-
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Building2,
+  Users,
+  IdCardLanyard,
+  ShieldUser,
+  Coins,
+  Wallet,
+  Box,
+  BookText,
+  HandCoins,
+  ArrowLeftRight,
+  ChevronDown,
+  ChevronRight,
+  Settings,
+  QrCode,
+  X
+} from "lucide-react";
+import LOGO from "../assets/logo1.png";
 
 const adminRoutes = [
-    {
-      label:'Dashboard',
-      icon:LayoutDashboard,
-      link:'/admin'
-    },
-    {
-      label:'Branches',
-      icon:Building2,
-      link:'/admin/branches'
-    },
-    {
-      label:'Customers',
-      icon:Users,
-      link:'/admin/customers'
-    },
-    {
-      label:'Employees',
-      icon:IdCardLanyard,
-      link:'/admin/employees'
-    },
-    {
-      label:'Account Managers',
-      icon:ShieldUser,
-      link:'/admin/accountmanagers'
-    },
-    {
-      label:'Rents',
-      icon:Coins,
-      link:'/admin/rents'
-    },
-    {
-      label:'Salary',
-      icon:Wallet,
-      link:'/admin/salary'
-    },
-    {
-      label:'Inventory',
-      icon:Box,
-      link:'/admin/inventory'
-    },
-    {
-      label:'Monthly Bills',
-      icon:BookText,
-      link:'/admin/monthlybill'
-    },
-    {
-      label:'Cashout',
-      icon:HandCoins,
-      link:'/admin/cashout'
-    },
-    {
-      label:'Transactions',
-      icon:ArrowLeftRight,
-      link:'/admin/transactions'
-    }
-]
-
-let accountRoutes = [
   {
     label: "Dashboard",
     icon: LayoutDashboard,
-    link: "/account",
+    link: "/admin",
   },
   {
     label: "Branches",
     icon: Building2,
-    link: "/account/branches",
+    link: "/admin/branches",
   },
   {
     label: "Customers",
     icon: Users,
-    link: "/account/customers",
+    children: [
+      { label: "Customers", link: "/admin/customers/clist" },
+      { label: "Rents", link: "/admin/customers/rents" },
+      { label: "Meals", link: "/admin/customers/meals" },
+      { label: "Complaints", link: "/admin/customers/complaints" },
+      { label: "Daily Update", link: "/admin/customers/dailyupdate" },
+    ],
   },
   {
     label: "Employees",
     icon: IdCardLanyard,
-    link: "/account/employees",
+    children: [
+      { label: "Employees", link: "/admin/employees/elist" },
+      { label: "Salary", link: "/admin/employees/salary" },
+    ],
   },
   {
-    label: "Rents",
-    icon: Coins,
-    link: "/account/rents",
-  },
-  {
-    label: "Salary",
-    icon: Wallet,
-    link: "/account/salary",
+    label: "Account Managers",
+    icon: ShieldUser,
+    link: "/admin/accountmanagers",
   },
   {
     label: "Inventory",
     icon: Box,
-    link: "/account/inventory",
+    link: "/admin/inventory",
   },
   {
     label: "Monthly Bills",
     icon: BookText,
-    link: "/account/monthlybill",
+    link: "/admin/monthlybill",
+  },
+  {
+    label: "Cashout",
+    icon: HandCoins,
+    link: "/admin/cashout",
+  },
+  {
+    label: "Scanner",
+    icon: QrCode,
+    link: "/admin/scanner",
   },
   {
     label: "Transactions",
     icon: ArrowLeftRight,
-    link: "/account/transactions",
+    link: "/admin/transactions",
+  },
+  {
+    label: "Settings",
+    icon: Settings,
+    link: "/admin/settings",
   },
 ];
 
-function SideBar({showSideBar, setShowSideBar, type}) {
-  const location = useLocation()
+function SideBar({ showSideBar, setShowSideBar, type }) {
+  const location = useLocation();
+  const [openSubmenu, setOpenSubmenu] = useState(null);
 
-  const isActive = (label) =>{
-     if((location.pathname==='/admin' || location.pathname==='/account') && label==='Dashboard') return true
-     if(location.pathname.includes(label.toLowerCase())) return true
-     if(location.pathname.includes("accountmanagers") && label === "Account Managers") return true
-     if(location.pathname.includes('monthlybill') && label === "Monthly Bills") return true
+  const toggleSubmenu = (label) => {
+    setOpenSubmenu((prev) => (prev === label ? null : label));
+  };
 
-     return false
+  const isActive = (label, link, children) => {
+    if(location.pathname === link) return true
+    
+    // Check if any child route is active
+    if(children) {
+      return children.some(child => location.pathname === child.link)
+    }
 
-  }
+    return false
+  };
 
   const handleLinkClick = () => {
-    // Close sidebar on mobile when a link is clicked
     if (window.innerWidth < 768) {
-      setShowSideBar(false)
+      setShowSideBar(false);
     }
-  }
+  };
 
-  let routes = type === 'account' ? accountRoutes : adminRoutes
+  const routes = adminRoutes; // if you want accountRoutes also, you can switch based on `type`
 
   return (
-    <div className={`w-64 bg-[#202947] border-r border-neutral-200 fixed top-0 ${showSideBar ? "left-0" : "-left-64"} bottom-0 z-20 transition-transform duration-300 ease-in-out`}>
-       {/* Logo */}
-       <div className='h-16 relative w-full flex border-b border-[#383e59] justify-start items-center p-4'>
-         <div className='flex items-center gap-4'>
-           <div className='flex rounded-2xl bg-white justify-center items-center'>
-             <img className='w-12 h-12' src={LOGO}></img>
-           </div>
-           <h1 className='text-white text-xl font-semibold'>Pgsphere</h1>
-         </div>
-         <button 
-           onClick={() => setShowSideBar(false)}
-           className='p-1 right-1 absolute hover:bg-gray-100 rounded-md'
-         >
-           <X size={20} className='text-gray-500'></X>
-         </button>
-       </div>
-       {/* Links */}
-       <div className='flex flex-col p-6 gap-4'>
-          {
-            routes.map(({link, label, icon:Icon}, index) => (
-              <Link 
-                key={index} 
-                to={link} 
-                onClick={handleLinkClick}
-                className={`group flex p-2 px-4 items-center hover:bg-white gap-2 ${isActive(label) && "bg-white"} rounded-full`}
+    <div
+      className={`w-64 bg-[#202947] border-r border-neutral-200 fixed top-0 ${
+        showSideBar ? "left-0" : "-left-64"
+      } bottom-0 z-20 transition-all duration-300 ease-in-out`}
+    >
+      {/* Logo Section */}
+      <div className="h-16 relative w-full flex border-b border-[#383e59] justify-start items-center p-4">
+        <div className="flex items-center gap-4">
+          <div className="flex rounded-2xl bg-white justify-center items-center">
+            <img className="w-12 h-12" src={LOGO} alt="logo" />
+          </div>
+          <h1 className="text-white text-xl font-semibold">Pgsphere</h1>
+        </div>
+        <button
+          onClick={() => setShowSideBar(false)}
+          className="p-1 right-1 absolute hover:bg-gray-100 rounded-md"
+        >
+          <X size={20} className="text-gray-500" />
+        </button>
+      </div>
+
+      {/* Scrollable Menu Section */}
+      <div className="flex flex-col p-4 gap-4 overflow-y-auto h-[calc(100%-4rem)] scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
+        {routes.map(({ label, icon: Icon, link, children }, index) => (
+          <div key={index} className="flex flex-col">
+            {/* Parent Link / Toggle */}
+            <div
+              onClick={() => (children ? toggleSubmenu(label) : handleLinkClick())}
+              className={`group flex p-2 px-4 items-center justify-between hover:bg-white gap-2 rounded-full cursor-pointer ${
+                isActive(label, link, children) ? "bg-white" : ""
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Icon
+                  className={`${
+                    isActive(label, link, children)
+                      ? "text-[#202947]"
+                      : "text-[#a2a6ba]"
+                  } group-hover:text-[#202947]`}
+                  size={20}
+                />
+                {link ? (
+                  <Link
+                    to={link}
+                    onClick={handleLinkClick}
+                    className={`${
+                      isActive(label, link, children)
+                        ? "text-[#202947]"
+                        : "text-[#a2a6ba]"
+                    } group-hover:text-[#202947] font-medium`}
+                  >
+                    {label}
+                  </Link>
+                ) : (
+                  <span
+                    className={`${
+                      isActive(label, link, children)
+                        ? "text-[#202947]"
+                        : "text-[#a2a6ba]"
+                    } group-hover:text-[#202947] font-medium`}
+                  >
+                    {label}
+                  </span>
+                )}
+              </div>
+              {children && (
+                <div
+                  className={`transition-transform duration-300 ${
+                    openSubmenu === label ? "rotate-180" : "rotate-0"
+                  }`}
+                >
+                  <ChevronDown
+                    className={`${
+                      isActive(label, link, children)
+                        ? "text-[#202947]"
+                        : "text-[#a2a6ba]"
+                    }`}
+                    size={18}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Submenu Section */}
+            {children && (
+              <div
+                className={`ml-8 overflow-hidden transition-all duration-300 ease-in-out ${
+                  openSubmenu === label ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
+                }`}
               >
-                <Icon className={`${isActive(label) ? "text-[#202947]" : 'text-[#a2a6ba]'} group-hover:text-[#202947]`} size={20}></Icon>
-                <span className={`${isActive(label) ? "text-[#202947]" : 'text-[#a2a6ba]'} group-hover:text-[#202947] font-medium`}>{label}</span>
-              </Link>
-            ))
-          }
-       </div>
+                {children.map((sub, i) => (
+                  <Link
+                    key={i}
+                    to={sub.link}
+                    onClick={handleLinkClick}
+                    className={`hover:text-[#202947] flex mt-2 items-center p-1.5 text-sm rounded-lg hover:bg-white/80 ${
+                      isActive(sub.label, sub.link)
+                        ? "bg-white text-[#202947]"
+                        : "text-[#a2a6ba]"
+                    }`}
+                  >
+                    • {sub.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
-  )
+  );
 }
 
-export default SideBar
+export default SideBar;

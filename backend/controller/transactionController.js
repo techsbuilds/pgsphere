@@ -15,7 +15,7 @@ export const createTransactionForCustomerRent = async (req, res, next) =>{
      const {pgcode, userType, mongoid} = req  
      const {amount, payment_mode, customer, bank_account, month, year, isDeposite, isSettled, isSkip} = req.body 
 
-     if(isDeposite===undefined || isSettled===undefined || isSkip===undefined || !customer){
+     if(isDeposite===undefined || isSettled===undefined || isSkip===undefined || !customer || !month || !year){
        return res.status(400).json({message:"Please provide all required fields.",success:false})
      }
 
@@ -201,6 +201,128 @@ export const createTransactionForExtraCharge  = async (req, res, next) =>{
       await customerRent.save()
 
       return res.status(200).json({message:"New extra charge added successfully.",success:true,data:newTransaction})
+
+   }catch(err){
+      next(err)
+   }
+}
+
+export const createTransactionForRentByCustomer = async (req, res, next) =>{
+   try{
+      const {mongoid, pgcode} = req 
+
+      const {amount, payment_mode, month, year, bank_account} = req.body 
+
+      if(!amount || !payment_mode || !bank_account || !month || !year) return res.status(400).json({message:"Please provide all required fields.",success:false})
+
+      if(payment_mode === 'bank_transfer' || payment_mode === 'upi'){
+         if(!req.file){
+            return res.status(400).json({message:"Please provide payment proof.",success:false})
+         }
+      }
+
+      const existCustomer = await CUSTOMER.findById(mongoid)
+
+      if(!existCustomer) return res.status(404).json({message:"Customer not found.",success:false})
+
+      let payment_proof = ''
+      if(req.file){
+         payment_proof = `${process.env.DOMAIN}/uploads/paymentproof/${req.file.filename}`
+      }
+
+      const newRentAttempt = await RENTATTEMPT({  
+         customer:mongoid,
+         amount,
+         rent_amount:amount,
+         payment_proof,
+         month,
+         year 
+      })
+
+      const transaction = await TRANSACTION({
+         transactionType:'income',
+         type:'rent_attempt',
+         refModel:'Rentattempt',
+         refId:newRentAttempt,
+         payment_mode,
+         status:'pending',
+         branch:existCustomer.branch,
+         pgcode,
+         bank_account,
+         added_by:mongoid,
+         added_by_type:'Customer'
+      })
+
+      await newRentAttempt.save();
+      await transaction.save();
+
+      return res.status(200).json({message:"Rent request sended successfully.",success:true, data:transaction})
+
+   }catch(err){
+      next(err)
+   }
+}
+
+export const verifyCustomerTransaction = async (req, res, next) =>{
+   try{
+      const {mongoid, userType, pgcode} = req 
+
+      const {transactionId, status} = req.body
+      if(!transactionId || !status) return res.status(400).json({message:"Please provide all required fields.",success:false})
+
+      if(!['completed','rejected'].includes(status)){ 
+         return res.status(400).json({message:"Invalid status value.",success:false})
+      }
+
+      const transaction = await TRANSACTION.findOne({_id:transactionId, pgcode, added_by_type:'Customer'}).populate('refId') 
+
+      if(!transaction) return res.status(400).json({message:"Transaction not found.",success:false})
+
+      if(userType==="Account"){  
+         const account = await ACCOUNT.findById(mongoid)
+
+         if(!account) return res.status(404).json({message:"Account not found.",success:false})
+
+         if(!account.branch.includes(transaction.branch.toString())){
+            return res.status(403).json({message:"You are not authorized to verify transaction for this branch.",success:false})
+         }
+      }
+
+      const customerRent = await CUSTOMERRENT.findOne({
+         customer:transaction.refId.customer,
+         month:transaction.refId.month,
+         year:transaction.refId.year
+      })
+
+      if(!customerRent) return res.status(404).json({message:"Customer rent not found.",success:false})
+
+      if(status==='rejected'){
+         transaction.status = 'rejected'
+         await transaction.save() 
+
+         return res.status(200).json({message:"Customer transaction rejected successfully.",success:true})
+      }
+
+      if(customerRent.status === 'Paid'){
+         return res.status(400).json({message:"Customer rent is already paid.",success:false})
+      }
+
+      let pendingAmount = customerRent.rent_amount - customerRent.paid_amount
+
+      if(transaction.refId.amount > pendingAmount){
+         return res.status(400).json({message:"Transaction amount exceeds the pending rent amount.",success:false})
+      }  
+
+      customerRent.paid_amount += transaction.refId.amount
+      if(customerRent.paid_amount === customerRent.rent_amount){
+         customerRent.status = 'Paid'
+      }
+
+      transaction.status = status
+      await customerRent.save()
+      await transaction.save()
+
+      return res.status(200).json({message:"Transaction verified successfully.",success:true,data:transaction})
 
    }catch(err){
       next(err)

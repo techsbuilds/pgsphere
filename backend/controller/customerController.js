@@ -11,9 +11,10 @@ import LOGINMAPPING from "../models/LOGINMAPPING.js";
 import bcryptjs from "bcryptjs";
 import ADMIN from "../models/ADMIN.js";
 import { sendCustomerWelcomeEmail } from "../utils/sendMail.js";
-import dotenv from "dotenv";
+import dotenv, { populate } from "dotenv";
 import CUSTOMERRENT from "../models/CUSTOMERRENT.js";
 import DEPOSITEAMOUNT from "../models/DEPOSITEAMOUNT.js";
+import SCANNER from "../models/SCANNER.js";
 
 dotenv.config();
 
@@ -1233,7 +1234,7 @@ export const getCustomerPendingRentListById = async (req, res, next) =>{
       path:'refId',
       model:'Rentattempt',
       match:{customer: customer._id}
-    })
+    }).populate('bank_account').sort({createdAt:-1})
 
     const customerRequest = [] 
 
@@ -1243,6 +1244,9 @@ export const getCustomerPendingRentListById = async (req, res, next) =>{
        if(!entry) continue;
 
        customerRequest.push({
+         transactionId:tx._id,
+         bank_account:tx.bank_account,
+         payment_mode:tx.payment_mode,
          amount:entry.amount,
          payment_proof:entry.payment_proof,
          month:entry.month,
@@ -1382,4 +1386,80 @@ export const updateCustomerByCustomer = async (req, res, next) => {
     session.endSession();
     next(error)
   }
+}
+
+
+export const getCustomerRentListForCustomer = async (req, res, next) =>{
+   try{
+      const {mongoid, pgcode} = req 
+
+      const customer = await CUSTOMER.findById(mongoid)
+
+      const scanner = await SCANNER.findOne({pgcode, branch:customer.branch, status:'active'}).populate('bankaccount')
+
+      if(!customer) return res.status(404).json({message:"Customer not found.",success:false})
+
+      //Retrieving customer rent list
+      const customerRents = await CUSTOMERRENT.find({customer:mongoid})
+
+      let rentList = []
+
+      for (const rent of customerRents){
+        
+        const customerRequest = await TRANSACTION.find({
+           transactionType:'income',
+            type:'rent_attempt',
+            refModel:'Rentattempt',
+            pgcode,
+            added_by_type:'Customer',
+            branch:customer.branch
+        }).populate({
+          path:'refId',
+          model:'Rentattempt',
+          match:{customer: customer._id, month:rent.month, year:rent.year}
+        }).sort({createdAt:-1})
+
+        let requestList = []
+
+        for (const req of customerRequest){
+            const entry = req.refId 
+  
+            if(!entry) continue;
+  
+            requestList.push({
+              amount:entry.amount,
+              payment_proof:entry.payment_proof,
+              month:entry.month,
+              year:entry.year,
+              status:req.status,
+              payment_mode:req.payment_mode
+            })
+        }
+
+        rentList.push({
+          month:rent.month,
+          year:rent.year,
+          status:rent.status,
+          rent_amount:rent.rent_amount,
+          pending:rent.rent_amount - rent.paid_amount,
+          extra_charges:rent.extraChargeSchemas,
+          requestList
+        })
+
+      }
+
+
+      return res.status(200).json({message:"Customer rent list fetched successfully.", success:true, data:{
+        customerId:customer._id,
+        customer_name:customer.customer_name,
+        mobile_no:customer.mobile_no,
+        rentList,
+        scannerDetails:scanner || null
+      }})
+
+
+ 
+   }catch(err){
+      next(err)
+   }
 }
