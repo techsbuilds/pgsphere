@@ -44,5 +44,7 @@ app.put('/:customerId', verifyToken, updateCustomerDetails)
 //For get customer rent list for customer portal 
 app.get('/me/rent-list', verifyToken, getCustomerRentListForCustomer)
 
+//For get Dashboard Summary by Customer
+app.get('/dashboard/me',verifyToken,getDashboardSummary)
 
 export default app

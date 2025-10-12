@@ -3,6 +3,9 @@ import BRANCH from "../models/BRANCH.js"
 import CUSTOMER from "../models/CUSTOMER.js"
 import MEAL from "../models/MEAL.js"
 import moment from "moment/moment.js"
+import MEALCONFIG from "../models/MEALCONFIG.js"
+import mongoose from "mongoose"
+import DAILYUPDATE from "../models/DAILYUPDATE.js"
 
 export const addMeal = async (req, res, next) => {
     try {
@@ -21,6 +24,12 @@ export const addMeal = async (req, res, next) => {
 
         if (!Array.isArray(branch)) {
             branch = [branch]
+        }
+
+        const isexist = await MEAL.findOne({ date, pgcode, branch: { $in: branch } })
+
+        if (isexist) {
+            return res.status(400).json({ message: "Meal Already Exist for this Branch on this Date", success: false })
         }
 
         if (userType === 'Account') {
@@ -63,6 +72,12 @@ export const updateStatusByCustomer = async (req, res, next) => {
         const { mongoid, pgcode, userType } = req
         let { date, type } = req.body
 
+        const now = new Date()
+
+        const currentHours = now.getHours()
+
+        const currentDate = now.toISOString().split('T')[0]
+
         if (userType === 'Customer') {
             const customer = await CUSTOMER.findById(mongoid)
 
@@ -85,6 +100,34 @@ export const updateStatusByCustomer = async (req, res, next) => {
                 }
             }
 
+            if (date > currentDate) {
+                console.log("ohk")
+            }
+
+            else if (date === currentDate) {
+
+                const mealconfig = await MEALCONFIG.findOne({ pgcode })
+
+                if (!mealconfig) {
+                    return res.status(404).json({ message: "Meal Config Not Found ", success: false })
+                }
+
+                const breakfastHour = mealconfig.breakfast_time
+                const lunchHour = mealconfig.lunch_time
+                const dinnerHour = mealconfig.dinner_time
+
+                if (type === "Breakfast" && currentHours >= breakfastHour) {
+                    return res.status(400).json({ message: `You can't Cancel Breakfast After ${breakfastHour}`, success: false })
+                }
+                if (type === "Lunch" && currentHours >= lunchHour) {
+                    return res.status(400).json({ message: `You can't Cancel Lunch After ${lunchHour}`, success: false })
+                }
+                if (type === "Dinner" && currentHours >= dinnerHour) {
+                    return res.status(400).json({ message: `You can't Cancel Dinner After ${dinnerHour}`, success: false })
+                }
+            } else {
+                return res.status(400).json({ message: "You can't Cancel Meal for Past", success: false })
+            }
 
             const branch = customer.branch
 
@@ -103,7 +146,7 @@ export const updateStatusByCustomer = async (req, res, next) => {
                 mealObj.cancelled.push(mongoid);
             }
 
-            mealDetails.save()
+            await mealDetails.save()
 
             return res.status(200).json({ message: "Meal Cancelled Successfully.", success: true, })
 
@@ -284,6 +327,105 @@ export const getMealDetailsbyDay = async (req, res, next) => {
         return res.status(200).json({ message: "Get Meal Successfully by Day.", meal: mealsDetails, success: true })
 
     } catch (error) {
+        next(error)
+    }
+}
+
+export const updateMeal = async (req, res, next) => {
+
+    const session = await mongoose.startSession()
+    session.startTransaction()
+
+    try {
+        const { mongoid, userType, pgcode } = req
+        let { mealid, date } = req.params
+        let { meals, branch } = req.body
+
+        if (!mealid || !date) {
+            await session.abortTransaction()
+            session.endSession()
+            return res.status(400).json({ message: "Please Provide All Required Fields !", success: false })
+        }
+
+        const parsedDate = moment(date, ["YYYY-MM-DD", "DD-MM-YYYY", "DD/MM/YYYY", "MM-DD-YYYY", "MM/DD/YYYY"], true);
+
+        if (parsedDate.isValid()) {
+            // Convert to standard format
+            date = parsedDate.format("YYYY-MM-DD");
+        } else {
+            return res.status(400).json({ message: "Please Provide Valid Date !", success: false })
+        }
+
+        if (userType === "Account") {
+            const acmanager = await ACCOUNT.findById(mongoid).session(session)
+
+            if (!acmanager) {
+
+                await session.abortTransaction()
+                session.endSession()
+                return res.status(404).json({ message: "Acmanager Not Found !", success: false })
+            }
+
+            const branches = acmanager.branch
+
+            isAuthorized = branch.every((br) => branches.includes(br))
+
+            if (!isAuthorized) {
+
+                await session.abortTransaction()
+                session.endSession()
+                return res.status(400).json({ message: "You are Not Autherized to Update Meal in this Branch", success: false })
+            }
+        }
+        let meal = await MEAL.findOne({ _id: mealid, date, pgcode }).session(session)
+
+        const dailyUpdateBranch = meal.branch
+
+        if (!meal) {
+
+            await session.abortTransaction()
+            session.endSession()
+            return res.status(404).json({ message: "Meal Not Found !", success: false })
+        }
+
+        if (meals) {
+            if (!Array.isArray(meals)) {
+                meals = [meals]
+            }
+
+            meal.meals = meals
+        }
+
+        if (branch) {
+
+            if (!Array.isArray(branch)) {
+                branch = [branch]
+            }
+
+            meal.branch = branch
+        }
+
+        await meal.save({ session })
+
+        const dailyUpdate = new DAILYUPDATE({
+            title: "Meal Updated",
+            content_type: "General",
+            pgcode,
+            branch: dailyUpdateBranch,
+            added_by: mongoid,
+            added_by_type: userType
+        })
+
+        dailyUpdate.save({ session })
+
+        await session.commitTransaction()
+        session.endSession()
+
+        return res.status(200).json({ message: `Meal Updated Successfully for ${date}`, success: true })
+    } catch (error) {
+
+        await session.abortTransaction()
+        session.endSession()
         next(error)
     }
 }
