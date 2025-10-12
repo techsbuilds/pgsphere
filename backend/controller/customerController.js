@@ -14,6 +14,8 @@ import { sendCustomerWelcomeEmail } from "../utils/sendMail.js";
 import dotenv from "dotenv";
 import CUSTOMERRENT from "../models/CUSTOMERRENT.js";
 import DEPOSITEAMOUNT from "../models/DEPOSITEAMOUNT.js";
+import DAILYUPDATE from "../models/DAILYUPDATE.js"
+import COMPLAINT from "../models/COMPLAINT.js";
 
 dotenv.config();
 
@@ -1219,17 +1221,6 @@ export const updateCustomerByCustomer = async (req, res, next) => {
     }
 
     if (name) {
-
-      const existCustomer = await CUSTOMER.findOne({ customer_name: name }).session(session)
-
-      if (existCustomer) {
-
-        await session.abortTransaction();
-        session.endSession();
-
-        return res.status(409).json({ message: "Customer already exists with same name.", success: false })
-      }
-
       customer.customer_name = name
     }
 
@@ -1274,6 +1265,52 @@ export const updateCustomerByCustomer = async (req, res, next) => {
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
+    next(error)
+  }
+}
+
+// today dailyUpdate , complaint of customer , pending rent amount , pending rent months
+export const getDashboardSummary = async(req,res,next) =>{
+  try {
+    const {mongoid,userType,pgcode} = req
+
+    let dailyUpdateCount = 0
+    let complaintCount = 0
+    let pendingRentAmount = 0
+    let pendingRentMonths = 0
+
+    let startofDay = new Date()
+    startofDay.setHours(0,0,0,0)
+
+    let endofDay = new Date()
+    endofDay.setHours(23,59,59,999)
+
+    if(userType !== 'Customer'){
+      return res.status(403).json({message: "You are not Autherized to access This Data.", success: false})
+    }
+
+    const customer = await CUSTOMER.findById(mongoid)
+
+    if(!customer){
+      return res.status(404).json({message: "Customer Not Found.", success: false})
+    }
+
+    const branch = customer.branch
+
+    dailyUpdateCount = await DAILYUPDATE.countDocuments({pgcode,branch,createdAt: {$gte: startofDay, $lte: endofDay}})
+
+    complaintCount = await COMPLAINT.countDocuments({pgcode,branch,added_by: mongoid})
+
+    pendingRentMonths = await CUSTOMERRENT.countDocuments({customer:mongoid,status:"Pending"})
+
+    const pendingRent = await CUSTOMERRENT.find({customer:mongoid,status:"Pending"})
+
+    pendingRent.forEach(rent =>{
+      pendingRentAmount += (rent.rent_amount - rent.paid_amount)
+    })
+
+    return res.status(200).json({message: "Dashboard Summary Fetched Successfully.", success: true, data: {dailyUpdateCount,complaintCount,pendingRentAmount,pendingRentMonths}})
+  } catch (error) {
     next(error)
   }
 }

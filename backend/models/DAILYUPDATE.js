@@ -17,10 +17,10 @@ const dailyUpdateSchema = new mongoose.Schema({
         required: true,             // enforce PG reference
         ref: 'Loginmapping'         // pgcode lives in Loginmapping
     },
-    branch: {
+    branch:[{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Branch'
-    },
+    }],
     added_by: {
         type: mongoose.Schema.Types.ObjectId,
         refPath: 'added_by_type',

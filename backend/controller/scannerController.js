@@ -265,7 +265,7 @@ export const updateScanner = async (req, res, next) => {
             scanner.bankaccount = bankaccount
         }
 
-        await scanner.save()
+        await scanner.save({session})
         return res.status(200).json({ message: "Update Scanner Successfully", success: true })
 
     } catch (error) {

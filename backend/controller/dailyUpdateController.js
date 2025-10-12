@@ -1,14 +1,19 @@
 import ACCOUNT from "../models/ACCOUNT.js"
 import CUSTOMER from "../models/CUSTOMER.js"
 import DAILYUPDATE from "../models/DAILYUPDATE.js"
+import ADMIN from "../models/ADMIN.js"
 
 export const addDailyUpdate = async (req, res, next) => {
     try {
-        const { title, content_type, branch } = req.body
+        let { title, content_type, branch } = req.body
         const { pgcode, userType, mongoid } = req
 
         if (!title || !content_type || !branch) {
             return res.status(400).json({ message: "Please Provide All Requireed Fields", success: false })
+        }
+
+        if (!Array.isArray(branch)) {
+            branch = [branch]
         }
 
         const newDailyUpdate = new DAILYUPDATE({
