@@ -1453,6 +1453,8 @@ export const getCustomerRentListForCustomer = async (req, res, next) =>{
    }catch(err){
       next(err)
    }
+}
+
 // today dailyUpdate , complaint of customer , pending rent amount , pending rent months
 export const getDashboardSummary = async(req,res,next) =>{
   try {
