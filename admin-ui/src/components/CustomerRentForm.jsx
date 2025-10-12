@@ -186,7 +186,7 @@ function CustomerRentForm({selectedCustomer, onClose}) {
                   "Pay"
                 }
              </button>
-          </div>
+               </div>
            </form>
         </div>
     </div>

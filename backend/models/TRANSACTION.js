@@ -41,7 +41,6 @@ const transactionSchema = new mongoose.Schema({
     bank_account:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Bankaccount',
-        required:true
     },
     added_by:{
         type:mongoose.Schema.Types.ObjectId,

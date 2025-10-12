@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { AgGridReact } from "ag-grid-react";
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
@@ -15,6 +16,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
 function CustomerRent() {
   const [openForm, setOpenForm] = useState(false);
+  const navigate = useNavigate();
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("");
@@ -38,6 +40,10 @@ function CustomerRent() {
     if (refresh) refetch();
   };
 
+  const handleRedirectToRentPreview = (customer) => {
+    navigate('/admin/rent-preview', {state: {customerId:customer.data.customerId}})
+  }
+
   return (
     <div className="flex w-full h-full flex-col gap-8">
       {openForm && <CustomerRentForm selectedCustomer={selectedCustomer} onClose={handleCloseForm}></CustomerRentForm>}
@@ -52,6 +58,7 @@ function CustomerRent() {
         <AgGridReact
           rowData={rows}
           rowHeight={70}
+          onRowClicked={handleRedirectToRentPreview}
           loading={loading}
           headerHeight={54}
           columnDefs={columns}

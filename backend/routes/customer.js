@@ -32,6 +32,9 @@ app.get('/export/excel', verifyToken, exportCustomersToExcel)
 //For verify customer details
 app.post('/verify-customer/:customerId', verifyToken, verifyCustomer)
 
+//For get pending customer rent list by id
+app.get('/pending-rent/:customerId', verifyToken, getCustomerPendingRentListById)
+
 //For update customer details by customer
 app.put('/me', verifyToken, updateCustomerByCustomer)
 

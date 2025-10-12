@@ -1,6 +1,6 @@
-import { Plus, Search } from "lucide-react";
+import { ChevronRight, Plus, Search } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getAllBranch } from "../services/branchService";
 
 function Breadcrumb({
@@ -13,6 +13,7 @@ function Breadcrumb({
   onClick,
 }) {
   const location = useLocation();
+  const navigate = useNavigate()
   const [branch, setBranch] = useState([]);
 
   useEffect(() => {
@@ -382,6 +383,16 @@ function Breadcrumb({
               </select>
             </div>
           </>
+        );
+
+      case '/admin/rent-preview':
+      case '/account/rent-preview':
+        return (
+          <div className="w-full flex items-center gap-2">
+            <span className="cursor-pointer hover:text-blue-500" onClick={()=>navigate(-1)}>Rent</span>
+            <ChevronRight className="w-4 h-4 text-gray-500"></ChevronRight>
+            <span className="font-semibold">Rent Preview</span>
+          </div>
         );
 
       case "/admin/salary":

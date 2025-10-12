@@ -45,3 +45,9 @@ export const convertIntoRupees = (amount) =>{
         return "₹"+amount
     }
 }
+
+export const getShortName = (name) => {
+    if(!name) return '' 
+    
+    return name.split(' ').map(ch => ch.charAt(0).toUpperCase()).join('')
+}

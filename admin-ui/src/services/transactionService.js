@@ -13,6 +13,18 @@ export const createTransactionForCustomerPay = async (transactionData) =>{
      }
 }
 
+//Create transaction for extra charge
+export const createTransactionForExtraCharge = async (transactionData) =>{
+   try{
+      const response = await api.post('/transaction/extra-charge', transactionData)
+      return response.data.data
+   }catch(err){
+      console.log(err)
+      const errMessage = err?.response?.data?.message || "Something went wrong."
+      throw new Error(errMessage)
+   }
+}
+
 //Create transaction for employee salary 
 export const createTransactionForEmployeePay = async (transactionData) =>{
    try{
