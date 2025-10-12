@@ -84,3 +84,15 @@ export const getAllTransactions = async (branch="",transactionType="") =>{
       throw new Error(errMessage)
    }
 }
+
+//Verify customer transaction 
+export const verifyCustomerTransaction = async (transactionData) =>{
+   try{
+      const response = await api.post('/transaction/customer-transaction/verify', transactionData)
+      return response.data.data
+   }catch(err){
+      console.log(err)
+      const errMessage = err?.response?.data?.message || "Something went wrong."
+      throw new Error(errMessage)
+   }
+}

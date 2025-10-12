@@ -12,6 +12,7 @@ import "ag-grid-community/styles/ag-theme-alpine.css"; // Or any other theme
 
 import Breadcrumb from "../../components/Breadcrumb";
 import { useMonthlyBillTable } from "../../hooks/useMonthlyBillTable";
+import { deleteMonthlyBill } from "../../services/monthlyBillService";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -22,6 +23,7 @@ function MonthlyBill() {
   const [openConfirmBox,setOpenConfirmBox] = useState(false)
   const [openPayForm,setOpenPayForm] = useState(false)
   const [selectedMonthlyBill, setSelectedMonthlyBill] = useState(null)
+  const [loader,setLoader] = useState(false)
 
   const handleOpenForm = (monthlyBill = null) =>{
     setSelectedMonthlyBill(monthlyBill)
@@ -62,10 +64,30 @@ function MonthlyBill() {
     refetch(searchQuery, selectedBranch)
   },[searchQuery, selectedBranch])
 
+  const handleDeleteMonthlyBill = async () =>{
+    setLoader(true)
+    try{
+        const response = await deleteMonthlyBill(selectedMonthlyBill.billId)
+        handleCloseConfirmationBox(true)
+    }catch(err){
+        console.log(err)
+        toast.error(err?.message)
+    }finally{
+        setLoader(false)
+    }
+  }
+
   return (
     <div className="flex w-full h-full flex-col gap-8">
       {openForm && <MonthlyBillForm monthlyBill={selectedMonthlyBill} onClose={handleCloseForm}></MonthlyBillForm>}
-      {openConfirmBox && <ConfirmationBox monthlyBill={selectedMonthlyBill} onClose={handleCloseConfirmationBox}></ConfirmationBox>}
+      <ConfirmationBox
+      openForm={openConfirmBox}
+      onClose={handleCloseConfirmationBox}
+      loader={loader}
+      onConfirm={handleDeleteMonthlyBill}
+      confirmButton={'Delete'}
+      confirmText={'Are you sure to want to delete monthly bill?'}
+      ></ConfirmationBox>
       {openPayForm && <MonthlyBillPay monthlyBill={selectedMonthlyBill} onClose={handleClosePayForm}></MonthlyBillPay>}
       <Breadcrumb
       searchQuery={searchQuery}

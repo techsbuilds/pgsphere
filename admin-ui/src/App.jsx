@@ -29,6 +29,11 @@ import CashOut from './pages/admin/CashOut';
 import Transaction from './pages/admin/Transaction';
 import Profile from './pages/admin/Profile';
 import RentPreview from './pages/admin/RentPreview';
+import Meal from './pages/admin/Meal';
+import Complaints from './pages/admin/Complaints';
+import DailyUpdate from './pages/admin/DailyUpdate';
+import Scanner from './pages/admin/Scanner';
+import Settings from './pages/admin/Settings';
 
 //Import Account components
 import AccountLayout from './layouts/AccountLayout';
@@ -61,18 +66,23 @@ function App() {
             <Route index element={<AdminDashboard></AdminDashboard>}></Route>
             <Route path='branches' element={<Branch></Branch>}></Route>
             <Route path='branches/preview' element={<BranchPreview></BranchPreview>}></Route>
-            <Route path='customers' element={<Customer></Customer>}></Route>
-            <Route path='employees' element={<Employee></Employee>}></Route>
+            <Route path='customers/clist' element={<Customer></Customer>}></Route>
+            <Route path='customers/rents' element={<CustomerRent></CustomerRent>}></Route>
+            <Route path='customers/meals' element={<Meal></Meal>}></Route>
+            <Route path='customers/complaints' element={<Complaints></Complaints>}></Route>
+            <Route path='customers/dailyupdate' element={<DailyUpdate></DailyUpdate>}></Route>
+            <Route path='employees/elist' element={<Employee></Employee>}></Route>
+            <Route path='employees/salary' element={<EmployeeSalary></EmployeeSalary>}></Route>
             <Route path='accountmanagers' element={<Accountmanager></Accountmanager>}></Route>
             <Route path='branches/room/preview' element={<RoomPreview></RoomPreview>}></Route>
-            <Route path='rents' element={<CustomerRent></CustomerRent>}></Route>
             <Route path='rent-preview' element={<RentPreview></RentPreview>}></Route>
-            <Route path='salary' element={<EmployeeSalary></EmployeeSalary>}></Route>
             <Route path='inventory' element={<Inventory></Inventory>}></Route>
             <Route path='monthlybill' element={<MonthlyBill></MonthlyBill>}></Route>
             <Route path='cashout' element={<CashOut></CashOut>}></Route>
             <Route path='transactions' element={<Transaction></Transaction>}></Route>
             <Route path='profile' element={<Profile></Profile>}></Route>
+            <Route path='scanner' element={<Scanner></Scanner>}></Route>
+            <Route path='settings' element={<Settings></Settings>}></Route>
           </Route>
      
          {/* Account Routes */}

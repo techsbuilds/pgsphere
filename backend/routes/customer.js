@@ -1,6 +1,6 @@
 import express from 'express'
 import { verifyToken } from '../middleware/verifyUser.js'
-import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, getCustomerDetailsForCustomer, getPendingCustomerRentList, updateCustomerDetails, exportCustomersToExcel, verifyCustomer, updateCustomerByCustomer, getDashboardSummary } from '../controller/customerController.js'
+import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, getCustomerDetailsForCustomer, getPendingCustomerRentList, updateCustomerDetails, exportCustomersToExcel, verifyCustomer, updateCustomerByCustomer, getCustomerPendingRentListById, getCustomerRentListForCustomer } from '../controller/customerController.js'
 import { aadharCardMulter } from '../middleware/upload.js'
 
 const app = express.Router()
@@ -40,6 +40,9 @@ app.put('/me', verifyToken, updateCustomerByCustomer)
 
 //For update customer details
 app.put('/:customerId', verifyToken, updateCustomerDetails)
+
+//For get customer rent list for customer portal 
+app.get('/me/rent-list', verifyToken, getCustomerRentListForCustomer)
 
 //For get Dashboard Summary by Customer
 app.get('/dashboard/me',verifyToken,getDashboardSummary)
