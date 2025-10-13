@@ -6,6 +6,7 @@ import moment from "moment/moment.js"
 import MEALCONFIG from "../models/MEALCONFIG.js"
 import mongoose from "mongoose"
 import DAILYUPDATE from "../models/DAILYUPDATE.js"
+import { convertTo24Hour } from "../utils/gethour.js"
 
 export const addMeal = async (req, res, next) => {
     try {
@@ -16,6 +17,16 @@ export const addMeal = async (req, res, next) => {
 
         if (!date || !meals || !branch) {
             return res.status(400).json({ message: "Please Provide All Requires Fields.", success: false })
+        }
+
+        const parsedDate = moment(date, ["YYYY-MM-DD", "DD-MM-YYYY", "DD/MM/YYYY", "MM-DD-YYYY", "MM/DD/YYYY"], true);
+
+        if (parsedDate.isValid()) {
+            // Convert to standard format
+            date = parsedDate.format("YYYY-MM-DD");
+        } else {
+            // If invalid, fallback to today
+            date = moment().format("YYYY-MM-DD");
         }
 
         if (!Array.isArray(meals)) {
@@ -74,7 +85,10 @@ export const updateStatusByCustomer = async (req, res, next) => {
 
         const now = new Date()
 
-        const currentHours = now.getHours()
+        let currentHours = now.getHours()
+        const currentmitune = now.getMinutes()
+
+        currentHours = currentHours + currentmitune / 60
 
         const currentDate = now.toISOString().split('T')[0]
 
@@ -112,9 +126,9 @@ export const updateStatusByCustomer = async (req, res, next) => {
                     return res.status(404).json({ message: "Meal Config Not Found ", success: false })
                 }
 
-                const breakfastHour = mealconfig.breakfast_time
-                const lunchHour = mealconfig.lunch_time
-                const dinnerHour = mealconfig.dinner_time
+                const breakfastHour = convertTo24Hour(mealconfig.breakfast_time)
+                const lunchHour = convertTo24Hour(mealconfig.lunch_time)
+                const dinnerHour = convertTo24Hour(mealconfig.dinner_time)
 
                 if (type === "Breakfast" && currentHours >= breakfastHour) {
                     return res.status(400).json({ message: `You can't Cancel Breakfast After ${breakfastHour}`, success: false })
