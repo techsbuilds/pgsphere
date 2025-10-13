@@ -1353,10 +1353,10 @@ export const updateCustomerByCustomer = async (req, res, next) => {
       
       const existCustomer = await CUSTOMER.findOne({ email: email, _id: { $ne: mongoid } }).session(session)
 
-      if (!existCustomer) {
+      if (existCustomer) {
         await session.abortTransaction();
         session.endSession();
-        return res.status(409).json({ message: "Customer already exists with same mobile no.", success: false })
+        return res.status(409).json({ message: "Customer already exists with same Email.", success: false })
       }
 
       customerLogin.email = email
