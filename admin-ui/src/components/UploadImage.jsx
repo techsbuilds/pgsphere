@@ -10,8 +10,6 @@ function UploadImage({file, setFile, className, previewImage, setPreviewImage}) 
   const fileInputRef = useRef(null);
   const [imagePreview, setImagePreview] = useState(previewImage);
 
-  console.log('Image preview',imagePreview)
-
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file && file.type.startsWith("image/")) {

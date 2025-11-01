@@ -1411,6 +1411,20 @@ export const getCustomerDetailsForCustomer = async (req, res, next) => {
       })
       .lean();
 
+    data.customer = customer
+
+    const branch = await CUSTOMER.findById(mongoid).populate('branch')
+    const adminid = branch.added_by
+
+    const admin = await ADMIN.findById(adminid)
+
+    if (!admin) {
+      return res.status(404).json({ message: "Admin Not Found in Customer get Details By Customer", success: false })
+    }
+
+    data.pgname = admin.pgname
+    data.pglogo = admin.pglogo
+
     if (!customer) {
       return res
         .status(404)
@@ -1496,7 +1510,7 @@ export const updateCustomerByCustomer = async (req, res, next) => {
         _id: { $ne: mongoid },
       }).session(session);
 
-      if (!existCustomer) {
+      if (existCustomer) {
         await session.abortTransaction();
         session.endSession();
         return res

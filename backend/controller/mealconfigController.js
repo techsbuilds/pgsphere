@@ -8,18 +8,20 @@ export const createMealConfig = async (req, res, next) => {
         const { pgcode, mongoid, userType } = req
         const { breakfast_time, lunch_time, dinner_time } = req.body
 
+        const existingConfig = await MEALCONFIG.findOne({ pgcode })
+
+        if (existingConfig) {
+            return res.status(400).json({ message: "Meal Config Already Exists", success: false })
+        }
+
         if (!breakfast_time || !lunch_time || !dinner_time) {
             return res.status(400).json({ message: "All Meal Times are Required", success: false })
         }
 
-        const breakfastHour = convertTo24Hour(breakfast_time)
-        const lunchHour = convertTo24Hour(lunch_time)
-        const dinnerHour = convertTo24Hour(dinner_time)
-
         let mealconfig = await MEALCONFIG({
-            breakfast_time: breakfastHour,
-            lunch_time: lunchHour,
-            dinner_time: dinnerHour,
+            breakfast_time,
+            lunch_time,
+            dinner_time,
             pgcode,
             added_by: mongoid,
             added_by_type: userType
@@ -83,18 +85,15 @@ export const updateMealConfig = async (req, res, next) => {
         }
 
         if (breakfast_time && breakfast_time !== mealconfig.breakfast_time) {
-            const breakfastHour = convertTo24Hour(breakfast_time)
-            mealconfig.breakfast_time = breakfastHour
+            mealconfig.breakfast_time = breakfast_time
         }
 
         if (lunch_time && lunch_time !== mealconfig.lunch_time) {
-            const lunchHour = convertTo24Hour(lunch_time)
-            mealconfig.lunch_time = lunchHour
+            mealconfig.lunch_time = lunch_time
         }
 
         if (dinner_time && dinner_time !== mealconfig.dinner_time) {
-            const dinnerHour = convertTo24Hour(dinner_time)
-            mealconfig.dinner_time = dinnerHour
+            mealconfig.dinner_time = dinner_time
         }
 
         await mealconfig.save({ session })

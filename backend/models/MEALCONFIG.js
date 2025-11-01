@@ -2,15 +2,15 @@ import mongoose from "mongoose";
 
 const mealConfigSchema = new mongoose.Schema({
     breakfast_time: {
-        type: Number,
+        type: String,
         required: [true, "Breakfast Time is required"]
     },
     lunch_time: {
-        type: Number,
+        type: String,
         required: [true, "Lunch Time is required"]
     },
     dinner_time: {
-        type: Number,
+        type: String,
         required: [true, "Dinner Time is required"]
     },
     pgcode: {

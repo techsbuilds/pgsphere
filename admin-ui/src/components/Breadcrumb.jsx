@@ -788,6 +788,56 @@ function Breadcrumb({
             </div>
           </div>
         );
+
+        case "/admin/scanner":
+          return (
+          <>
+            {/* Title Row */}
+            <div className="flex justify-between items-center w-full">
+              <h1 className="text-2xl md:text-3xl font-semibold">Scanner</h1>
+              {/* Desktop: Show search and add button on right */}
+              <div className="hidden md:flex items-center gap-2">
+                <div className="border rounded-2xl border-neutral-300 bg-white p-2 w-72 flex items-center gap-2">
+                  <Search className="text-gray-500" size={20}></Search>
+                  <input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    type="text"
+                    className="flex-1 outline-none"
+                    placeholder="Search branch"
+                  ></input>
+                </div>
+                <button
+                  onClick={() => onClick()}
+                  className="p-2 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                >
+                  Add Scanner
+                </button>
+              </div>
+              {/* Mobile: Show only add button on right */}
+              <button
+                onClick={() => onClick()}
+                className="md:hidden px-3 py-1.5 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+              >
+                Add
+              </button>
+            </div>
+            
+            {/* Mobile: Bottom row with search only */}
+            <div className="md:hidden flex items-center gap-2">
+              <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 h-10">
+                <Search className="text-gray-500" size={20}></Search>
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  type="text"
+                  className="flex-1 outline-none"
+                  placeholder="Search branch"
+                ></input>
+              </div>
+            </div>
+          </>
+        );
     }
   };
 
