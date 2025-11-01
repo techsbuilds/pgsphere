@@ -393,14 +393,14 @@ export const updateMeal = async (req, res, next) => {
         }
         let meal = await MEAL.findOne({ _id: mealid, date, pgcode }).session(session)
 
-        const dailyUpdateBranch = meal.branch
-
         if (!meal) {
 
             await session.abortTransaction()
             session.endSession()
             return res.status(404).json({ message: "Meal Not Found !", success: false })
         }
+
+        const dailyUpdateBranch = meal.branch
 
         if (meals) {
             if (!Array.isArray(meals)) {
@@ -430,7 +430,7 @@ export const updateMeal = async (req, res, next) => {
             added_by_type: userType
         })
 
-        dailyUpdate.save({ session })
+        await dailyUpdate.save({ session })
 
         await session.commitTransaction()
         session.endSession()
