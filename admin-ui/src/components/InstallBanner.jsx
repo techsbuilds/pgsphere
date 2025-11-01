@@ -8,7 +8,7 @@ const InstallBanner = () => {
   if (!showInstallBanner) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#374856] to-[#40505E] text-white shadow-lg border-b border-gray-200">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#202947] to-[#202947] text-white shadow-lg border-b border-gray-200">
       <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
         <div className="flex items-center space-x-3">
           <div className="flex-shrink-0">

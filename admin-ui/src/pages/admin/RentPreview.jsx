@@ -67,11 +67,11 @@ function RentPreview() {
       const data = await getCustomerPendingRentById(location.state.customerId);
       setCustomerDetails(data);
       setPendingRentList(data?.pendingRentMap);
-      setCustomerRequest(data?.customerRequest);
       if (data?.pendingRentMap?.length > 0) {
         setSelectedMonthYear(
           `${data?.pendingRentMap[0]?.month}-${data?.pendingRentMap[0]?.year}`
         );
+        setCustomerRequest(data?.pendingRentMap[0]?.customerRequest);
         setSelectedRent(data?.pendingRentMap[0]);
       }else{
         navigate(-1)

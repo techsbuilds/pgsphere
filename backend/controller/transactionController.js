@@ -9,6 +9,7 @@ import MONTHLYPAYMENTRECEIPT from "../models/MONTHLYPAYMENTRECEIPT.js";
 import TRANSACTION from "../models/TRANSACTION.js";
 import ACCOUNT from "../models/ACCOUNT.js"
 import RENTATTEMPT from "../models/RENTATTEMPT.js";
+import DEPOSITEAMOUNT from "../models/DEPOSITEAMOUNT.js";
 
 export const createTransactionForCustomerRent = async (req, res, next) =>{
    try{
@@ -143,6 +144,71 @@ export const createTransactionForCustomerRent = async (req, res, next) =>{
      next(err)
    }
 }
+
+export const createTransactionForDepositeAmount = async (req, res, next) =>{
+   try{
+      const {mongoid, userType, pgcode} = req 
+
+      const {customer, amount, bank_account, payment_mode} = req.body
+
+      if(!customer || !amount || !bank_account || !payment_mode) return res.status(400).json({message:"Please provide all required fields.",success:false})
+
+      const existCustomer = await CUSTOMER.findById(customer)
+
+      if(!existCustomer) return res.status(404).json({message:"Customer not found.",success:false})
+
+      if(userType === "Account"){
+         const account = await ACCOUNT.findById(mongoid)
+
+         if(!account) return res.status(404).json({message:"Account not found.",success:false})
+
+         if(!account.branch.includes(existCustomer.branch.toString())){
+            return res.status(403).json({message:"You are not authorized to create transaction for this customer.",success:false})
+         }
+      }
+
+      if(amount < 0) return res.status(400).json({message:"amount value is invalid.",success:false})
+
+      if((existCustomer.paid_deposite_amount + amount) > existCustomer.deposite_amount){
+         return res.status(400).json({message:"Deposite amount exceeds the customer's deposite amount.",success:false})
+      }
+
+      const newDepositeAmount = new DEPOSITEAMOUNT({
+         customer,
+         amount
+      })
+
+      const newTransaction = new TRANSACTION({
+         transactionType:'deposite',
+         type:'deposite',
+         refModel:'Depositeamount',
+         refId:newDepositeAmount._id,
+         payment_mode,
+         status:'completed',
+         branch:existCustomer.branch,
+         pgcode,
+         bank_account,
+         added_by:mongoid,
+         added_by_type:userType
+      })
+
+      if(existCustomer.paid_deposite_amount + amount === existCustomer.deposite_amount){
+         existCustomer.deposite_status = 'Paid'
+         await existCustomer.save()
+      }
+
+      existCustomer.paid_deposite_amount += amount
+
+      await newDepositeAmount.save()
+      await newTransaction.save()
+      await existCustomer.save()
+
+      return res.status(200).json({message:"New transaction created for deposite amount.",success:true,data:newTransaction})
+
+   }catch(err){
+      next(err)
+   }
+} 
 
 export const createTransactionForExtraCharge  = async (req, res, next) =>{
    try{

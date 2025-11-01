@@ -11,18 +11,20 @@ import LOGINMAPPING from "../models/LOGINMAPPING.js";
 import bcryptjs from "bcryptjs";
 import ADMIN from "../models/ADMIN.js";
 import { sendCustomerWelcomeEmail } from "../utils/sendMail.js";
-import dotenv, { populate } from "dotenv";
+import dotenv from "dotenv";
 import CUSTOMERRENT from "../models/CUSTOMERRENT.js";
 import DEPOSITEAMOUNT from "../models/DEPOSITEAMOUNT.js";
 import SCANNER from "../models/SCANNER.js";
-import DAILYUPDATE from "../models/DAILYUPDATE.js"
+import DAILYUPDATE from "../models/DAILYUPDATE.js";
 import COMPLAINT from "../models/COMPLAINT.js";
+import BANKACCOUNT from "../models/BANKACCOUNT.js";
 
 dotenv.config();
 
 export const createCustomer = async (req, res, next) => {
   try {
     const { mongoid, userType, pgcode } = req;
+
     const {
       customer_name,
       email,
@@ -30,6 +32,7 @@ export const createCustomer = async (req, res, next) => {
       ref_person_contact_no,
       mobile_no,
       deposite_amount,
+      variable_deposite_amount,
       rent_amount,
       room,
       branch,
@@ -43,16 +46,15 @@ export const createCustomer = async (req, res, next) => {
       userType: "Admin",
       status: "active",
     });
+
     if (!adminLogin) {
       if (req.file) {
         await removeFile(path.join("uploads", "aadhar", req.file.filename));
       }
-      return res
-        .status(400)
-        .json({
-          message: "Your PG is not active. Please contact support.",
-          success: false,
-        });
+      return res.status(400).json({
+        message: "Your PG is not active. Please contact support.",
+        success: false,
+      });
     }
 
     const admin = await ADMIN.findById(adminLogin.mongoid);
@@ -60,12 +62,10 @@ export const createCustomer = async (req, res, next) => {
       if (req.file) {
         await removeFile(path.join("uploads", "aadhar", req.file.filename));
       }
-      return res
-        .status(400)
-        .json({
-          message: "Your PG is not active. Please contact support.",
-          success: false,
-        });
+      return res.status(400).json({
+        message: "Your PG is not active. Please contact support.",
+        success: false,
+      });
     }
 
     if (!req.file)
@@ -86,12 +86,10 @@ export const createCustomer = async (req, res, next) => {
       !payment_mode
     ) {
       await removeFile(path.join("uploads", "aadhar", req.file.filename));
-      return res
-        .status(400)
-        .json({
-          message: "Please provide all required fields.",
-          success: false,
-        });
+      return res.status(400).json({
+        message: "Please provide all required fields.",
+        success: false,
+      });
     }
 
     if (userType === "Account") {
@@ -106,31 +104,25 @@ export const createCustomer = async (req, res, next) => {
           .json({ message: "Account manager is not found.", success: false });
       }
 
-
       if (!account.branch.includes(branch)) {
         if (req.file) {
           await removeFile(path.join("uploads", "aadhar", req.file.filename));
         }
-        return res
-          .status(403)
-          .json({
-            message: "You are not authorized to add customer in this branch.",
-            success: false,
-          });
+        return res.status(403).json({
+          message: "You are not authorized to add customer in this branch.",
+          success: false,
+        });
       }
-
     }
 
     const existCustomer = await CUSTOMER.findOne({ mobile_no, email });
 
     if (existCustomer) {
       await removeFile(path.join("uploads", "aadhar", req.file.filename));
-      return res
-        .status(409)
-        .json({
-          message: "Customer is already exist with same email or mobile no.",
-          success: false,
-        });
+      return res.status(409).json({
+        message: "Customer is already exist with same email or mobile no.",
+        success: false,
+      });
     }
 
     const existRoom = await ROOM.findById(room);
@@ -153,22 +145,18 @@ export const createCustomer = async (req, res, next) => {
 
     if (existRoom.branch.toString() !== branch) {
       await removeFile(path.join("uploads", "aadhar", req.file.filename));
-      return res
-        .status(400)
-        .json({
-          message: "Room does not belong to this branch.",
-          success: false,
-        });
+      return res.status(400).json({
+        message: "Room does not belong to this branch.",
+        success: false,
+      });
     }
 
     if (existRoom.filled >= existRoom.capacity) {
       await removeFile(path.join("uploads", "aadhar", req.file.filename));
-      return res
-        .status(400)
-        .json({
-          message: "Room is already full. Cannot add more customers.",
-          success: false,
-        });
+      return res.status(400).json({
+        message: "Room is already full. Cannot add more customers.",
+        success: false,
+      });
     }
 
     let imageUrl = `${process.env.DOMAIN}/uploads/aadhar/${req.file.filename}`;
@@ -176,10 +164,15 @@ export const createCustomer = async (req, res, next) => {
     const saltRounds = 10;
     const hashedPassword = await bcryptjs.hash(pgcode, saltRounds);
 
+    let isDepositePaid = deposite_amount == variable_deposite_amount ? "Paid" : "Pending"
+
     const newCustomer = await CUSTOMER({
       customer_name,
       mobile_no,
+      email,
       deposite_amount,
+      deposite_status: isDepositePaid,
+      paid_deposite_amount: variable_deposite_amount ? variable_deposite_amount : 0,
       rent_amount,
       room,
       joining_date,
@@ -189,7 +182,7 @@ export const createCustomer = async (req, res, next) => {
       ref_person_name,
       added_by: mongoid,
       added_by_type: userType,
-      aadharcard_url: imageUrl
+      aadharcard_url: imageUrl,
     });
 
     const newLogin = await LOGINMAPPING({
@@ -213,27 +206,6 @@ export const createCustomer = async (req, res, next) => {
       year: new Date().getFullYear(),
     });
 
-    //Create deposite amount
-    const newDepositeAmount = await DEPOSITEAMOUNT({
-      customer: newCustomer._id,
-      amount: deposite_amount,
-    });
-
-    //Create transaction for deposite amount
-    const newTransaction = await TRANSACTION({
-      transactionType: "income",
-      type: "deposite",
-      refModel: "Depositeamount",
-      refId: newDepositeAmount._id,
-      payment_mode: payment_mode,
-      status: "completed",
-      branch,
-      pgcode,
-      bank_account: bank_account,
-      added_by: mongoid,
-      added_by_type: userType
-    });
-
     //Send mail to customer
     await sendCustomerWelcomeEmail(
       email,
@@ -244,20 +216,43 @@ export const createCustomer = async (req, res, next) => {
       pgcode
     );
 
+    if(variable_deposite_amount){
+      //Create deposite amount
+      const newDepositeAmount = await DEPOSITEAMOUNT({
+        customer: newCustomer._id,
+        amount: variable_deposite_amount,
+      });
+
+      //Create transaction for deposite amount
+      const newTransaction = await TRANSACTION({
+        transactionType: "deposite",
+        type: "deposite",
+        refModel: "Depositeamount",
+        refId: newDepositeAmount._id,
+        payment_mode: payment_mode,
+        status: "completed",
+        branch,
+        pgcode,
+        bank_account: bank_account,
+        added_by: mongoid,
+        added_by_type: userType,
+      });
+
+      await newDepositeAmount.save();
+      await newTransaction.save();
+   }
+
     await newLogin.save();
     await existRoom.save();
     await newCustomer.save();
     await newCustomerRent.save();
-    await newDepositeAmount.save();
-    await newTransaction.save();
 
-    return res
-      .status(200)
-      .json({
-        message: "New customer created successfully.",
-        success: true,
-        data: newCustomer,
-      });
+
+    return res.status(200).json({
+      message: "New customer created successfully.",
+      success: true,
+      data: newCustomer,
+    });
   } catch (err) {
     next(err);
   }
@@ -280,13 +275,10 @@ export const getAllCustomer = async (req, res, next) => {
 
       if (branch) {
         if (!account.branch.includes(branch)) {
-          return res
-            .status(403)
-            .json({
-              message:
-                "You are not authorized to view customers in this branch.",
-              success: false,
-            });
+          return res.status(403).json({
+            message: "You are not authorized to view customers in this branch.",
+            success: false,
+          });
         }
         branchFilter = mongoose.Types.ObjectId.createFromHexString(branch);
       } else {
@@ -372,6 +364,8 @@ export const getAllCustomer = async (req, res, next) => {
           email: 1,
           mobile_no: 1,
           deposite_amount: 1,
+          paid_deposite_amount: 1,
+          deposite_status: 1,
           rent_amount: 1,
           joining_date: 1,
           aadharcard_url: 1,
@@ -428,12 +422,10 @@ export const getCustomerByRoomId = async (req, res, next) => {
           .json({ message: "Account manager not found.", success: false });
 
       if (!account.branch.includes(room.branch))
-        return res
-          .status(403)
-          .json({
-            message: "You are not authorized to view customers in this room.",
-            success: false,
-          });
+        return res.status(403).json({
+          message: "You are not authorized to view customers in this room.",
+          success: false,
+        });
     }
 
     const { searchQuery } = req.query;
@@ -474,13 +466,11 @@ export const getCustomerByRoomId = async (req, res, next) => {
       },
     ]);
 
-    return res
-      .status(200)
-      .json({
-        message: "All customer details retrived by room id",
-        success: true,
-        data: customers,
-      });
+    return res.status(200).json({
+      message: "All customer details retrived by room id",
+      success: true,
+      data: customers,
+    });
   } catch (err) {
     next(err);
   }
@@ -512,12 +502,10 @@ export const getCustomerByBranchId = async (req, res, next) => {
           .json({ message: "Account manager not found.", success: false });
 
       if (!account.branch.includes(branchId))
-        return res
-          .status(403)
-          .json({
-            message: "You are not authorized to view customers in this branch.",
-            success: false,
-          });
+        return res.status(403).json({
+          message: "You are not authorized to view customers in this branch.",
+          success: false,
+        });
     }
 
     const { searchQuery } = req.query;
@@ -559,13 +547,11 @@ export const getCustomerByBranchId = async (req, res, next) => {
       },
     ]);
 
-    return res
-      .status(200)
-      .json({
-        message: "All customer details retrived by branch id.",
-        success: true,
-        data: customers,
-      });
+    return res.status(200).json({
+      message: "All customer details retrived by branch id.",
+      success: true,
+      data: customers,
+    });
   } catch (err) {
     next(err);
   }
@@ -580,37 +566,44 @@ export const updateCustomerDetails = async (req, res, next) => {
     const { userType, mongoid, pgcode } = req;
     const {
       customer_name,
+      email,
       mobile_no,
       deposite_amount,
       rent_amount,
       room,
       branch,
       joining_date,
+      ref_person_name,
+      ref_person_contact_no
     } = req.body;
 
     if (!customerId) {
       await session.abortTransaction();
       session.endSession();
+      removeFile(path.join("uploads", "aadhar", req.file.filename));
       return res
         .status(400)
         .json({ message: "Please provide customer id.", success: false });
     }
 
-    const customer = await CUSTOMER.findOne({ _id: customerId, pgcode })
-      .populate({
-        path: "loginDetails",
-        model: "LOGINMAPPING",
-        match: { status: { $in: ["active", "inactive"] } },
-      })
-      .session(session);
+    const customer = await CUSTOMER.findById(customerId)
+    .session(session);
 
     if (!customer) {
       await session.abortTransaction();
       session.endSession();
+      removeFile(path.join("uploads", "aadhar", req.file.filename));
       return res
         .status(404)
         .json({ message: "Customer not found.", success: false });
     }
+
+    const customerLogin = await LOGINMAPPING.findOne({
+      mongoid: customerId,
+      pgcode,
+      userType: "Customer",
+      status: { $in: ["active", "inactive"] },
+    })
 
     if (userType === "Account") {
       const account = await ACCOUNT.findById(mongoid);
@@ -618,6 +611,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (!account) {
         await session.abortTransaction();
         session.endSession();
+        removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res
           .status(404)
           .json({ message: "Account manager not found.", success: false });
@@ -626,13 +620,12 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (!account.branch.includes(customer.branch.toString())) {
         await session.abortTransaction();
         session.endSession();
-        return res
-          .status(403)
-          .json({
-            message:
-              "You are not authorized to update customer details in this branch.",
-            success: false,
-          });
+        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        return res.status(403).json({
+          message:
+            "You are not authorized to update customer details in this branch.",
+          success: false,
+        });
       }
     }
 
@@ -644,19 +637,107 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (existCustomer) {
         await session.abortTransaction();
         session.endSession();
-        return res
-          .status(409)
-          .json({
-            message: "Customer already exists with same mobile no.",
-            success: false,
-          });
+        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        return res.status(409).json({
+          message: "Customer already exists with same mobile no.",
+          success: false,
+        });
       }
       customer.mobile_no = mobile_no;
     }
 
+    //Email address check
+    if (email && email !== customer.email) {
+       const existCustomer = await LOGINMAPPING.findOne({email ,status:'active'})
+
+       if(existCustomer) {
+        await session.abortTransaction();
+        session.endSession();
+        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        return res.status(409).json({
+          message: "Customer already exists with same email address.",
+          success: false,
+        });
+       }
+
+       customer.email = email;
+       customerLogin.email = email;
+
+    } 
+
     if (customer_name) customer.customer_name = customer_name;
-    if (deposite_amount) customer.deposite_amount = deposite_amount;
-    if (rent_amount) customer.rent_amount = rent_amount;
+    if (deposite_amount && deposite_amount !== customer.deposite_amount){
+       if(deposite_amount < customer.deposite_amount){
+
+          const defaultBankAccount = await BANKACCOUNT.findOne({pgcode, is_default:true}).session(session)
+
+          const newDepositeAmount = await DEPOSITEAMOUNT({
+            customer: customer._id,
+            amount: customer.deposite_amount - deposite_amount,
+          })
+          
+          const newTransaction = await TRANSACTION({
+            transactionType: "withdrawal",
+            type: "deposite",
+            refModel: "Depositeamount",
+            refId: newDepositeAmount._id,
+            payment_mode: "cash",
+            status: "completed",
+            branch: customer.branch,
+            bank_account: defaultBankAccount ? defaultBankAccount._id : null,
+            pgcode,
+            added_by: mongoid,
+            added_by_type: userType,
+          })
+
+          await newDepositeAmount.save({session});
+          await newTransaction.save({session});
+
+       }else{
+          customer.deposite_status = 'Pending'
+       }
+       customer.deposite_amount = deposite_amount;
+    }
+
+    if (rent_amount){      
+
+       if(rent_amount < customer.rent_amount){
+          await session.abortTransaction();
+          session.endSession();
+          removeFile(path.join("uploads", "aadhar", req.file.filename));
+          return  res.status(400).json({
+            message: "Rent amount cannot be less than previous rent amount.",
+            success: false,
+          });
+       }
+
+       customer.rent_amount = rent_amount;
+
+       const customerRent = await CUSTOMERRENT.findOne({
+        customer: customer._id,
+        month: new Date().getMonth() + 1,
+        year: new Date().getFullYear(),
+       })
+
+       customerRent.rent_amount = rent_amount;
+       customerRent.status = 'Pending';
+
+       //Reset all marked flags
+       customerRent.setteled = false;
+       customerRent.skipped = false;
+       customerRent.is_deposite = false;
+
+    }
+
+    if(req.file){
+      //Remove old aadhar image
+      const oldImagePath = customer.aadharcard_url.split('/uploads/aadhar/')[1];
+      await removeFile(path.join('uploads', 'aadhar', oldImagePath));
+
+      //Set new aadhar image
+      let imageUrl = `${process.env.DOMAIN}/uploads/aadhar/${req.file.filename}`;
+      customer.aadharcard_url = imageUrl;
+    }
 
     // ✅ Branch check
     if (branch) {
@@ -664,6 +745,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (!existBranch || existBranch.pgcode !== req.pgcode) {
         await session.abortTransaction();
         session.endSession();
+        removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res
           .status(400)
           .json({ message: "Invalid branch for this PG", success: false });
@@ -684,6 +766,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (!newRoom || newRoom.pgcode !== req.pgcode) {
         await session.abortTransaction();
         session.endSession();
+        removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res
           .status(400)
           .json({ message: "Invalid new room for this PG", success: false });
@@ -693,6 +776,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (newRoom.filled >= newRoom.capacity) {
         await session.abortTransaction();
         session.endSession();
+        removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res
           .status(400)
           .json({ message: "New room is already full", success: false });
@@ -718,17 +802,20 @@ export const updateCustomerDetails = async (req, res, next) => {
 
     if (joining_date) customer.joining_date = joining_date;
 
+    if (ref_person_name) customer.ref_person_name = ref_person_name;
+
+    if(ref_person_contact_no) customer.ref_person_contact_no = ref_person_contact_no;
+
     await customer.save({ session });
+    await customerLogin.save({ session });
 
     await session.commitTransaction();
     session.endSession();
 
-    return res
-      .status(200)
-      .json({
-        message: "Customer details updated successfully.",
-        success: true,
-      });
+    return res.status(200).json({
+      message: "Customer details updated successfully.",
+      success: true,
+    });
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
@@ -749,12 +836,10 @@ export const changeStatus = async (req, res, next) => {
     if (!customerId || status === undefined) {
       await session.abortTransaction();
       session.endSession();
-      return res
-        .status(400)
-        .json({
-          message: "Please provide customer id and status",
-          success: false,
-        });
+      return res.status(400).json({
+        message: "Please provide customer id and status",
+        success: false,
+      });
     }
 
     // normalize requested status to boolean
@@ -787,13 +872,11 @@ export const changeStatus = async (req, res, next) => {
       if (!account.branch.includes(customer.branch.toString())) {
         await session.abortTransaction();
         session.endSession();
-        return res
-          .status(403)
-          .json({
-            message:
-              "You are not authorized to change customer status in this branch.",
-            success: false,
-          });
+        return res.status(403).json({
+          message:
+            "You are not authorized to change customer status in this branch.",
+          success: false,
+        });
       }
     }
 
@@ -812,23 +895,19 @@ export const changeStatus = async (req, res, next) => {
     if (!loginmapping) {
       await session.abortTransaction();
       session.endSession();
-      return res
-        .status(404)
-        .json({
-          message: "Customer not found in Loginmapping.",
-          success: false,
-        });
+      return res.status(404).json({
+        message: "Customer not found in Loginmapping.",
+        success: false,
+      });
     }
     if (loginmapping.status === desiredStatus) {
       await session.abortTransaction();
       session.endSession();
-      return res
-        .status(200)
-        .json({
-          message: "No change in status.",
-          success: true,
-          data: customer,
-        });
+      return res.status(200).json({
+        message: "No change in status.",
+        success: true,
+        data: customer,
+      });
     }
 
     // ensure room belongs to same PG
@@ -838,12 +917,10 @@ export const changeStatus = async (req, res, next) => {
     if (!room) {
       await session.abortTransaction();
       session.endSession();
-      return res
-        .status(404)
-        .json({
-          message: "Customer room is missing or invalid.",
-          success: false,
-        });
+      return res.status(404).json({
+        message: "Customer room is missing or invalid.",
+        success: false,
+      });
     }
 
     let updatedRoom;
@@ -853,12 +930,10 @@ export const changeStatus = async (req, res, next) => {
       if (room.filled >= room.capacity) {
         await session.abortTransaction();
         session.endSession();
-        return res
-          .status(400)
-          .json({
-            message: "Room is full. Cannot activate customer.",
-            success: false,
-          });
+        return res.status(400).json({
+          message: "Room is full. Cannot activate customer.",
+          success: false,
+        });
       }
 
       updatedRoom = await ROOM.findByIdAndUpdate(
@@ -918,22 +993,24 @@ export const getPendingCustomerRentList = async (req, res, next) => {
 
     const activeCustomerMappings = await LOGINMAPPING.find({
       pgcode,
-      status: 'active',
-      userType: 'Customer'
-    }).select("mongoid")
+      status: "active",
+      userType: "Customer",
+    }).select("mongoid");
 
-    const customerIds = activeCustomerMappings.map(mapping => mapping.mongoid);
+    const customerIds = activeCustomerMappings.map(
+      (mapping) => mapping.mongoid
+    );
 
     if (!customerIds.length) {
       return res.status(200).json({
-        message: 'No active customer found for this pg.',
+        message: "No active customer found for this pg.",
         success: true,
-        data: []
-      })
+        data: [],
+      });
     }
 
     let filter = {
-      _id: { $in: customerIds }
+      _id: { $in: customerIds },
     };
 
     if (searchQuery) {
@@ -950,24 +1027,26 @@ export const getPendingCustomerRentList = async (req, res, next) => {
 
       if (branch) {
         if (!account.branch.includes(branch))
-          return res
-            .status(403)
-            .json({
-              message:
-                "You are not authorized to view customers in this branch.",
-              success: false,
-            });
+          return res.status(403).json({
+            message: "You are not authorized to view customers in this branch.",
+            success: false,
+          });
         filter.branch = branch;
       } else {
         filter.branch = { $in: account.branch };
       }
-    } else if (userType === 'Admin') {
+    } else if (userType === "Admin") {
       // For other user types, apply branch filter if provided
       if (branch) {
         filter.branch = branch;
       }
     } else {
-      return res.status(403).json({ message: 'You are not authorized to view this resource.', success: false })
+      return res
+        .status(403)
+        .json({
+          message: "You are not authorized to view this resource.",
+          success: false,
+        });
     }
 
     const customers = await CUSTOMER.find(filter)
@@ -977,21 +1056,27 @@ export const getPendingCustomerRentList = async (req, res, next) => {
     const result = [];
 
     for (const customer of customers) {
-      const pendingRents = await CUSTOMERRENT.find({ customer: customer._id, status: 'Pending' })
+      const pendingRents = await CUSTOMERRENT.find({
+        customer: customer._id,
+        status: "Pending",
+      });
 
-      const pendingRentMap = []
+      const pendingRentMap = [];
 
-      let pendingAmount = 0
+      let pendingAmount = 0;
 
       for (const customerRent of pendingRents) {
-        const isRequired = !(customerRent.month === (new Date().getMonth() + 1) && customerRent.year === new Date().getFullYear())
-        pendingAmount += (customerRent.rent_amount - customerRent.paid_amount)
+        const isRequired = !(
+          customerRent.month === new Date().getMonth() + 1 &&
+          customerRent.year === new Date().getFullYear()
+        );
+        pendingAmount += customerRent.rent_amount - customerRent.paid_amount;
         pendingRentMap.push({
           month: customerRent.month,
           year: customerRent.year,
           pending: customerRent.rent_amount - customerRent.paid_amount,
-          required: isRequired
-        })
+          required: isRequired,
+        });
       }
 
       if (pendingRentMap.length > 0) {
@@ -1003,19 +1088,16 @@ export const getPendingCustomerRentList = async (req, res, next) => {
           mobile_no: customer.mobile_no,
           rent_amount: customer.rent_amount,
           pending_amount: pendingAmount,
-          pending_rent: pendingRentMap
-        })
+          pending_rent: pendingRentMap,
+        });
       }
-
     }
 
-    return res
-      .status(200)
-      .json({
-        message: "Pending customer list fetched successfully.",
-        success: true,
-        data: result,
-      });
+    return res.status(200).json({
+      message: "Pending customer list fetched successfully.",
+      success: true,
+      data: result,
+    });
   } catch (err) {
     next(err);
   }
@@ -1037,13 +1119,10 @@ export const exportCustomersToExcel = async (req, res, next) => {
 
       if (branch) {
         if (!account.branch.includes(branch)) {
-          return res
-            .status(403)
-            .json({
-              message:
-                "You are not authorized to view customers in this branch.",
-              success: false,
-            });
+          return res.status(403).json({
+            message: "You are not authorized to view customers in this branch.",
+            success: false,
+          });
         }
         filter.branch = branch;
       } else {
@@ -1103,7 +1182,7 @@ export const verifyCustomer = async (req, res, next) => {
   try {
     const { pgcode, mongoid, userType } = req;
     const { customerId } = req.params;
-    const { deposite_amount, rent_amount, payment_mode, bank_account } =
+    const { deposite_amount, variable_deposite_amount, rent_amount, payment_mode, bank_account } =
       req.body;
 
     if (!customerId)
@@ -1112,12 +1191,10 @@ export const verifyCustomer = async (req, res, next) => {
         .json({ message: "Please provide customer id.", success: false });
 
     if (!deposite_amount || !rent_amount)
-      return res
-        .status(400)
-        .json({
-          message: "Please provide all required fields.",
-          success: false,
-        });
+      return res.status(400).json({
+        message: "Please provide all required fields.",
+        success: false,
+      });
 
     const customer = await CUSTOMER.findById(customerId);
 
@@ -1141,6 +1218,8 @@ export const verifyCustomer = async (req, res, next) => {
 
     customerLogin.status = "active";
 
+    customer.deposite_status = variable_deposite_amount == deposite_amount ? "Paid" : "Pending"
+
     // Create customer rent
     const newCustomerRent = await CUSTOMERRENT({
       customer: customer._id,
@@ -1151,32 +1230,36 @@ export const verifyCustomer = async (req, res, next) => {
       year: new Date().getFullYear(),
     });
 
-    // Create new deposite amount
-    const newDepositeAmount = await DEPOSITEAMOUNT({
-      customer: customer._id,
-      amount: deposite_amount,
-    });
+    if(variable_deposite_amount){
+      customer.paid_deposite_amount = variable_deposite_amount;
+      // Create new deposite amount
+      const newDepositeAmount = await DEPOSITEAMOUNT({
+        customer: customer._id,
+        amount: deposite_amount,
+      });
 
-    // Create transaction for deposite amount
-    const newTransaction = await TRANSACTION({
-      transactionType: "income",
-      type: "deposite",
-      refModel: "Depositeamount",
-      refId: newDepositeAmount._id,
-      payment_mode: payment_mode,
-      status: "completed",
-      branch: customer.branch,
-      pgcode,
-      bank_account: bank_account,
-      added_by: mongoid,
-      added_by_type: userType
-    });
+      // Create transaction for deposite amount
+      const newTransaction = await TRANSACTION({
+        transactionType: "deposite",
+        type: "deposite",
+        refModel: "Depositeamount",
+        refId: newDepositeAmount._id,
+        payment_mode: payment_mode,
+        status: "completed",
+        branch: customer.branch,
+        pgcode,
+        bank_account: bank_account,
+        added_by: mongoid,
+        added_by_type: userType,
+      });
+
+      await newDepositeAmount.save();
+      await newTransaction.save();
+    }
 
     await customer.save();
     await customerLogin.save();
     await newCustomerRent.save();
-    await newDepositeAmount.save();
-    await newTransaction.save();
 
     return res
       .status(200)
@@ -1188,113 +1271,145 @@ export const verifyCustomer = async (req, res, next) => {
 
 export const getCustomerPendingRentListById = async (req, res, next) => {
   try {
-    const { pgcode, userType, mongoid } = req
-    const { customerId } = req.params
+    const { pgcode, userType, mongoid } = req;
+    const { customerId } = req.params;
 
     const customer = await CUSTOMER.findById(customerId)
-      .populate('branch')
-      .populate('room')
+      .populate("branch")
+      .populate("room");
 
-    if (!customer) return res.status(404).json({ message: "Customer not found.", success: false })
+    if (!customer)
+      return res
+        .status(404)
+        .json({ message: "Customer not found.", success: false });
 
-    if (userType === 'Account') {
-      const account = await ACCOUNT.findById(mongoid)
+    if (userType === "Account") {
+      const account = await ACCOUNT.findById(mongoid);
 
-      if (!account) return res.status(404).json({ message: "Account manager not found.", success: false })
+      if (!account)
+        return res
+          .status(404)
+          .json({ message: "Account manager not found.", success: false });
 
       if (!account.branch.includes(customer.branch.toString())) {
-        return res.status(403).json({ message: "You are not authorized to view customers in this branch.", success: false })
+        return res
+          .status(403)
+          .json({
+            message: "You are not authorized to view customers in this branch.",
+            success: false,
+          });
       }
     }
 
-    //Getting pending customer rent list 
-    const pendingRents = await CUSTOMERRENT.find({ customer: customer._id, status: 'Pending' })
+    //Getting pending customer rent list
+    const pendingRents = await CUSTOMERRENT.find({
+      customer: customer._id,
+      status: "Pending",
+    });
 
-    const pendingRentMap = []
+    const pendingRentMap = [];
 
     for (const customerRent of pendingRents) {
-      const isRequired = !(customerRent.month === (new Date().getMonth() + 1) && customerRent.year === new Date().getFullYear())
+      const isRequired = !(
+        customerRent.month === new Date().getMonth() + 1 &&
+        customerRent.year === new Date().getFullYear()
+      );
+
+      //Getting customer request
+      const transactions = await TRANSACTION.find({
+        transactionType: "income",
+        type: "rent_attempt",
+        refModel: "Rentattempt",
+        pgcode,
+        added_by_type: "Customer",
+        branch: customer.branch,
+      })
+        .populate({
+          path: "refId",
+          model: "Rentattempt",
+          match: {
+            customer: customer._id,
+            month: customerRent.month,
+            year: customerRent.year,
+          },
+        })
+        .populate("bank_account")
+        .sort({ createdAt: -1 });
+
+      const customerRequest = [];
+
+      for (const tx of transactions) {
+        const entry = tx.refId;
+
+        if (!entry) continue;
+
+        customerRequest.push({
+          transactionId: tx._id,
+          bank_account: tx.bank_account,
+          payment_mode: tx.payment_mode,
+          amount: entry.amount,
+          payment_proof: entry.payment_proof,
+          month: entry.month,
+          year: entry.year,
+          status: tx.status,
+        });
+      }
+
+
       pendingRentMap.push({
         month: customerRent.month,
         year: customerRent.year,
         pending: customerRent.rent_amount - customerRent.paid_amount,
         required: isRequired,
         rent_amount: customerRent.rent_amount,
-        extra_charges: customerRent.extraChargeSchemas
-      })
-    }
+        extra_charges: customerRent.extraChargeSchemas,
+        customerRequest,
+      });
 
-    //Getting customer request 
-    const transactions = await TRANSACTION.find({
-      transactionType: 'income',
-      type: 'rent_attempt',
-      refModel: 'Rentattempt',
-      pgcode,
-      added_by_type: 'Customer',
-      branch: customer.branch
-    }).populate({
-      path: 'refId',
-      model: 'Rentattempt',
-      match: { customer: customer._id }
-    }).populate('bank_account').sort({ createdAt: -1 })
-
-    const customerRequest = []
-
-    for (const tx of transactions) {
-      const entry = tx.refId
-
-      if (!entry) continue;
-
-      customerRequest.push({
-        transactionId: tx._id,
-        bank_account: tx.bank_account,
-        payment_mode: tx.payment_mode,
-        amount: entry.amount,
-        payment_proof: entry.payment_proof,
-        month: entry.month,
-        year: entry.year,
-        status: tx.status,
-      })
     }
 
     return res.status(200).json({
-      message: "Customer pending rent list details fetched successfully.", success: true, data: {
+      message: "Customer pending rent list details fetched successfully.",
+      success: true,
+      data: {
         customerId: customerId,
         customer_name: customer.customer_name,
         branch: customer.branch,
         room: customer.room,
         mobile_no: customer.mobile_no,
         pendingRentMap,
-        customerRequest
-      }
-    })
-
-
+      },
+    });
   } catch (err) {
-    next(err)
+    next(err);
   }
-}
+};
 
 export const getCustomerDetailsForCustomer = async (req, res, next) => {
   try {
+    const { userType, mongoid } = req;
 
-    const { userType, mongoid } = req
+    console.log(mongoid)
 
-    let data = {}
-
-    if (userType !== 'Customer') {
-      return res.status(403).json({ message: "You are not Autherized to access This Data.", success: false })
+    if (userType !== "Customer") {
+      return res
+        .status(403)
+        .json({
+          message: "You are not Autherized to access This Data.",
+          success: false,
+        });
     }
 
     // find Customer
     const customer = await CUSTOMER.findById(mongoid)
-      .populate('branch')
+      .populate("branch")
       .populate({
-        path: 'room',
+        path: "room",
         populate: {
-          path: 'floor_id'
-        }
-      }).lean()
+          path: "floor_id",
+        },
+      })
+      .lean();
 
     data.customer = customer
 
@@ -1311,127 +1426,166 @@ export const getCustomerDetailsForCustomer = async (req, res, next) => {
     data.pglogo = admin.pglogo
 
     if (!customer) {
-      return res.status(404).json({ message: "Customer Not Found.", success: false })
+      return res
+        .status(404)
+        .json({ message: "Customer Not Found.", success: false });
     }
 
-    return res.status(200).json({ message: "Customer Data Recieved Successfully", data, success: true })
-
+    return res
+      .status(200)
+      .json({
+        message: "Customer Data Recieved Successfully",
+        data: customer,
+        success: true,
+      });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
 export const updateCustomerByCustomer = async (req, res, next) => {
-
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    let { name, email, mobile } = req.body
-    const { userType, mongoid, pgcode } = req
+    let { name, email, mobile } = req.body;
+    const { userType, mongoid, pgcode } = req;
 
-    if (userType !== 'Customer') {
-
+    if (userType !== "Customer") {
       await session.abortTransaction();
       session.endSession();
 
-      return res.status(403).json({ message: "You are not Autherized to access This Data.", success: false })
+      return res
+        .status(403)
+        .json({
+          message: "You are not Autherized to access This Data.",
+          success: false,
+        });
     }
 
-    let customer = await CUSTOMER.findById(mongoid).session(session)
+    let customer = await CUSTOMER.findById(mongoid).session(session);
 
     if (!customer) {
-
       await session.abortTransaction();
       session.endSession();
 
-      return res.status(404).json({ message: "Customer Not Found.", success: false })
+      return res
+        .status(404)
+        .json({ message: "Customer Not Found.", success: false });
     }
 
     if (name) {
-      customer.customer_name = name
+      customer.customer_name = name;
     }
 
     if (mobile && mobile !== customer.mobile_no) {
-      const existCustomer = await CUSTOMER.findOne({ mobile_no: mobile, _id: { $ne: mongoid } }).session(session)
+      const existCustomer = await CUSTOMER.findOne({
+        mobile_no: mobile,
+        _id: { $ne: mongoid },
+      }).session(session);
 
       if (existCustomer) {
-
         await session.abortTransaction();
         session.endSession();
 
-        return res.status(409).json({ message: "Customer already exists with same mobile no.", success: false })
+        return res
+          .status(409)
+          .json({
+            message: "Customer already exists with same mobile no.",
+            success: false,
+          });
       }
 
-      customer.mobile_no = mobile
+      customer.mobile_no = mobile;
     }
 
     if (email && email !== customer.email) {
-      const customerLogin = await LOGINMAPPING.findOne({ mongoid, pgcode }).session(session)
+      const customerLogin = await LOGINMAPPING.findOne({
+        mongoid,
+        pgcode,
+      }).session(session);
 
-      const existCustomer = await CUSTOMER.findOne({ email: email, _id: { $ne: mongoid } }).session(session)
+      const existCustomer = await CUSTOMER.findOne({
+        email: email,
+        _id: { $ne: mongoid },
+      }).session(session);
 
       if (existCustomer) {
         await session.abortTransaction();
         session.endSession();
-        return res.status(409).json({ message: "Customer already exists with same Email.", success: false })
+        return res
+          .status(409)
+          .json({
+            message: "Customer already exists with same mobile no.",
+            success: false,
+          });
       }
 
-      customerLogin.email = email
-      await customerLogin.save({ session })
-      customer.email = email
+      customerLogin.email = email;
+      await customerLogin.save({ session });
+      customer.email = email;
     }
 
-
-    await customer.save({ session })
+    await customer.save({ session });
 
     await session.commitTransaction();
     session.endSession();
 
-    return res.status(200).json({ message: "Customer Details Update Successfully by Customer.", success: true })
-
+    return res
+      .status(200)
+      .json({
+        message: "Customer Details Update Successfully by Customer.",
+        success: true,
+      });
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    next(error)
+    next(error);
   }
-}
-
+};
 
 export const getCustomerRentListForCustomer = async (req, res, next) => {
   try {
-    const { mongoid, pgcode } = req
+    const { mongoid, pgcode } = req;
 
-    const customer = await CUSTOMER.findById(mongoid)
+    const customer = await CUSTOMER.findById(mongoid);
 
-    const scanner = await SCANNER.findOne({ pgcode, branch: customer.branch, status: 'active' }).populate('bankaccount')
+    const scanner = await SCANNER.findOne({
+      pgcode,
+      branch: customer.branch,
+      status: "active",
+    }).populate("bankaccount");
 
-    if (!customer) return res.status(404).json({ message: "Customer not found.", success: false })
+    if (!customer)
+      return res
+        .status(404)
+        .json({ message: "Customer not found.", success: false });
 
     //Retrieving customer rent list
-    const customerRents = await CUSTOMERRENT.find({ customer: mongoid })
+    const customerRents = await CUSTOMERRENT.find({ customer: mongoid });
 
-    let rentList = []
+    let rentList = [];
 
     for (const rent of customerRents) {
-
       const customerRequest = await TRANSACTION.find({
-        transactionType: 'income',
-        type: 'rent_attempt',
-        refModel: 'Rentattempt',
+        transactionType: "income",
+        type: "rent_attempt",
+        refModel: "Rentattempt",
         pgcode,
-        added_by_type: 'Customer',
-        branch: customer.branch
-      }).populate({
-        path: 'refId',
-        model: 'Rentattempt',
-        match: { customer: customer._id, month: rent.month, year: rent.year }
-      }).sort({ createdAt: -1 })
+        added_by_type: "Customer",
+        branch: customer.branch,
+      })
+        .populate({
+          path: "refId",
+          model: "Rentattempt",
+          match: { customer: customer._id, month: rent.month, year: rent.year },
+        })
+        .sort({ createdAt: -1 });
 
-      let requestList = []
+      let requestList = [];
 
       for (const req of customerRequest) {
-        const entry = req.refId
+        const entry = req.refId;
 
         if (!entry) continue;
 
@@ -1441,8 +1595,8 @@ export const getCustomerRentListForCustomer = async (req, res, next) => {
           month: entry.month,
           year: entry.year,
           status: req.status,
-          payment_mode: req.payment_mode
-        })
+          payment_mode: req.payment_mode,
+        });
       }
 
       rentList.push({
@@ -1452,71 +1606,100 @@ export const getCustomerRentListForCustomer = async (req, res, next) => {
         rent_amount: rent.rent_amount,
         pending: rent.rent_amount - rent.paid_amount,
         extra_charges: rent.extraChargeSchemas,
-        requestList
-      })
-
+        requestList,
+      });
     }
 
-
     return res.status(200).json({
-      message: "Customer rent list fetched successfully.", success: true, data: {
+      message: "Customer rent list fetched successfully.",
+      success: true,
+      data: {
         customerId: customer._id,
         customer_name: customer.customer_name,
         mobile_no: customer.mobile_no,
         rentList,
-        scannerDetails: scanner || null
-      }
-    })
-
-
-
+        scannerDetails: scanner || null,
+      },
+    });
   } catch (err) {
-    next(err)
+    next(err);
   }
-}
+};
 
 // today dailyUpdate , complaint of customer , pending rent amount , pending rent months
 export const getDashboardSummary = async (req, res, next) => {
   try {
-    const { mongoid, userType, pgcode } = req
+    const { mongoid, userType, pgcode } = req;
 
-    let dailyUpdateCount = 0
-    let complaintCount = 0
-    let pendingRentAmount = 0
-    let pendingRentMonths = 0
+    let dailyUpdateCount = 0;
+    let complaintCount = 0;
+    let pendingRentAmount = 0;
+    let pendingRentMonths = 0;
 
-    let startofDay = new Date()
-    startofDay.setHours(0, 0, 0, 0)
+    let startofDay = new Date();
+    startofDay.setHours(0, 0, 0, 0);
 
-    let endofDay = new Date()
-    endofDay.setHours(23, 59, 59, 999)
+    let endofDay = new Date();
+    endofDay.setHours(23, 59, 59, 999);
 
-    if (userType !== 'Customer') {
-      return res.status(403).json({ message: "You are not Autherized to access This Data.", success: false })
+    if (userType !== "Customer") {
+      return res
+        .status(403)
+        .json({
+          message: "You are not Autherized to access This Data.",
+          success: false,
+        });
     }
 
-    const customer = await CUSTOMER.findById(mongoid)
+    const customer = await CUSTOMER.findById(mongoid);
 
     if (!customer) {
-      return res.status(404).json({ message: "Customer Not Found.", success: false })
+      return res
+        .status(404)
+        .json({ message: "Customer Not Found.", success: false });
     }
 
-    const branch = customer.branch
+    const branch = customer.branch;
 
-    dailyUpdateCount = await DAILYUPDATE.countDocuments({ pgcode, branch, createdAt: { $gte: startofDay, $lte: endofDay } })
+    dailyUpdateCount = await DAILYUPDATE.countDocuments({
+      pgcode,
+      branch,
+      createdAt: { $gte: startofDay, $lte: endofDay },
+    });
 
-    complaintCount = await COMPLAINT.countDocuments({ pgcode, branch, added_by: mongoid })
+    complaintCount = await COMPLAINT.countDocuments({
+      pgcode,
+      branch,
+      added_by: mongoid,
+    });
 
-    pendingRentMonths = await CUSTOMERRENT.countDocuments({ customer: mongoid, status: "Pending" })
+    pendingRentMonths = await CUSTOMERRENT.countDocuments({
+      customer: mongoid,
+      status: "Pending",
+    });
 
-    const pendingRent = await CUSTOMERRENT.find({ customer: mongoid, status: "Pending" })
+    const pendingRent = await CUSTOMERRENT.find({
+      customer: mongoid,
+      status: "Pending",
+    });
 
-    pendingRent.forEach(rent => {
-      pendingRentAmount += (rent.rent_amount - rent.paid_amount)
-    })
+    pendingRent.forEach((rent) => {
+      pendingRentAmount += rent.rent_amount - rent.paid_amount;
+    });
 
-    return res.status(200).json({ message: "Dashboard Summary Fetched Successfully.", success: true, data: { dailyUpdateCount, complaintCount, pendingRentAmount, pendingRentMonths } })
+    return res
+      .status(200)
+      .json({
+        message: "Dashboard Summary Fetched Successfully.",
+        success: true,
+        data: {
+          dailyUpdateCount,
+          complaintCount,
+          pendingRentAmount,
+          pendingRentMonths,
+        },
+      });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};

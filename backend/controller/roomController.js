@@ -15,8 +15,6 @@ export const createRoom = async (req, res, next) => {
 
         if (existRoom) return res.status(409).json({ message: "Room is already exist with given room no.", success: false })
 
-        console.log("pgcode", pgcode)
-
         const existBranch = await BRANCH.findOne({ _id: branch, pgcode })
 
         if (!existBranch) return res.status(404).json({ message: "Branch not found.", success: false })
