@@ -14,20 +14,19 @@ const __dirname = path.dirname(__filename)
 
 export const addScanner = async (req, res, next) => {
     try {
-
-        let { bankac, branch } = req.body
+        let { bankaccount, branch } = req.body
         const { pgcode, mongoid, userType } = req
 
-        if (!bankac || !branch) {
+        if (!bankaccount || !branch) {
 
             if (req.file) {
                 await removeFile(path.join("uploads", "scanner", req.file.filename));
             }
 
-            return res.status(400).json({ message: "Please provide All Required Fields", success: false })
+            return res.status(400).json({ message: "bsdsdv", success: false })
         }
 
-        const bankAc = await BANKACCOUNT.findOne({ _id: bankac, pgcode })
+        const bankAc = await BANKACCOUNT.findOne({ _id: bankaccount, pgcode })
 
         if (!bankAc) {
             if (req.file) {
@@ -69,7 +68,7 @@ export const addScanner = async (req, res, next) => {
 
         const newScanner = new SCANNER({
             sc_image: scannerurl,
-            bankaccount: bankac,
+            bankaccount: bankaccount,
             pgcode,
             branch,
             added_by: mongoid,
@@ -78,7 +77,7 @@ export const addScanner = async (req, res, next) => {
 
         await newScanner.save()
 
-        return res.status(201).json({ message: "new Scanner Add Successfully.", success: true })
+        return res.status(201).json({ message: "New Scanner Add Successfully.", success: true })
 
     } catch (error) {
         next(error)

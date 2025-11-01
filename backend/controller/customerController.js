@@ -917,23 +917,23 @@ export const getPendingCustomerRentList = async (req, res, next) => {
     const { searchQuery, branch } = req.query;
 
     const activeCustomerMappings = await LOGINMAPPING.find({
-       pgcode,
-       status:'active',
-       userType:'Customer'
+      pgcode,
+      status: 'active',
+      userType: 'Customer'
     }).select("mongoid")
 
     const customerIds = activeCustomerMappings.map(mapping => mapping.mongoid);
 
-    if(!customerIds.length){
+    if (!customerIds.length) {
       return res.status(200).json({
-        message:'No active customer found for this pg.',
-        success:true,
-        data:[]
+        message: 'No active customer found for this pg.',
+        success: true,
+        data: []
       })
     }
 
     let filter = {
-      _id: {$in: customerIds}
+      _id: { $in: customerIds }
     };
 
     if (searchQuery) {
@@ -961,13 +961,13 @@ export const getPendingCustomerRentList = async (req, res, next) => {
       } else {
         filter.branch = { $in: account.branch };
       }
-    } else if(userType === 'Admin'){ 
+    } else if (userType === 'Admin') {
       // For other user types, apply branch filter if provided
       if (branch) {
         filter.branch = branch;
       }
     } else {
-      return res.status(403).json({message:'You are not authorized to view this resource.', success:false})
+      return res.status(403).json({ message: 'You are not authorized to view this resource.', success: false })
     }
 
     const customers = await CUSTOMER.find(filter)
@@ -983,7 +983,7 @@ export const getPendingCustomerRentList = async (req, res, next) => {
 
       let pendingAmount = 0
 
-      for(const customerRent of pendingRents){
+      for (const customerRent of pendingRents) {
         const isRequired = !(customerRent.month === (new Date().getMonth() + 1) && customerRent.year === new Date().getFullYear())
         pendingAmount += (customerRent.rent_amount - customerRent.paid_amount)
         pendingRentMap.push({
@@ -1186,89 +1186,91 @@ export const verifyCustomer = async (req, res, next) => {
   }
 };
 
-export const getCustomerPendingRentListById = async (req, res, next) =>{
-  try{
-    const {pgcode, userType, mongoid} = req 
-    const {customerId} = req.params 
+export const getCustomerPendingRentListById = async (req, res, next) => {
+  try {
+    const { pgcode, userType, mongoid } = req
+    const { customerId } = req.params
 
     const customer = await CUSTOMER.findById(customerId)
-    .populate('branch')
-    .populate('room')
+      .populate('branch')
+      .populate('room')
 
-    if(!customer) return res.status(404).json({message:"Customer not found.",success:false})
+    if (!customer) return res.status(404).json({ message: "Customer not found.", success: false })
 
-    if(userType === 'Account'){
+    if (userType === 'Account') {
       const account = await ACCOUNT.findById(mongoid)
 
-      if(!account) return res.status(404).json({message:"Account manager not found.",success:false})
+      if (!account) return res.status(404).json({ message: "Account manager not found.", success: false })
 
-      if(!account.branch.includes(customer.branch.toString())){
-        return res.status(403).json({message:"You are not authorized to view customers in this branch.",success:false})
+      if (!account.branch.includes(customer.branch.toString())) {
+        return res.status(403).json({ message: "You are not authorized to view customers in this branch.", success: false })
       }
     }
 
     //Getting pending customer rent list 
-    const pendingRents = await CUSTOMERRENT.find({customer:customer._id, status:'Pending'})
-    
-    const pendingRentMap = [] 
+    const pendingRents = await CUSTOMERRENT.find({ customer: customer._id, status: 'Pending' })
 
-    for(const customerRent of pendingRents){
+    const pendingRentMap = []
+
+    for (const customerRent of pendingRents) {
       const isRequired = !(customerRent.month === (new Date().getMonth() + 1) && customerRent.year === new Date().getFullYear())
       pendingRentMap.push({
-        month:customerRent.month,
-        year:customerRent.year,
-        pending:customerRent.rent_amount - customerRent.paid_amount,
-        required:isRequired,
-        rent_amount:customerRent.rent_amount,
-        extra_charges:customerRent.extraChargeSchemas
+        month: customerRent.month,
+        year: customerRent.year,
+        pending: customerRent.rent_amount - customerRent.paid_amount,
+        required: isRequired,
+        rent_amount: customerRent.rent_amount,
+        extra_charges: customerRent.extraChargeSchemas
       })
     }
 
     //Getting customer request 
     const transactions = await TRANSACTION.find({
-      transactionType:'income',
-      type:'rent_attempt',
-      refModel:'Rentattempt',
+      transactionType: 'income',
+      type: 'rent_attempt',
+      refModel: 'Rentattempt',
       pgcode,
-      added_by_type:'Customer',
-      branch:customer.branch
+      added_by_type: 'Customer',
+      branch: customer.branch
     }).populate({
-      path:'refId',
-      model:'Rentattempt',
-      match:{customer: customer._id}
-    }).populate('bank_account').sort({createdAt:-1})
+      path: 'refId',
+      model: 'Rentattempt',
+      match: { customer: customer._id }
+    }).populate('bank_account').sort({ createdAt: -1 })
 
-    const customerRequest = [] 
+    const customerRequest = []
 
-    for(const tx of transactions){
-       const entry = tx.refId 
+    for (const tx of transactions) {
+      const entry = tx.refId
 
-       if(!entry) continue;
+      if (!entry) continue;
 
-       customerRequest.push({
-         transactionId:tx._id,
-         bank_account:tx.bank_account,
-         payment_mode:tx.payment_mode,
-         amount:entry.amount,
-         payment_proof:entry.payment_proof,
-         month:entry.month,
-         year:entry.year,
-         status:tx.status,
-       })
+      customerRequest.push({
+        transactionId: tx._id,
+        bank_account: tx.bank_account,
+        payment_mode: tx.payment_mode,
+        amount: entry.amount,
+        payment_proof: entry.payment_proof,
+        month: entry.month,
+        year: entry.year,
+        status: tx.status,
+      })
     }
 
-    return res.status(200).json({message:"Customer pending rent list details fetched successfully.", success:true, data:{
-      customerId:customerId,
-      customer_name:customer.customer_name,
-      branch:customer.branch,
-      room:customer.room,
-      mobile_no:customer.mobile_no,
-      pendingRentMap,
-      customerRequest
-    }})
+    return res.status(200).json({
+      message: "Customer pending rent list details fetched successfully.", success: true, data: {
+        customerId: customerId,
+        customer_name: customer.customer_name,
+        branch: customer.branch,
+        room: customer.room,
+        mobile_no: customer.mobile_no,
+        pendingRentMap,
+        customerRequest
+      }
+    })
 
 
-  }catch(err){
+  } catch (err) {
     next(err)
   }
 }
@@ -1277,6 +1279,8 @@ export const getCustomerDetailsForCustomer = async (req, res, next) => {
   try {
 
     const { userType, mongoid } = req
+
+    let data = {}
 
     if (userType !== 'Customer') {
       return res.status(403).json({ message: "You are not Autherized to access This Data.", success: false })
@@ -1292,11 +1296,25 @@ export const getCustomerDetailsForCustomer = async (req, res, next) => {
         }
       }).lean()
 
+    data.customer = customer
+
+    const branch = await CUSTOMER.findById(mongoid).populate('branch')
+    const adminid = branch.added_by
+
+    const admin = await ADMIN.findById(adminid)
+
+    if (!admin) {
+      return res.status(404).json({ message: "Admin Not Found in Customer get Details By Customer", success: false })
+    }
+
+    data.pgname = admin.pgname
+    data.pglogo = admin.pglogo
+
     if (!customer) {
       return res.status(404).json({ message: "Customer Not Found.", success: false })
     }
 
-    return res.status(200).json({ message: "Customer Data Recieved Successfully", data: customer, success: true })
+    return res.status(200).json({ message: "Customer Data Recieved Successfully", data, success: true })
 
   } catch (error) {
     next(error)
@@ -1335,7 +1353,7 @@ export const updateCustomerByCustomer = async (req, res, next) => {
     }
 
     if (mobile && mobile !== customer.mobile_no) {
-      const existCustomer = await CUSTOMER.findOne({ mobile_no: mobile, _id: { $ne: mongoid }  }).session(session)
+      const existCustomer = await CUSTOMER.findOne({ mobile_no: mobile, _id: { $ne: mongoid } }).session(session)
 
       if (existCustomer) {
 
@@ -1349,8 +1367,8 @@ export const updateCustomerByCustomer = async (req, res, next) => {
     }
 
     if (email && email !== customer.email) {
-      const customerLogin = await LOGINMAPPING.findOne({mongoid, pgcode}).session(session)
-      
+      const customerLogin = await LOGINMAPPING.findOne({ mongoid, pgcode }).session(session)
+
       const existCustomer = await CUSTOMER.findOne({ email: email, _id: { $ne: mongoid } }).session(session)
 
       if (existCustomer) {
@@ -1380,85 +1398,87 @@ export const updateCustomerByCustomer = async (req, res, next) => {
 }
 
 
-export const getCustomerRentListForCustomer = async (req, res, next) =>{
-   try{
-      const {mongoid, pgcode} = req 
+export const getCustomerRentListForCustomer = async (req, res, next) => {
+  try {
+    const { mongoid, pgcode } = req
 
-      const customer = await CUSTOMER.findById(mongoid)
+    const customer = await CUSTOMER.findById(mongoid)
 
-      const scanner = await SCANNER.findOne({pgcode, branch:customer.branch, status:'active'}).populate('bankaccount')
+    const scanner = await SCANNER.findOne({ pgcode, branch: customer.branch, status: 'active' }).populate('bankaccount')
 
-      if(!customer) return res.status(404).json({message:"Customer not found.",success:false})
+    if (!customer) return res.status(404).json({ message: "Customer not found.", success: false })
 
-      //Retrieving customer rent list
-      const customerRents = await CUSTOMERRENT.find({customer:mongoid})
+    //Retrieving customer rent list
+    const customerRents = await CUSTOMERRENT.find({ customer: mongoid })
 
-      let rentList = []
+    let rentList = []
 
-      for (const rent of customerRents){
-        
-        const customerRequest = await TRANSACTION.find({
-           transactionType:'income',
-            type:'rent_attempt',
-            refModel:'Rentattempt',
-            pgcode,
-            added_by_type:'Customer',
-            branch:customer.branch
-        }).populate({
-          path:'refId',
-          model:'Rentattempt',
-          match:{customer: customer._id, month:rent.month, year:rent.year}
-        }).sort({createdAt:-1})
+    for (const rent of customerRents) {
 
-        let requestList = []
+      const customerRequest = await TRANSACTION.find({
+        transactionType: 'income',
+        type: 'rent_attempt',
+        refModel: 'Rentattempt',
+        pgcode,
+        added_by_type: 'Customer',
+        branch: customer.branch
+      }).populate({
+        path: 'refId',
+        model: 'Rentattempt',
+        match: { customer: customer._id, month: rent.month, year: rent.year }
+      }).sort({ createdAt: -1 })
 
-        for (const req of customerRequest){
-            const entry = req.refId 
-  
-            if(!entry) continue;
-  
-            requestList.push({
-              amount:entry.amount,
-              payment_proof:entry.payment_proof,
-              month:entry.month,
-              year:entry.year,
-              status:req.status,
-              payment_mode:req.payment_mode
-            })
-        }
+      let requestList = []
 
-        rentList.push({
-          month:rent.month,
-          year:rent.year,
-          status:rent.status,
-          rent_amount:rent.rent_amount,
-          pending:rent.rent_amount - rent.paid_amount,
-          extra_charges:rent.extraChargeSchemas,
-          requestList
+      for (const req of customerRequest) {
+        const entry = req.refId
+
+        if (!entry) continue;
+
+        requestList.push({
+          amount: entry.amount,
+          payment_proof: entry.payment_proof,
+          month: entry.month,
+          year: entry.year,
+          status: req.status,
+          payment_mode: req.payment_mode
         })
-
       }
 
+      rentList.push({
+        month: rent.month,
+        year: rent.year,
+        status: rent.status,
+        rent_amount: rent.rent_amount,
+        pending: rent.rent_amount - rent.paid_amount,
+        extra_charges: rent.extraChargeSchemas,
+        requestList
+      })
 
-      return res.status(200).json({message:"Customer rent list fetched successfully.", success:true, data:{
-        customerId:customer._id,
-        customer_name:customer.customer_name,
-        mobile_no:customer.mobile_no,
+    }
+
+
+    return res.status(200).json({
+      message: "Customer rent list fetched successfully.", success: true, data: {
+        customerId: customer._id,
+        customer_name: customer.customer_name,
+        mobile_no: customer.mobile_no,
         rentList,
-        scannerDetails:scanner || null
-      }})
+        scannerDetails: scanner || null
+      }
+    })
 
 
- 
-   }catch(err){
-      next(err)
-   }
+
+  } catch (err) {
+    next(err)
+  }
 }
 
 // today dailyUpdate , complaint of customer , pending rent amount , pending rent months
-export const getDashboardSummary = async(req,res,next) =>{
+export const getDashboardSummary = async (req, res, next) => {
   try {
-    const {mongoid,userType,pgcode} = req
+    const { mongoid, userType, pgcode } = req
 
     let dailyUpdateCount = 0
     let complaintCount = 0
@@ -1466,36 +1486,36 @@ export const getDashboardSummary = async(req,res,next) =>{
     let pendingRentMonths = 0
 
     let startofDay = new Date()
-    startofDay.setHours(0,0,0,0)
+    startofDay.setHours(0, 0, 0, 0)
 
     let endofDay = new Date()
-    endofDay.setHours(23,59,59,999)
+    endofDay.setHours(23, 59, 59, 999)
 
-    if(userType !== 'Customer'){
-      return res.status(403).json({message: "You are not Autherized to access This Data.", success: false})
+    if (userType !== 'Customer') {
+      return res.status(403).json({ message: "You are not Autherized to access This Data.", success: false })
     }
 
     const customer = await CUSTOMER.findById(mongoid)
 
-    if(!customer){
-      return res.status(404).json({message: "Customer Not Found.", success: false})
+    if (!customer) {
+      return res.status(404).json({ message: "Customer Not Found.", success: false })
     }
 
     const branch = customer.branch
 
-    dailyUpdateCount = await DAILYUPDATE.countDocuments({pgcode,branch,createdAt: {$gte: startofDay, $lte: endofDay}})
+    dailyUpdateCount = await DAILYUPDATE.countDocuments({ pgcode, branch, createdAt: { $gte: startofDay, $lte: endofDay } })
 
-    complaintCount = await COMPLAINT.countDocuments({pgcode,branch,added_by: mongoid})
+    complaintCount = await COMPLAINT.countDocuments({ pgcode, branch, added_by: mongoid })
 
-    pendingRentMonths = await CUSTOMERRENT.countDocuments({customer:mongoid,status:"Pending"})
+    pendingRentMonths = await CUSTOMERRENT.countDocuments({ customer: mongoid, status: "Pending" })
 
-    const pendingRent = await CUSTOMERRENT.find({customer:mongoid,status:"Pending"})
+    const pendingRent = await CUSTOMERRENT.find({ customer: mongoid, status: "Pending" })
 
-    pendingRent.forEach(rent =>{
+    pendingRent.forEach(rent => {
       pendingRentAmount += (rent.rent_amount - rent.paid_amount)
     })
 
-    return res.status(200).json({message: "Dashboard Summary Fetched Successfully.", success: true, data: {dailyUpdateCount,complaintCount,pendingRentAmount,pendingRentMonths}})
+    return res.status(200).json({ message: "Dashboard Summary Fetched Successfully.", success: true, data: { dailyUpdateCount, complaintCount, pendingRentAmount, pendingRentMonths } })
   } catch (error) {
     next(error)
   }
