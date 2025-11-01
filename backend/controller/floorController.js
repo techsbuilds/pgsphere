@@ -20,10 +20,10 @@ export const createFloor = async (req, res, next) => {
                 return res.status(403).json({ message: "You are not Autherized to create Floor in this Branch.", success: false })
             }
         }
-        const existFloor = await Floor.findOne({ floor_name, branch, pgcode })
+        const existFloor = await FLOOR.findOne({ floor_name, branch, pgcode })
 
         if (existFloor) return res.status(409).json({ message: "Floor with this name already exists in this branch.", success: false })
-        const newFloor = await Floor({
+        const newFloor = await FLOOR({
             floor_name,
             branch,
             pgcode
@@ -53,7 +53,7 @@ export const getFloorAndRoomByBranch = async (req, res, next) => {
             }
         }
 
-        const floors = await Floor.find({branch:branchId, pgcode})
+        const floors = await FLOOR.find({branch:branchId, pgcode})
 
         const result = []
 
