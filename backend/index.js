@@ -27,6 +27,8 @@ import complaintRoute from './routes/compliant.js'
 import scannerRoute from './routes/scanner.js'
 import mealconfigRoute from './routes/mealconfig.js'
 
+import { initCronsJobs } from './utils/cron.js';
+
 // Get the current file's path
 const __filename = fileURLToPath(import.meta.url);
 
@@ -90,6 +92,9 @@ const connectDb = async () => {
     try {
       await mongoose.connect(process.env.MONGO);
       console.log("Connected to MongoDB successfully");
+
+      //Initialize cron jobs after DB connection
+      await initCronsJobs();
     } catch (err) {
       throw err;
     }
@@ -144,7 +149,7 @@ app.use('/api/mealconfig',mealconfigRoute)
     });
   });
   
-  app.listen(port, () => {
+ app.listen(port, () => {
     connectDb();
     console.log(`App is listening on port: ${port}`);
  });

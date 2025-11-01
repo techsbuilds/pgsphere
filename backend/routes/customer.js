@@ -39,7 +39,7 @@ app.get('/pending-rent/:customerId', verifyToken, getCustomerPendingRentListById
 app.put('/me', verifyToken, updateCustomerByCustomer)
 
 //For update customer details
-app.put('/:customerId', verifyToken, updateCustomerDetails)
+app.put('/:customerId', verifyToken, aadharCardMulter, updateCustomerDetails)
 
 //For get customer rent list for customer portal 
 app.get('/me/rent-list', verifyToken, getCustomerRentListForCustomer)

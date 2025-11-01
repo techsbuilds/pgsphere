@@ -2,12 +2,14 @@ import { useEffect, useState, } from "react";
 import Tooltip from '@mui/material/Tooltip';
 import { toast } from "react-toastify";
 import { getShortMonthName, sliceString } from "../helper";
-
+import { GridActionsCellItem } from "@mui/x-data-grid";
 
 //Importing images
 import BOY from '../assets/boy.png'
 import BRANCH from '../assets/branch.png'
 import PHONE from '../assets/call.png'
+import { HandCoins } from 'lucide-react';
+
 
 import { capitalise } from "../helper";
 
@@ -15,7 +17,8 @@ import { capitalise } from "../helper";
 import { getCustomerPendingRents } from "../services/customerService";
 
 
-export const useCustomerRentTable = (handleOpenForm) =>{
+
+export const useCustomerRentTable = (handleRedirectToRentPreview) =>{
     const [rows, setRows] = useState([])
     const [loading,setLoading] = useState(false)
 
@@ -43,68 +46,59 @@ export const useCustomerRentTable = (handleOpenForm) =>{
             headerName: 'Full Name',
             field: 'customer_name',
             minWidth: 220,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
               <div className="flex items-center w-full h-full">
                  <div className="flex items-center gap-3">
                    <img src={BOY} alt="vendor" className="w-9 h-9 rounded-full" />
-                   <span>{capitalise(params.value)}</span>
+                   <div className="flex flex-col">
+                     <span className="leading-5 font-medium">{capitalise(params.value)}</span>
+                     <div className="flex text-gray-600 items-center gap-0.5">
+                       <span className="text-sm">+91</span>
+                       <span className="text-sm tracking-wide">{params.row.mobile_no}</span>
+                      </div>
+                   </div>
                  </div>
               </div>
             ),
         },
         {
             headerName: 'Room No',
-            field: 'room.room_id',
-            minWidth: 160,
+            field: 'room',
+            minWidth: 100,
             flex: 1,
-            valueGetter: (params) => params.data.room?.room_id,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
               <div className="flex items-center w-full h-full">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-lg">{params.value}</span>
+                  <span className="font-bold text-lg">{params.value.room_id}</span>
                  </div>
               </div>
             ),
         },
         {
             headerName: 'Branch',
-            field: 'branch.branch_name',
-            minWidth: 260,
+            field: 'branch',
+            minWidth: 160,
             flex: 1,
-            valueGetter: (params) => params.data.branch?.branch_name,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
              <div className="flex items-center w-full h-full">
-                <Tooltip title={params.value}>
+                <Tooltip title={params.value.branch_name}>
                  <div className="flex items-center gap-2">
                    <img src={BRANCH} alt="branch" className="w-7 h-7 rounded-full" />
-                   <span>{sliceString(params.value,20)}</span>
+                   <span>{sliceString(params.value.branch_name,20)}</span>
                  </div>
                 </Tooltip>
              </div>
             ),
         },
-        {
-            headerName: 'Mobile No',
-            field: 'mobile_no',
-            minWidth: 200,
-            cellRenderer: (params) => (
-              <div className="flex w-full h-full items-center">
-               <div className="flex items-center gap-2">
-                <img src={PHONE} alt="phone" className="w-7 h-7 rounded-full" />
-                <span>{params.value}</span>
-               </div>
-              </div>
-            ),
-          },
           {
             headerName: 'Rent Amount',
             field: 'rent_amount',
-            minWidth: 200,
+            minWidth: 140,
             flex: 1,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
               <div className="flex items-center w-full h-full">
                 <div className="flex items-center gap-2">
-                 <span>₹{params.value}</span>
+                 <span className="font-semibold">₹{params.value}</span>
                 </div>
               </div>
             ),
@@ -112,12 +106,12 @@ export const useCustomerRentTable = (handleOpenForm) =>{
           {
             headerName: 'Pending Amount',
             field: 'pending_amount',
-            minWidth: 200,
+            minWidth:160,
             flex: 1,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
               <div className="flex items-center w-full h-full">
                 <div className="flex items-center gap-2">
-                 <span>₹{params.value}</span>
+                 <span className="font-semibold">₹{params.value}</span>
                 </div>
               </div>
             )
@@ -125,15 +119,15 @@ export const useCustomerRentTable = (handleOpenForm) =>{
           {
             headerName: 'Months',
             field: 'pending_rent',
-            minWidth: 230,
-            cellRenderer: (params) =>(
+            minWidth: 160,
+            renderCell: (params) =>(
                 <div className="flex w-full h-full items-center">
                     <div className="flex items-center gap-2">
                         {
                             params.value.map((item,index)=> (
                                 <div key={index} className={`flex p-1 border rounded-md ${item.required ? "bg-red-100" : "bg-neutral-50" } items-center gap-2`}>
-                                  <span>{getShortMonthName(item.month)}</span>
-                                  <span>{item.year}</span>
+                                  <span className="leading-5">{getShortMonthName(item.month)}</span>
+                                  <span className="leading-5">{item.year}</span>
                                 </div>
                             ))
                         }
@@ -143,18 +137,16 @@ export const useCustomerRentTable = (handleOpenForm) =>{
           },
           {
             headerName: 'Action',
-            field: 'action',
-            minWidth: 200,
+            field: 'actions',
+            type:'actions',
+            minWidth: 120,
             flex: 1,
-            cellRenderer: (params) => {
-                return (
-                    <div className="flex items-center w-full h-full">
-                        <button disabled={loading} onClick={()=>handleOpenForm(params.data)} className="bg-blue-500 hover:bg-blue-600 transition-colors duration-300 cursor-pointer text-lg w-32 text-white rounded-md p-1.5">
-                            Pay
-                        </button>
-                    </div>
-                )
-            }
+            getActions: (params) => [
+            <GridActionsCellItem 
+            icon={<HandCoins></HandCoins>}
+            label="Pay Rent"
+            onClick={()=> handleRedirectToRentPreview(params.row)}
+            ></GridActionsCellItem>]
           }
     ]
 

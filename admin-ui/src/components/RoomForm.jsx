@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 
 //importing icons
 import { ChevronLeft, LoaderCircle } from 'lucide-react'
-import { zodResolver } from '@hookform/resolvers/zod'
+
 import { roomSchema } from '../validations/roomSchema'
 import { toast } from 'react-toastify'
 import { createRoom, updateRoom } from '../services/roomService'
 
-function RoomForm({branchId,onClose,selectedRoom}) {
+function RoomForm({branchId,floor,onClose,selectedRoom}) {
   const [loading, setLoading] = useState(false)  
 
   const {
@@ -22,7 +23,9 @@ function RoomForm({branchId,onClose,selectedRoom}) {
     defaultValues: {
         room_id:'',
         capacity:1,
-        remarks:''
+        remarks:'',
+        service_type:'',
+        room_type:''
     }
   });
 
@@ -31,7 +34,9 @@ function RoomForm({branchId,onClose,selectedRoom}) {
         reset({
             room_id:selectedRoom.room_id,
             capacity:selectedRoom.capacity,
-            remark:selectedRoom.remark
+            remark:selectedRoom.remark,
+            room_type:selectedRoom.room_type,
+            service_type:selectedRoom.service_type
         })
     }
   },[selectedRoom])
@@ -42,8 +47,11 @@ function RoomForm({branchId,onClose,selectedRoom}) {
         let payload = {
             room_id:formData.room_id,
             capacity:formData.capacity,
+            service_type:formData.service_type,
+            room_type:formData.room_type,
             remark:formData.remark,
-            branch:branchId
+            branch:branchId,
+            floor_id:floor._id
         }
         const data = await createRoom(payload)
         toast.success('New room added successfully')
@@ -111,6 +119,32 @@ function RoomForm({branchId,onClose,selectedRoom}) {
                       {
                          errors.capacity && <span className='text-xs sm:text-sm text-red-500'>{errors.capacity.message}</span>
                       }
+                    </div>
+                </div>
+                <div className='flex flex-col gap-1 sm:gap-2'>
+                    <label className='text-sm sm:text-base'>Room Type <span className='text-sm text-red-500'>*</span></label>
+                    <div className='flex flex-col'>
+                       <select
+                        {...register('room_type')}
+                       className='p-2 sm:p-3 border border-neutral-300 rounded-md outline-none text-sm sm:text-base'
+                       >
+                        <option value={''}>-- Select Room Type --</option>
+                        <option value={'Room'}>Room</option>
+                        <option value={'Hall'}>Hall</option>
+                       </select>
+                    </div>
+                </div>
+                <div className='flex flex-col gap-1 sm:gap-2'>
+                    <label className='text-sm sm:text-base'>Service Type <span className='text-sm text-red-500'>*</span></label>
+                    <div className='flex flex-col'>
+                       <select
+                        {...register('service_type')}
+                       className='p-2 sm:p-3 border border-neutral-300 rounded-md outline-none text-sm sm:text-base'
+                       >
+                        <option value={''}>-- Select Service Type --</option>
+                        <option value={'AC'}>AC</option>
+                        <option value={'Non-AC'}>Non-AC</option>
+                       </select>
                     </div>
                 </div>
                 <div className='flex flex-col gap-1 sm:gap-2'>

@@ -4,7 +4,11 @@ import api from "../utils/api";
 //For create customer
 export const createCustomer = async (customerData) =>{
     try{
-        const response = await api.post('/customer', customerData)
+        const response = await api.post('/customer', customerData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
         return response.data.data
     }catch(err){
         console.log(err)
@@ -52,7 +56,11 @@ export const getCustomerByBranchId = async (branchId, searchQuery) =>{
 //For update customer details
 export const updateCustomer = async (customerId, customerData) =>{
     try{
-        const response = await api.put(`/customer/${customerId}`, customerData)
+        const response = await api.put(`/customer/${customerId}`, customerData,  {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
         return response.data.data
     }catch(err){
         console.log(err)
@@ -90,6 +98,17 @@ export const getCustomerPendingRentById = async (customerId) =>{
     try{
         const response = await api.get(`/customer/pending-rent/${customerId}`)
         return response.data.data
+    }catch(err){
+        console.log(err)
+        const errMessage = err?.response?.data?.message || "Something went wrong."
+        throw new Error(errMessage)
+    }
+}
+
+//For verify customer account 
+export const verifyCustomerAccount = async (customerId, data) =>{
+    try{
+        const response = await api.post(`/customer/verify-customer/${customerId}`, data)
     }catch(err){
         console.log(err)
         const errMessage = err?.response?.data?.message || "Something went wrong."
