@@ -1,4 +1,4 @@
-import Floor from "../models/Floor.js";
+import FLOOR from "../models/FLOOR.js";
 import ACCOUNT from "../models/ACCOUNT.js";
 import ROOM from "../models/ROOM.js";
 
