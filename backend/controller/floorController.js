@@ -1,10 +1,13 @@
-import Floor from "../models/Floor";
-import ACCOUNT from "../models/ACCOUNT";
+import Floor from "../models/Floor.js";
+import ACCOUNT from "../models/ACCOUNT.js";
+import ROOM from "../models/ROOM.js";
 
 export const createFloor = async (req, res, next) => {
     try {
         const { mongoid, userType, pgcode } = req
+
         const { floor_name, branch } = req.body
+
         if (!floor_name || !branch)  return res.status(400).json({ message: "Please provide all required fields.", success: false })
 
         if (userType === 'Account') {
@@ -33,26 +36,39 @@ export const createFloor = async (req, res, next) => {
     }
 }
 
-export const getFloorByBranch = async (req, res, next) => {
-    try {
-        const { branchId } = req.params
-        const { mongoid, userType, pgcode } = req
+export const getFloorAndRoomByBranch = async (req, res, next) => {
+    try{
+        const {branchId} = req.params  
+        const {mongoid, userType, pgcode} = req 
 
-        if (!branchId) return res.status(400).json({ message: "Please provide all required fields.", success: false })
-            
-        if (userType === 'Account') {
+        if(!branchId) return res.status(400).json({message:"Please provide all required fields.", success:false})
+
+        if(userType === 'Account'){
             const acmanager = await ACCOUNT.findById(mongoid) 
-            if (!acmanager) {
-                return res.status(404).json({ message: "Account manager not Found.", success: false })
+            if(!acmanager){
+                return res.status(404).json({message:"Account manager not Found.", success:false})
             }
-            if (!acmanager.branch.includes(branchId)) {
-                return res.status(403).json({ message: "You are not Autherized to view Floor in this Branch.", success: false })
+            if(!acmanager.branch.includes(branchId)){
+                return res.status(403).json({message:"You are not Autherized to view Floor in this Branch.", success:false})
             }
         }
 
-        const floors = await Floor.find({ branch: branchId, pgcode })
-        return res.status(200).json({ message: "Floors retrieved successfully.", success: true, data: floors })
-    } catch (err) {
+        const floors = await Floor.find({branch:branchId, pgcode})
+
+        const result = []
+
+        for (const floor of floors){
+            const rooms = await ROOM.find({floor_id:floor._id, pgcode})
+
+            result.push({
+                floor,
+                rooms
+            })
+        }
+
+        return res.status(200).json({message:"Floors and Rooms retrieved successfully.", success:true, data:result})
+
+    }catch(err){
         next(err)
     }
 }

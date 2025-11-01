@@ -10,8 +10,6 @@ function UploadImage({file, setFile, className, previewImage, setPreviewImage}) 
   const fileInputRef = useRef(null);
   const [imagePreview, setImagePreview] = useState(previewImage);
 
-  console.log('Image preview',imagePreview)
-
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file && file.type.startsWith("image/")) {
@@ -74,7 +72,7 @@ function UploadImage({file, setFile, className, previewImage, setPreviewImage}) 
             onClick={() => fileInputRef.current.click()}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
-            className="w-full border-neutral-400 transition-all duration-300 hover:border-black flex justify-center items-center border-2  rounded-md border-dashed h-44"
+            className="w-full border-neutral-400 cursor-pointer transition-all duration-300 hover:border-black flex justify-center items-center border-2  rounded-md border-dashed h-44"
           >
             <div className="flex items-center flex-col gap-2">
               <img src={UPLOAD} alt="upload" className="w-10 h-10"></img>

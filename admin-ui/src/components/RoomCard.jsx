@@ -22,9 +22,12 @@ function RoomCard({openForm,room}) {
         }} size={18} className="text-white"></SquarePen>
       </div>
        <h1 className='text-3xl text-[#36454F] font-bold'>{room.room_id}</h1>
-       <div className='flex flex-col'>
-         <span>Room {room.room_id}</span>
-         <span className='text-gray-500'>Capacity {room.capacity}</span>
+       <div className='flex justify-between items-center'>
+         <div className='flex flex-col'>
+           <span>{room.room_type==="Room"? "Room" : "Hall"} {room.room_id}</span>
+           <span className='text-gray-500'>Capacity {room.capacity}</span>
+         </div>
+         <span>{room.service_type}</span>
        </div>
     </div>
   )

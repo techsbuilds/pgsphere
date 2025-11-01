@@ -20,6 +20,14 @@ import bankaccountRoute from './routes/bankaccount.js'
 import cashoutRoute from './routes/cashout.js'
 import adminRoute from './routes/admin.js'
 import contactRoute from './routes/contact.js'
+import dailyUpdateRoute from './routes/dailyupdate.js'
+import floorRoute from './routes/floor.js'
+import mealRoute from './routes/meal.js'
+import complaintRoute from './routes/compliant.js'
+import scannerRoute from './routes/scanner.js'
+import mealconfigRoute from './routes/mealconfig.js'
+
+import { initCronsJobs } from './utils/cron.js';
 
 // Get the current file's path
 const __filename = fileURLToPath(import.meta.url);
@@ -84,6 +92,9 @@ const connectDb = async () => {
     try {
       await mongoose.connect(process.env.MONGO);
       console.log("Connected to MongoDB successfully");
+
+      //Initialize cron jobs after DB connection
+      await initCronsJobs();
     } catch (err) {
       throw err;
     }
@@ -118,6 +129,12 @@ app.use('/api/bankaccount', bankaccountRoute)
 app.use('/api/cashout', cashoutRoute)
 app.use('/api/admin', adminRoute)
 app.use('/api/contact',contactRoute)
+app.use('/api/dailyupdate', dailyUpdateRoute)
+app.use('/api/floor', floorRoute)
+app.use('/api/meal',mealRoute)
+app.use('/api/complaint',complaintRoute)
+app.use('/api/scanner',scannerRoute)
+app.use('/api/mealconfig',mealconfigRoute)
 
  // Middleware to catch errors
  app.use((err, req, res, next) => {
@@ -132,7 +149,7 @@ app.use('/api/contact',contactRoute)
     });
   });
   
-  app.listen(port, () => {
+ app.listen(port, () => {
     connectDb();
     console.log(`App is listening on port: ${port}`);
  });

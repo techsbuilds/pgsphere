@@ -1,14 +1,15 @@
 import express from 'express'
 import { verifyToken } from '../middleware/verifyUser.js'
-import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, getPendingCustomerRentList, updateCustomerDetails } from '../controller/customerController.js'
+import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, getCustomerDetailsForCustomer, getPendingCustomerRentList, updateCustomerDetails, exportCustomersToExcel, verifyCustomer, updateCustomerByCustomer, getCustomerPendingRentListById, getCustomerRentListForCustomer, getDashboardSummary } from '../controller/customerController.js'
+import { aadharCardMulter } from '../middleware/upload.js'
 
 const app = express.Router()
 
 //For create new customer
-app.post('/', verifyToken, createCustomer)
+app.post('/', verifyToken, aadharCardMulter, createCustomer)
 
 //For get all customer
-app.get('/',verifyToken, getAllCustomer)
+app.get('/', verifyToken, getAllCustomer)
 
 //For get customer by room id
 app.get('/room/:roomId', verifyToken, getCustomerByRoomId)
@@ -16,8 +17,8 @@ app.get('/room/:roomId', verifyToken, getCustomerByRoomId)
 //For get customer by branch id
 app.get('/branch/:branchId', verifyToken, getCustomerByBranchId)
 
-//For update customer details
-app.put('/:customerId', verifyToken, updateCustomerDetails)
+//For get customer by customer
+app.get('/me', verifyToken, getCustomerDetailsForCustomer)
 
 //For change customer status
 app.put('/status/:customerId', verifyToken, changeStatus)
@@ -25,5 +26,25 @@ app.put('/status/:customerId', verifyToken, changeStatus)
 //For get pending customer rents
 app.get('/pending-rent', verifyToken, getPendingCustomerRentList)
 
+//For export data in excel files
+app.get('/export/excel', verifyToken, exportCustomersToExcel)
+
+//For verify customer details
+app.post('/verify-customer/:customerId', verifyToken, verifyCustomer)
+
+//For get pending customer rent list by id
+app.get('/pending-rent/:customerId', verifyToken, getCustomerPendingRentListById)
+
+//For update customer details by customer
+app.put('/me', verifyToken, updateCustomerByCustomer)
+
+//For update customer details
+app.put('/:customerId', verifyToken, aadharCardMulter, updateCustomerDetails)
+
+//For get customer rent list for customer portal 
+app.get('/me/rent-list', verifyToken, getCustomerRentListForCustomer)
+
+//For get Dashboard Summary by Customer
+app.get('/dashboard/me',verifyToken,getDashboardSummary)
 
 export default app

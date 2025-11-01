@@ -339,8 +339,14 @@ function EmployeeSalaryForm({ employee , onClose }) {
   };
 
   return (
-    <div className="fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center">
-      <div className="flex w-xl flex-col gap-4 bg-white rounded-2xl p-4">
+    <div 
+      className="fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center p-4 sm:p-6"
+      onClick={() => onClose(false)}
+    >
+      <div 
+        className="flex w-full max-w-xl flex-col gap-4 bg-white rounded-2xl p-4 max-h-[90vh] overflow-y-auto mx-2 sm:mx-4 my-4"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center gap-2 mb-2">
           <ChevronLeft
             size={28}

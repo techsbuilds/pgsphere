@@ -3,11 +3,11 @@ import mongoose from 'mongoose'
 const transactionSchema = new mongoose.Schema({
     transactionType: {
        type:String,
-       enum:['expense','income']
+       enum:['expense','income', 'deposite','withdrawal'],
     },
     type: {
         type: String,
-        enum: ['customer_rent', 'employee_salary', 'monthly_bill', 'inventory_purchase', 'cash_given'],
+        enum: ['rent_attempt','deposite', 'employee_salary', 'monthly_bill', 'inventory_purchase', 'cash_given'],
         required: true
     },
     refModel:{
@@ -24,6 +24,11 @@ const transactionSchema = new mongoose.Schema({
         enum:['cash','upi','bank_transfer'],
         default:'cash'
     },
+    status:{    
+        type:String,
+        enum:['pending','completed','rejected'],
+        default:'completed'
+    },
     branch:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Branch'
@@ -36,7 +41,15 @@ const transactionSchema = new mongoose.Schema({
     bank_account:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Bankaccount',
+    },
+    added_by:{
+        type:mongoose.Schema.Types.ObjectId,
+        refPath:'added_by_type',
         required:true
+    },
+    added_by_type:{
+        type:String,
+        enum:['Admin','Account','Customer']
     }
 },{timestamps:true})
 

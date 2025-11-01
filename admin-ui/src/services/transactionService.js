@@ -13,6 +13,30 @@ export const createTransactionForCustomerPay = async (transactionData) =>{
      }
 }
 
+//Create transaction for deposite collection
+export const createTransactionForDepositeCollection = async (transactionData) =>{
+   try{
+      const response = await api.post('/transaction/deposite', transactionData)
+      return response.data.data
+   }catch(err){
+      console.log(err)
+      const errMessage = err?.response?.data?.message || "Something went wrong."
+      throw new Error(errMessage)
+   }
+}
+
+//Create transaction for extra charge
+export const createTransactionForExtraCharge = async (transactionData) =>{
+   try{
+      const response = await api.post('/transaction/extra-charge', transactionData)
+      return response.data.data
+   }catch(err){
+      console.log(err)
+      const errMessage = err?.response?.data?.message || "Something went wrong."
+      throw new Error(errMessage)
+   }
+}
+
 //Create transaction for employee salary 
 export const createTransactionForEmployeePay = async (transactionData) =>{
    try{
@@ -65,6 +89,18 @@ export const createTransactionForCashout = async (transactionData) => {
 export const getAllTransactions = async (branch="",transactionType="") =>{
    try{
       const response = await api.get(`/transaction?branch=${branch}&transactionType=${transactionType}`)
+      return response.data.data
+   }catch(err){
+      console.log(err)
+      const errMessage = err?.response?.data?.message || "Something went wrong."
+      throw new Error(errMessage)
+   }
+}
+
+//Verify customer transaction 
+export const verifyCustomerTransaction = async (transactionData) =>{
+   try{
+      const response = await api.post('/transaction/customer-transaction/verify', transactionData)
       return response.data.data
    }catch(err){
       console.log(err)
