@@ -1,12 +1,12 @@
 import express from 'express'
-import { verifyToken } from '../middleware/verifyUser.js'
 import { addComplaint, closeComplaints, getAllComplaints, getAllComplaintsbyBranch } from '../controller/complaintController.js'
+import { verifyHandler } from '../middleware/verifyUser.js'
 
 const app = express.Router()
 
-app.post('/',verifyToken,addComplaint)
-app.get('/',verifyToken,getAllComplaints)
-app.get('/customer',verifyToken,getAllComplaintsbyBranch)
-app.put('/:com_id',verifyToken,closeComplaints)
+app.post('/',addComplaint)
+app.get('/',verifyHandler,getAllComplaints)
+app.get('/customer',getAllComplaintsbyBranch)
+app.put('/:com_id',closeComplaints)
 
 export default app
