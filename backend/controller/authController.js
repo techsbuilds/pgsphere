@@ -157,7 +157,7 @@ export const signupUser = async (req, res, next) => {
 
     await newLogin.save()
 
-    const DASHBOARD_URL = process.env.NODE_ENV === "production" ? "app.pgsphere.com" : "http://localhost:5173";
+    const DASHBOARD_URL = process.env.NODE_ENV === "production" ? "https://app.pgsphere.com" : "http://localhost:5173";
 
     const hasSentEmail = await sendRegistrationEmail(email, pgcode, DASHBOARD_URL);
 

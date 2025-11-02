@@ -61,6 +61,7 @@ const corsOptions = {
         "http://app.pgsphere.com",
         "https://pgsphere.com",
         "http://pgsphere.com",
+        "https://customer.pgsphere.com"
       ];
       // Allow requests with no origin (like mobile apps or CURL)
       if (!origin || allowedOrigins.includes(origin)) {

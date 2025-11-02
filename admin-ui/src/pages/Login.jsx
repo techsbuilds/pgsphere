@@ -155,7 +155,7 @@ function Login() {
         <div className='flex flex-col items-center gap-6 sm:gap-8 px-4'>
             <div className='flex flex-col gap-2 text-center'>
                <label className='text-lg sm:text-xl font-bold'>Two - Factor <br/> authentication </label>
-               <span className='text-xs sm:text-sm text-gray-500'>Enter 4-digit code which is sent to <br/> your email address <b>vivekmesuriya6@gmail.com</b></span>
+               <span className='text-xs sm:text-sm text-gray-500'>Enter 4-digit code which is sent to <br/> your email address <b>{emailForOtp}</b></span>
             </div>
 
             <OtpInput

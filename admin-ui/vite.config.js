@@ -41,6 +41,9 @@ export default defineConfig({
         ]
       },
       workbox: {
+        // ✅ Increase cache limit to allow larger JS bundles
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB
+
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,gif,woff,woff2,ttf,eot}'],
         runtimeCaching: [
           {
