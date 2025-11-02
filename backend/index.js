@@ -57,6 +57,7 @@ const corsOptions = {
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:5173",
+        "http://localhost:5174",
         "https://app.pgsphere.com",
         "http://app.pgsphere.com",
         "https://pgsphere.com",
