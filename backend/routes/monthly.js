@@ -1,19 +1,19 @@
 import express from 'express'
-import { verifyAdmin, verifyToken } from '../middleware/verifyUser.js'
+import { verifyAdmin, verifyHandler } from '../middleware/verifyUser.js'
 import { createMonthlyPayment, deleteMonthlyBill, getMonthlyPaymentsList, updateMonthlyPaymentDetails } from '../controller/monthlyPayController.js'
 
 const app = express.Router()
 
 //For create monthly payment
-app.post('/', verifyToken, verifyAdmin, createMonthlyPayment)
+app.post('/', verifyAdmin, createMonthlyPayment)
 
 //For get list of monthly payments
-app.get('/', verifyToken, getMonthlyPaymentsList)
+app.get('/',verifyHandler, getMonthlyPaymentsList)
 
 //For update monthly payment details 
-app.put('/:billId', verifyToken, verifyAdmin, updateMonthlyPaymentDetails)
+app.put('/:billId', verifyAdmin, updateMonthlyPaymentDetails)
 
 //For delete monthly payment bill
-app.delete('/:billId', verifyToken, verifyAdmin, deleteMonthlyBill)
+app.delete('/:billId', verifyAdmin, deleteMonthlyBill)
 
 export default app

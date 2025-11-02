@@ -28,6 +28,7 @@ import scannerRoute from './routes/scanner.js'
 import mealconfigRoute from './routes/mealconfig.js'
 
 import { initCronsJobs } from './utils/cron.js';
+import { verifyToken } from './middleware/verifyUser.js';
 
 // Get the current file's path
 const __filename = fileURLToPath(import.meta.url);
@@ -52,27 +53,27 @@ if (process.env.NODE_ENV === 'production') {
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const corsOptions = {
-    origin: (origin, callback) => {
-      const allowedOrigins = [
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "https://app.pgsphere.com",
-        "http://app.pgsphere.com",
-        "https://pgsphere.com",
-        "http://pgsphere.com",
-        "https://customer.pgsphere.com"
-      ];
-      // Allow requests with no origin (like mobile apps or CURL)
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
-    credentials: true,
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://app.pgsphere.com",
+      "http://app.pgsphere.com",
+      "https://pgsphere.com",
+      "http://pgsphere.com",
+      "https://customer.pgsphere.com"
+    ];
+    // Allow requests with no origin (like mobile apps or CURL)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
+  credentials: true,
 };
 
 // Handle preflight requests for all routes
@@ -83,75 +84,75 @@ app.use(cors(corsOptions));
 
 
 // Middleware to parse JSON
-app.use(express.json({limit:"50mb"}));
+app.use(express.json({ limit: "50mb" }));
 
 // Middleware to read cookies data
 app.use(cookieParser());
-app.use(express.urlencoded({limit:"50mb", extended: true }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 
 const connectDb = async () => {
-    try {
-      await mongoose.connect(process.env.MONGO);
-      console.log("Connected to MongoDB successfully");
+  try {
+    await mongoose.connect(process.env.MONGO);
+    console.log("Connected to MongoDB successfully");
 
-      //Initialize cron jobs after DB connection
-      await initCronsJobs();
-    } catch (err) {
-      throw err;
-    }
-  };
-  
-  app.get("/", (req, res) => {
-    res.send("Bahut maza aa raha hai 🥳");
-  });
-  
-  
-  // Notify MongoDB connection status
-  mongoose.connection.on("connected", () => {
-    console.log("MongoDB connected successfully");
-  });
-  
-  mongoose.connection.on("disconnected", () => {
-    console.log("MongoDB disconnected");
-  });
+    //Initialize cron jobs after DB connection
+    await initCronsJobs();
+  } catch (err) {
+    throw err;
+  }
+};
 
-  
+app.get("/", (req, res) => {
+  res.send("Bahut maza aa raha hai 🥳");
+});
+
+
+// Notify MongoDB connection status
+mongoose.connection.on("connected", () => {
+  console.log("MongoDB connected successfully");
+});
+
+mongoose.connection.on("disconnected", () => {
+  console.log("MongoDB disconnected");
+});
+
+
 //Middleware
-app.use('/api/auth',authRoute)
-app.use('/api/branch',branchRoute)
-app.use('/api/room',roomRoute)
-app.use('/api/customer',customerRoute)
-app.use('/api/employee',employeeRoute)
-app.use('/api/acmanager',acmanagerRoute)
-app.use('/api/transaction', transactionRoute)
-app.use('/api/inventory',inventoryRoute)
-app.use('/api/monthlybill', monthlyRoute)
-app.use('/api/bankaccount', bankaccountRoute)
-app.use('/api/cashout', cashoutRoute)
-app.use('/api/admin', adminRoute)
-app.use('/api/contact',contactRoute)
-app.use('/api/dailyupdate', dailyUpdateRoute)
-app.use('/api/floor', floorRoute)
-app.use('/api/meal',mealRoute)
-app.use('/api/complaint',complaintRoute)
-app.use('/api/scanner',scannerRoute)
-app.use('/api/mealconfig',mealconfigRoute)
+app.use('/api/auth', authRoute)
+app.use('/api/branch', verifyToken, branchRoute)
+app.use('/api/room', verifyToken, roomRoute)
+app.use('/api/customer', verifyToken, customerRoute)
+app.use('/api/employee', verifyToken, employeeRoute)
+app.use('/api/acmanager', verifyToken, acmanagerRoute)
+app.use('/api/transaction', verifyToken, transactionRoute)
+app.use('/api/inventory', verifyToken, inventoryRoute)
+app.use('/api/monthlybill', verifyToken, monthlyRoute)
+app.use('/api/bankaccount', verifyToken, bankaccountRoute)
+app.use('/api/cashout', verifyToken, cashoutRoute)
+app.use('/api/admin', verifyToken, adminRoute)
+app.use('/api/contact', contactRoute)
+app.use('/api/dailyupdate', verifyToken, dailyUpdateRoute)
+app.use('/api/floor', verifyToken, floorRoute)
+app.use('/api/meal', verifyToken, mealRoute)
+app.use('/api/complaint', verifyToken, complaintRoute)
+app.use('/api/scanner', verifyToken, scannerRoute)
+app.use('/api/mealconfig', verifyToken, mealconfigRoute)
 
- // Middleware to catch errors
- app.use((err, req, res, next) => {
-    const errStatus = err.status || 500;
-    const errMsg = err.message || "Something went wrong!";
-  
-    return res.status(errStatus).json({
-      success: "false",
-      status: errStatus,
-      message: errMsg,
-      stack: err.stack,
-    });
+// Middleware to catch errors
+app.use((err, req, res, next) => {
+  const errStatus = err.status || 500;
+  const errMsg = err.message || "Something went wrong!";
+
+  return res.status(errStatus).json({
+    success: "false",
+    status: errStatus,
+    message: errMsg,
+    stack: err.stack,
   });
-  
- app.listen(port, () => {
-    connectDb();
-    console.log(`App is listening on port: ${port}`);
- });
+});
+
+app.listen(port, () => {
+  connectDb();
+  console.log(`App is listening on port: ${port}`);
+});

@@ -1,19 +1,19 @@
 import express from 'express'
-import { verifyToken } from '../middleware/verifyUser.js'
+import { verifyHandler } from '../middleware/verifyUser.js'
 import { createRoom, getRoomByBranchId, getRoomById, updateRoom } from '../controller/roomController.js'
 
 const app = express.Router()
 
 //For create room
-app.post('/', verifyToken, createRoom)
+app.post('/',verifyHandler,createRoom)
 
 //For update room 
-app.put('/:roomId', verifyToken, updateRoom)
+app.put('/:roomId',verifyHandler, updateRoom)
 
 //Get Rooms by branch id
-app.get('/branch/:branchId', verifyToken, getRoomByBranchId)
+app.get('/branch/:branchId',verifyHandler, getRoomByBranchId)
 
 //Get Room by room id
-app.get('/:roomId', verifyToken, getRoomById)
+app.get('/:roomId',verifyHandler, getRoomById)
 
 export default app
