@@ -838,7 +838,14 @@ function Breadcrumb({
             </div>
           </>
         );
-    }
+     
+        case "/admin/settings":
+          return (
+            <div className="flex justify-between items-center w-full">
+              <h1 className="text-2xl md:text-3xl font-semibold">Settings</h1>
+            </div>
+         )
+   }
   };
 
   return <div className="p-2 flex flex-col gap-3">{getContent()}</div>;

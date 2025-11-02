@@ -36,6 +36,12 @@ export const addScanner = async (req, res, next) => {
             return res.status(400).json({ message: "bank Account Not Found", success: false })
         }
 
+        const isExist = await SCANNER.findOne({bankaccount:bankAc})
+
+        if(isExist){
+            return res.status(400).json({message:"Scanner Exist in this Bank-Account.",success:false})
+        }
+
         if (!Array.isArray(branch)) {
             branch = [branch]
         }
@@ -308,5 +314,21 @@ export const updateStatusScanner = async (req, res, next) => {
         return res.status(200).json({ message: ` Status ${scanner.status} successfully.`, success: true })
     } catch (error) {
         next(error)
+    }
+}
+
+export const deleteScanner = async(req,res,next)=>{
+    try {
+        const {scanner_id} = req.params
+
+        if(!scanner_id){
+            return res.status(400).json({message:"Please Provide Scanner id",success:true})
+        }
+
+        await SCANNER.findByIdAndDelete(scanner_id)
+
+        return res.status(200).json({message:"Scanner Deleted Successfully.",success:true})
+    } catch (error) {
+       next(error)
     }
 }

@@ -318,9 +318,9 @@ export const genLink = async (req, res, next) => {
 
     const token = jwt.sign({ mongoid, userType, branch, pgcode }, process.env.JWT, { expiresIn: "3d" })
 
-    const url = `${process.env.LINKURL}?token=${token}`
+    const url = `${process.env.CUSTOMER_PORTAL_URL}/register?token=${token}`
 
-    return res.status(201).json({ message: "Genrate Link Successfully.", url, success: true })
+    return res.status(201).json({ message: "Genrate Link Successfully.", data:url, success: true })
 
   } catch (error) {
     next(error)

@@ -1391,6 +1391,8 @@ export const getCustomerDetailsForCustomer = async (req, res, next) => {
 
     console.log(mongoid)
 
+    let data = {}
+
     if (userType !== "Customer") {
       return res
         .status(403)
@@ -1411,6 +1413,13 @@ export const getCustomerDetailsForCustomer = async (req, res, next) => {
       })
       .lean();
 
+    if (!customer) {
+        return res
+          .status(404)
+          .json({ message: "Customer Not Found.", success: false });
+    }
+  
+
     data.customer = customer
 
     const branch = await CUSTOMER.findById(mongoid).populate('branch')
@@ -1425,17 +1434,12 @@ export const getCustomerDetailsForCustomer = async (req, res, next) => {
     data.pgname = admin.pgname
     data.pglogo = admin.pglogo
 
-    if (!customer) {
-      return res
-        .status(404)
-        .json({ message: "Customer Not Found.", success: false });
-    }
-
+   
     return res
       .status(200)
       .json({
         message: "Customer Data Recieved Successfully",
-        data: customer,
+        data,
         success: true,
       });
   } catch (error) {

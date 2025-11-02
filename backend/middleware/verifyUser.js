@@ -27,8 +27,8 @@ export const verifyToken = async (req, res, next) => {
         if (req.userType === 'Customer') {
             let customer = await CUSTOMER.findById(req.mongoid)
 
-            if(!customer){
-                return res.status(404).json({message:"Customer Not Fount.",success:false})
+            if (!customer) {
+                return res.status(404).json({ message: "Customer Not Fount.", success: false })
             }
 
             req.branch = customer.branch
@@ -49,5 +49,19 @@ export const verifyAdmin = async (req, res, next) => {
         next()
     } else {
         return res.status(400).json({ message: "You are not Autherized to Perform this Task", success: false })
+    }
+}
+
+export const verifyHandler = async (req, res, next) => {
+    const userType = req.userType
+
+    if (!userType) {
+        return res.status(400).json({ message: "User-type not Provide so , Please Login Again.", success: false })
+    }
+
+    if (userType === "Admin" || userType === "Account") {
+        next()
+    }else {
+        return res.status(403).json({ message: "You are not Autherized to Perform this task.", success: false })
     }
 }

@@ -45,3 +45,13 @@ export const logout = async ()=>{
     throw new Error(errMessage)
    }
 }
+
+export const generateLink = async (branchId) => {
+   try {
+     const response = await api.get(`/auth/link/${branchId}`)
+     return response.data.data
+   } catch(err){
+     const errMessage = err?.response?.data?.message
+     throw new Error(errMessage)
+   }
+}

@@ -1,16 +1,16 @@
 import express from "express";
-import { verifyAdmin, verifyToken } from "../middleware/verifyUser.js";
+import { verifyAdmin } from "../middleware/verifyUser.js";
 import { createMealConfig, getMealConfig, updateMealConfig } from "../controller/mealconfigController.js";
 
 const app = express.Router()
 
 //For Creat Meal-config
-app.post('/',verifyToken,verifyAdmin,createMealConfig)
+app.post('/',verifyAdmin,createMealConfig)
 
 //For get meal-config
-app.get('/',verifyToken,getMealConfig)
+app.get('/',getMealConfig)
 
 //For update meal-config
-app.put('/:mealconfig_id',verifyToken,verifyAdmin,updateMealConfig)
+app.put('/:mealconfig_id',verifyAdmin,updateMealConfig)
 
 export default app

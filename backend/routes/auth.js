@@ -1,24 +1,24 @@
 import express from 'express'
 import { customerLogin, loginUser, genLink, logoutPortal, signUpCustomer, signupUser, validateToken, verifyOtp, verifyCustomerSignup } from '../controller/authController.js'
 import { aadharCardMulter } from '../middleware/upload.js'
-import { verifyToken } from '../middleware/verifyUser.js'
+import { verifyHandler, verifyToken } from '../middleware/verifyUser.js'
 
 const app = express.Router()
 
 //Login
-app.post('/sign-in',loginUser)
+app.post('/sign-in', loginUser)
 
 //Sign up
-app.post('/sign-up',signupUser)
+app.post('/sign-up', signupUser)
 
 //Validate token
-app.post('/validate-token',validateToken)
+app.post('/validate-token', validateToken)
 
 //Logout
-app.get('/logout',logoutPortal)
+app.get('/logout', logoutPortal)
 
 // verify otp
-app.post('/verify-otp',verifyOtp)
+app.post('/verify-otp', verifyOtp)
 
 //For customer signup
 app.post('/customer/sign-up', aadharCardMulter, signUpCustomer)
@@ -27,7 +27,7 @@ app.post('/customer/sign-up', aadharCardMulter, signUpCustomer)
 app.post('/customer/sign-in', customerLogin)
 
 //Genrate-Link
-app.get('/link/:branch',verifyToken,genLink)
+app.get('/link/:branch', verifyToken, verifyHandler, genLink)
 
 //For verify customer generate token
 app.get('/verify/customer/signup/:token', verifyCustomerSignup)

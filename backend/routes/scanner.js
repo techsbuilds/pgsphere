@@ -1,24 +1,26 @@
 import express from 'express'
-import { verifyAdmin, verifyToken } from '../middleware/verifyUser.js'
-import { addScanner, getallScanner, getScannerbyBranch, updateScanner, updateStatusScanner } from '../controller/scannerController.js'
+import { verifyAdmin, verifyHandler, } from '../middleware/verifyUser.js'
+import { addScanner, deleteScanner, getallScanner, getScannerbyBranch, updateScanner, updateStatusScanner } from '../controller/scannerController.js'
 import { scannerMulter } from '../middleware/upload.js'
 
 const app = express.Router()
 
 //For create scanner
-app.post('/', verifyToken, scannerMulter, addScanner)
+app.post('/', verifyHandler, scannerMulter, addScanner)
 
 //For getAllscanner by Admin
-app.get('/', verifyToken, verifyAdmin, getallScanner)
+app.get('/', verifyAdmin, getallScanner)
 
 //For getScanner by Branch
-app.get('/branch', verifyToken, getScannerbyBranch)
+app.get('/branch', getScannerbyBranch)
 
 //For updateScanner by Admin
-app.put('/:scanner_id', verifyToken, verifyAdmin, scannerMulter, updateScanner)
+app.put('/:scanner_id', verifyAdmin, scannerMulter, updateScanner)
 
 //For Update Status
-app.put('/status/:scanner_id',verifyToken,verifyAdmin,updateStatusScanner)
+app.put('/status/:scanner_id', verifyAdmin, updateStatusScanner)
 
+//For Delete Scanner by Admin
+app.delete('/:scanner_id', verifyAdmin, deleteScanner)
 
 export default app

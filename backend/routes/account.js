@@ -1,23 +1,23 @@
 import express from 'express'
-import { verifyToken, verifyAdmin } from '../middleware/verifyUser.js'
-import { changeAcmanagerStatus, createAccountManager, getAllAcmanager, updateAcManager,getDashboardSearchAcmanger } from '../controller/accountController.js'
+import { verifyAdmin, verifyHandler } from '../middleware/verifyUser.js'
+import { changeAcmanagerStatus, createAccountManager, getAllAcmanager, updateAcManager, getDashboardSearchAcmanger } from '../controller/accountController.js'
 
 const app = express.Router()
 
 //For create account manager
-app.post('/', verifyToken, verifyAdmin, createAccountManager)
+app.post('/', verifyAdmin, verifyHandler, createAccountManager)
 
 //For get all account manager
-app.get('/', verifyToken, verifyAdmin, getAllAcmanager)
+app.get('/', verifyAdmin, verifyHandler, getAllAcmanager)
 
 //For get Dashboard-Summery
-app.get('/dashboard-summery/:role', verifyToken, getDashboardSearchAcmanger)
+app.get('/dashboard-summery/:role', verifyHandler, getDashboardSearchAcmanger)
 
 //For update account manager
-app.put('/:acmanagerId', verifyToken, verifyAdmin, updateAcManager)
+app.put('/:acmanagerId', verifyAdmin, verifyHandler, updateAcManager)
 
 //For change status of acmanager
-app.put('/status/:acmanagerId', verifyToken, verifyAdmin, changeAcmanagerStatus)
+app.put('/status/:acmanagerId', verifyAdmin, verifyHandler, changeAcmanagerStatus)
 
 
 export default app
