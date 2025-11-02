@@ -118,7 +118,7 @@ function SideBar({ showSideBar, setShowSideBar, type }) {
     <div
       className={`w-64 bg-[#202947] border-r border-neutral-200 fixed top-0 ${
         showSideBar ? "left-0" : "-left-64"
-      } bottom-0 z-20 transition-all duration-300 ease-in-out`}
+      } bottom-0 z-50 transition-all duration-300 ease-in-out`}
     >
       {/* Logo Section */}
       <div className="h-16 relative w-full flex border-b border-[#383e59] justify-start items-center p-4">

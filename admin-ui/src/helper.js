@@ -51,3 +51,27 @@ export const getShortName = (name) => {
     
     return name.split(' ').map(ch => ch.charAt(0).toUpperCase()).join('')
 }
+
+export const parseTime = (timeStr) => {
+    if (!timeStr) return { hour: '08', minute: '00', period: 'AM' }; // fallback
+
+    // Convert to uppercase for safety
+    const str = timeStr.toUpperCase().trim();
+
+    // Extract period (AM/PM)
+    const period = str.includes('AM') ? 'AM' : 'PM';
+
+    // Remove period from string
+    const timeWithoutPeriod = str.replace(/AM|PM/, '').trim();
+
+    // Split hours/minutes
+    let [hour, minute] = timeWithoutPeriod.split(':');
+
+    if (!minute) minute = '00';
+
+    // Pad with zero if needed
+    hour = hour.padStart(2, '0');
+    minute = minute.padStart(2, '0');
+
+    return { hour, minute, period };
+  };
