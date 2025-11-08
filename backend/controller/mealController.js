@@ -443,3 +443,92 @@ export const updateMeal = async (req, res, next) => {
         next(error)
     }
 }
+
+export const getMealDetailsbyMonthly = async (req, res, next) => {
+    try {
+        const { pgcode, userType, mongoid } = req;
+        let { branch } = req.params;
+
+        let filter = {};
+        filter.pgcode = pgcode;
+
+        console.log("modnfejrgdv")
+        const today = new Date();
+
+        // Create date range
+        let startDate = new Date(today);
+        startDate.setDate(startDate.getDate() - 15);
+        startDate.setHours(0, 0, 0, 0);
+
+        let endDate = new Date(today);
+        endDate.setDate(endDate.getDate() + 15);
+        endDate.setHours(23, 59, 59, 999);
+
+        // Branch authorization
+        if (userType === 'Account') {
+            const acmanager = await ACCOUNT.findById(mongoid);
+
+            if (!acmanager) {
+                return res.status(404).json({
+                    message: "Account manager not found!",
+                    success: false
+                });
+            }
+
+            const isAuthorized = branch.every(br =>
+                acmanager.branch.includes(br)
+            );
+
+            if (!isAuthorized) {
+                return res.status(400).json({
+                    message: "You are not authorized to access meals for this branch!",
+                    success: false
+                });
+            }
+
+            filter.branch = branch;
+        }
+
+        if (userType === 'Admin') {
+            filter.branch = branch;
+        }
+
+        // Fetch meals in the 30-day window
+        const mealsRaw = await MEAL.find({
+            ...filter,
+            date: { $gte: startDate, $lte: endDate }
+        }).populate('branch').populate({
+            path:"meals.cancelled",
+            model:"Customer",
+            select:"_id customer_name"
+        }).lean();
+
+        // Create date → meal array map
+        let mealByDate = {};
+
+        // Fill all dates with empty arrays first
+        let loopDate = new Date(startDate);
+        while (loopDate <= endDate) {
+            const key = loopDate.toISOString().split("T")[0];
+            mealByDate[key] = [];
+            loopDate.setDate(loopDate.getDate() + 1);
+        }
+
+        // Put meals in their date array
+        mealsRaw.forEach(meal => {
+            const key = new Date(meal.date).toISOString().split("T")[0];
+            if (mealByDate[key]) {
+                mealByDate[key].push(meal);
+            }
+        });
+
+        return res.status(200).json({
+            message: "Meals fetched successfully.",
+            mealByDate,
+            success: true
+        });
+
+    } catch (error) {
+        next(error)
+    }
+}

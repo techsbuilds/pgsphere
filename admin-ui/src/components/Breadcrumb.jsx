@@ -67,7 +67,7 @@ function Breadcrumb({
                 Add
               </button>
             </div>
-            
+
             {/* Mobile: Bottom row with search only */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 h-10">
@@ -143,7 +143,7 @@ function Breadcrumb({
                 Add
               </button>
             </div>
-            
+
             {/* Mobile: Bottom row with search and filter */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 min-w-0 h-10">
@@ -218,7 +218,7 @@ function Breadcrumb({
                 Add
               </button>
             </div>
-            
+
             {/* Mobile: Bottom row with search and filter */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 min-w-0 h-10">
@@ -294,7 +294,7 @@ function Breadcrumb({
                 Add
               </button>
             </div>
-            
+
             {/* Mobile: Bottom row with search and filter */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 min-w-0 h-10">
@@ -356,7 +356,7 @@ function Breadcrumb({
                 </select>
               </div>
             </div>
-            
+
             {/* Mobile: Bottom row with search and filter */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 min-w-0 h-10">
@@ -389,7 +389,7 @@ function Breadcrumb({
       case '/account/rent-preview':
         return (
           <div className="w-full flex items-center gap-2">
-            <span className="cursor-pointer hover:text-blue-500" onClick={()=>navigate(-1)}>Rent</span>
+            <span className="cursor-pointer hover:text-blue-500" onClick={() => navigate(-1)}>Rent</span>
             <ChevronRight className="w-4 h-4 text-gray-500"></ChevronRight>
             <span className="font-semibold">Rent Preview</span>
           </div>
@@ -443,7 +443,7 @@ function Breadcrumb({
                 Add
               </button>
             </div>
-            
+
             {/* Mobile: Bottom row with search and filter */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 min-w-0 h-10">
@@ -518,7 +518,7 @@ function Breadcrumb({
                 Add
               </button>
             </div>
-            
+
             {/* Mobile: Bottom row with search and filter */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 min-w-0 h-10">
@@ -592,7 +592,7 @@ function Breadcrumb({
                 Add
               </button>
             </div>
-            
+
             {/* Mobile: Bottom row with search and filter */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 min-w-0 h-10">
@@ -654,7 +654,7 @@ function Breadcrumb({
                 Add
               </button>
             </div>
-            
+
             {/* Mobile: Bottom row with search only */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 h-10">
@@ -706,7 +706,7 @@ function Breadcrumb({
                 </select>
               </div>
             </div>
-            
+
             {/* Mobile: Bottom row with filters */}
             <div className="md:hidden flex items-center gap-2">
               <select
@@ -789,8 +789,8 @@ function Breadcrumb({
           </div>
         );
 
-        case "/admin/scanner":
-          return (
+      case "/admin/scanner":
+        return (
           <>
             {/* Title Row */}
             <div className="flex justify-between items-center w-full">
@@ -822,7 +822,7 @@ function Breadcrumb({
                 Add
               </button>
             </div>
-            
+
             {/* Mobile: Bottom row with search only */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 h-10">
@@ -838,14 +838,79 @@ function Breadcrumb({
             </div>
           </>
         );
-     
-        case "/admin/settings":
-          return (
+
+      case "/admin/settings":
+        return (
+          <div className="flex justify-between items-center w-full">
+            <h1 className="text-2xl md:text-3xl font-semibold">Settings</h1>
+          </div>
+        )
+
+      case "/admin/customers/complaints":
+        return (
+          <>
+            {/* Title Row */}
             <div className="flex justify-between items-center w-full">
-              <h1 className="text-2xl md:text-3xl font-semibold">Settings</h1>
+              <h1 className="text-2xl md:text-3xl font-semibold">Complaints</h1>
+              {/* Desktop: Show search and branch filter on right */}
+              <div className="hidden md:flex items-center gap-2">
+                <div className="border rounded-2xl border-neutral-300 bg-white p-2 w-72 flex items-center gap-2">
+                  <Search className="text-gray-500" size={20}></Search>
+                  <input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    type="text"
+                    className="flex-1 outline-none"
+                    placeholder="Search complaint"
+                  ></input>
+                </div>
+                {setSelectedBranch && (
+                  <select
+                    onChange={(e) => setSelectedBranch(e.target.value)}
+                    value={selectedBranch || ""}
+                    className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none"
+                  >
+                    <option value={""}>All Branch</option>
+                    {branch.map((item, index) => (
+                      <option key={index} value={item._id}>
+                        {item.branch_name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
             </div>
-         )
-   }
+
+            {/* Mobile: Bottom row with search and branch filter */}
+            <div className="md:hidden flex items-center gap-2">
+              <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 min-w-0 h-10">
+                <Search className="text-gray-500 flex-shrink-0" size={20}></Search>
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  type="text"
+                  className="flex-1 outline-none min-w-0"
+                  placeholder="Search complaint"
+                ></input>
+              </div>
+              {setSelectedBranch && (
+                <select
+                  onChange={(e) => setSelectedBranch(e.target.value)}
+                  value={selectedBranch || ""}
+                  className="p-1.5 flex-1 px-2 border rounded-2xl border-neutral-300 bg-white outline-none text-sm min-w-0 h-10"
+                >
+                  <option value={""}>All Branch</option>
+                  {branch.map((item, index) => (
+                    <option key={index} value={item._id}>
+                      {item.branch_name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          </>
+        )
+    }
   };
 
   return <div className="p-2 flex flex-col gap-3">{getContent()}</div>;

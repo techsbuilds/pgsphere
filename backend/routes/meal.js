@@ -1,11 +1,15 @@
 import express from 'express'
 import { verifyHandler } from '../middleware/verifyUser.js'
-import { addMeal, getMealDetailsbyWeekly, updateStatusByCustomer, getMealDetailsbyDay, updateMeal } from '../controller/mealController.js'
+import { addMeal, getMealDetailsbyWeekly, updateStatusByCustomer, getMealDetailsbyMonthly, getMealDetailsbyDay, updateMeal } from '../controller/mealController.js'
 
 const app = express.Router()
 
 //For add meal
 app.post('/', verifyHandler, addMeal)
+
+
+//For get Meal by Monthly
+app.get('/monthly/:branch', verifyHandler, getMealDetailsbyMonthly)
 
 //For get meal details by weakly
 app.get('/weekly/:branch?', getMealDetailsbyWeekly)
