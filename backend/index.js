@@ -28,7 +28,7 @@ import scannerRoute from './routes/scanner.js'
 import mealconfigRoute from './routes/mealconfig.js'
 
 import { initCronsJobs } from './utils/cron.js';
-import { verifyToken } from './middleware/verifyUser.js';
+import { verifyAdmin, verifyOwner } from './middleware/verifyUser.js';
 
 // Get the current file's path
 const __filename = fileURLToPath(import.meta.url);
@@ -120,24 +120,24 @@ mongoose.connection.on("disconnected", () => {
 
 //Middleware
 app.use('/api/auth', authRoute)
-app.use('/api/branch', verifyToken, branchRoute)
-app.use('/api/room', verifyToken, roomRoute)
-app.use('/api/customer', verifyToken, customerRoute)
-app.use('/api/employee', verifyToken, employeeRoute)
-app.use('/api/acmanager', verifyToken, acmanagerRoute)
-app.use('/api/transaction', verifyToken, transactionRoute)
-app.use('/api/inventory', verifyToken, inventoryRoute)
-app.use('/api/monthlybill', verifyToken, monthlyRoute)
-app.use('/api/bankaccount', verifyToken, bankaccountRoute)
-app.use('/api/cashout', verifyToken, cashoutRoute)
-app.use('/api/admin', verifyToken, adminRoute)
+app.use('/api/branch', verifyOwner, branchRoute)
+app.use('/api/room', verifyOwner, roomRoute)
+app.use('/api/customer', customerRoute)
+app.use('/api/employee', verifyOwner, employeeRoute)
+app.use('/api/acmanager', verifyOwner, acmanagerRoute)
+app.use('/api/transaction', transactionRoute)
+app.use('/api/inventory', verifyOwner, inventoryRoute)
+app.use('/api/monthlybill', verifyOwner, monthlyRoute)
+app.use('/api/bankaccount', verifyOwner, verifyAdmin ,bankaccountRoute)
+app.use('/api/cashout', verifyOwner, cashoutRoute)
+app.use('/api/admin', verifyOwner, adminRoute)
 app.use('/api/contact', contactRoute)
-app.use('/api/dailyupdate', verifyToken, dailyUpdateRoute)
-app.use('/api/floor', verifyToken, floorRoute)
-app.use('/api/meal', verifyToken, mealRoute)
-app.use('/api/complaint', verifyToken, complaintRoute)
-app.use('/api/scanner', verifyToken, scannerRoute)
-app.use('/api/mealconfig', verifyToken, mealconfigRoute)
+app.use('/api/dailyupdate', dailyUpdateRoute)
+app.use('/api/floor', verifyOwner, floorRoute)
+app.use('/api/meal', mealRoute)
+app.use('/api/complaint', complaintRoute)
+app.use('/api/scanner', verifyOwner, scannerRoute)
+app.use('/api/mealconfig', verifyOwner, mealconfigRoute)
 
 // Middleware to catch errors
 app.use((err, req, res, next) => {

@@ -281,7 +281,7 @@ export const customerLogin = async (req, res, next) => {
 
     const token = jwt.sign({ mongoid: user.mongoid, userType: user.userType, pgcode: user.pgcode , branch:user.branch }, process.env.JWT, { expiresIn: '30d' })
 
-    res.cookie('pgtoken', token, {
+    res.cookie('pgcustomertoken', token, {
       expires: new Date(Date.now() + 2592000000),
       httpOnly: true,
       domain:

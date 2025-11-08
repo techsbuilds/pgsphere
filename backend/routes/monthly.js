@@ -1,5 +1,5 @@
 import express from 'express'
-import { verifyAdmin, verifyHandler } from '../middleware/verifyUser.js'
+import { verifyAdmin } from '../middleware/verifyUser.js'
 import { createMonthlyPayment, deleteMonthlyBill, getMonthlyPaymentsList, updateMonthlyPaymentDetails } from '../controller/monthlyPayController.js'
 
 const app = express.Router()
@@ -8,7 +8,7 @@ const app = express.Router()
 app.post('/', verifyAdmin, createMonthlyPayment)
 
 //For get list of monthly payments
-app.get('/',verifyHandler, getMonthlyPaymentsList)
+app.get('/', getMonthlyPaymentsList)
 
 //For update monthly payment details 
 app.put('/:billId', verifyAdmin, updateMonthlyPaymentDetails)

@@ -1178,7 +1178,7 @@ export const exportCustomersToExcel = async (req, res, next) => {
   }
 };
 
-export const verifyCustomer = async (req, res, next) => {
+export const verifyCustomerLogin = async (req, res, next) => {
   try {
     const { pgcode, mongoid, userType } = req;
     const { customerId } = req.params;

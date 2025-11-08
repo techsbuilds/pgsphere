@@ -10,6 +10,8 @@ function Breadcrumb({
   setSearchQuery,
   selectedTransactions,
   setSelectedTransactions,
+  selectedStatus,
+  setSelectedStatus,
   onClick,
 }) {
   const location = useLocation();
@@ -852,18 +854,19 @@ function Breadcrumb({
             {/* Title Row */}
             <div className="flex justify-between items-center w-full">
               <h1 className="text-2xl md:text-3xl font-semibold">Complaints</h1>
-              {/* Desktop: Show search and branch filter on right */}
+              {/* Desktop: Show status filter and branch filter on right */}
               <div className="hidden md:flex items-center gap-2">
-                <div className="border rounded-2xl border-neutral-300 bg-white p-2 w-72 flex items-center gap-2">
-                  <Search className="text-gray-500" size={20}></Search>
-                  <input
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    type="text"
-                    className="flex-1 outline-none"
-                    placeholder="Search complaint"
-                  ></input>
-                </div>
+                {setSelectedStatus && (
+                  <select
+                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    value={selectedStatus || ""}
+                    className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none"
+                  >
+                    <option value={""}>All Status</option>
+                    <option value={"Open"}>Open</option>
+                    <option value={"Close"}>Close</option>
+                  </select>
+                )}
                 {setSelectedBranch && (
                   <select
                     onChange={(e) => setSelectedBranch(e.target.value)}
@@ -881,18 +884,19 @@ function Breadcrumb({
               </div>
             </div>
 
-            {/* Mobile: Bottom row with search and branch filter */}
+            {/* Mobile: Bottom row with status filter and branch filter */}
             <div className="md:hidden flex items-center gap-2">
-              <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 min-w-0 h-10">
-                <Search className="text-gray-500 flex-shrink-0" size={20}></Search>
-                <input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  type="text"
-                  className="flex-1 outline-none min-w-0"
-                  placeholder="Search complaint"
-                ></input>
-              </div>
+              {setSelectedStatus && (
+                <select
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  value={selectedStatus || ""}
+                  className="p-1.5 flex-1 px-2 border rounded-2xl border-neutral-300 bg-white outline-none text-sm min-w-0 h-10"
+                >
+                  <option value={""}>All Status</option>
+                  <option value={"Open"}>Open</option>
+                  <option value={"Close"}>Close</option>
+                </select>
+              )}
               {setSelectedBranch && (
                 <select
                   onChange={(e) => setSelectedBranch(e.target.value)}
