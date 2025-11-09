@@ -19,7 +19,8 @@ export const verifyOwner = async (req, res, next) => {
         req.userType = decoded.userType
         req.pgcode = decoded.pgcode;
 
-        if (userType === "Admin" || userType === "Account") {
+        
+        if (req.userType === "Admin" || req.userType === "Account") {
             next()
         } else {
             return res.status(403).json({ message: "You are not Autherized to Perform this task.", success: false })
