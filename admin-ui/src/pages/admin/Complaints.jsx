@@ -8,7 +8,6 @@ import ComplaintCard from '../../components/ComplaintCard'
 function Complaints() {
   const [complaints, setComplaints] = useState([])
   const [loading, setLoading] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
   const [selectedBranch, setSelectedBranch] = useState('')
   const [selectedStatus, setSelectedStatus] = useState('')
 
@@ -32,10 +31,10 @@ function Complaints() {
   return (
     <div className='flex flex-col h-full gap-4 sm:gap-6 lg:gap-8 px-2 sm:px-4 lg:px-0'>
       <Breadcrumb 
-        searchQuery={searchQuery} 
-        setSearchQuery={setSearchQuery}
         selectedBranch={selectedBranch}
         setSelectedBranch={setSelectedBranch}
+        selectedStatus={selectedStatus}
+        setSelectedStatus={setSelectedStatus}
       ></Breadcrumb>
       {
         loading ?

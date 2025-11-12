@@ -1,18 +1,18 @@
 import express from 'express'
-import { verifyAdmin, verifyHandler, } from '../middleware/verifyUser.js'
+import { verifyAdmin } from '../middleware/verifyUser.js'
 import { addScanner, deleteScanner, getallScanner, getScannerbyBranch, updateScanner, updateStatusScanner } from '../controller/scannerController.js'
 import { scannerMulter } from '../middleware/upload.js'
 
 const app = express.Router()
 
 //For create scanner
-app.post('/', verifyHandler, scannerMulter, addScanner)
+app.post('/', scannerMulter, addScanner)
 
 //For getAllscanner by Admin
 app.get('/', verifyAdmin, getallScanner)
 
 //For getScanner by Branch
-app.get('/branch', getScannerbyBranch)
+app.get('/branch',getScannerbyBranch)
 
 //For updateScanner by Admin
 app.put('/:scanner_id', verifyAdmin, scannerMulter, updateScanner)
