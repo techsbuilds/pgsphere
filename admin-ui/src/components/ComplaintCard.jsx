@@ -48,8 +48,8 @@ function ComplaintCard({ item, onRefresh }) {
     <div className="w-full rounded-2xl relative hover:scale-[1.02] transition-all duration-300 overflow-visible shadow-sm border cursor-pointer border-neutral-300 bg-white p-5">
       {/* Icon + Button - Vertically Centered on Right */}
       {!isClosed && (
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 z-30 flex justify-center items-center gap-2">
-          <AlertTriangle className="text-red-500" size={20} />
+        <div className="absolute right-2 top-10 -translate-y-1/2 z-30 flex justify-center items-center gap-2">
+
           <button
             onClick={(e) => {
               e.stopPropagation()
@@ -67,7 +67,7 @@ function ComplaintCard({ item, onRefresh }) {
       <div className={`flex items-start mb-3 w-full relative ${!isClosed ? 'pr-32' : ''}`}>
         {/* Description on Left */}
         <div className="flex-1">
-          <p className="text-gray-900 text-xl font-medium inline">
+          <p className="text-gray-900 text-base font-medium inline">
             {displayDescription}
             {shouldTruncate && !isDescriptionExpanded && <span>...</span>}
             {shouldTruncate && (
@@ -88,7 +88,7 @@ function ComplaintCard({ item, onRefresh }) {
       {/* Customer Name */}
       <div className="mb-2 w-full flex items-center gap-1">
         <User className="text-gray-600" size={20} />
-        <p className="text-gray-900 text-lg">
+        <p className="text-gray-900 text-base">
           {item?.added_by?.customer_name || 'N/A'}
         </p>
       </div>
@@ -99,7 +99,7 @@ function ComplaintCard({ item, onRefresh }) {
         <div className="flex items-center gap-1">
         <BedSingle className="text-gray-600" size={18} />
           <span className="text-gray-600 text-sm">
-            Room: {item?.added_by?.room?.room_id || 'N/A'}
+            {item?.added_by?.room?.room_type==="Room" ? "Room" : "Hall"} {item?.added_by?.room?.room_id || 'N/A'}
           </span>
         </div>
         <div className="flex items-center gap-1">

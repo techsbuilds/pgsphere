@@ -452,7 +452,6 @@ export const getMealDetailsbyMonthly = async (req, res, next) => {
         let filter = {};
         filter.pgcode = pgcode;
 
-        console.log("modnfejrgdv")
         const today = new Date();
 
         // Create date range

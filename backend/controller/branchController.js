@@ -238,10 +238,33 @@ export const getDashboardSummery = async (req, res, next) => {
         .json({ message: "Branch not found or unauthorized.", success: false });
 
     const totalRooms = await ROOM.countDocuments({ branch: branchId });
-    const totalCustomers = await CUSTOMER.countDocuments({
-      branch: branchId,
-      status: true,
-    });
+
+    const totalCustomers = await LOGINMAPPING.aggregate([
+      {
+        $match: {
+          userType: 'Customer',
+          status: 'active'
+        }
+      },
+      {
+        $lookup: {
+          from: 'customers',           // collection name in MongoDB (usually lowercase plural)
+          localField: 'mongoid',
+          foreignField: '_id',
+          as: 'customerData'
+        }
+      },
+      { $unwind: '$customerData' },
+      {
+        $match: {
+          'customerData.branch': new mongoose.Types.ObjectId(branchId)
+        }
+      },
+      {
+        $count: 'total'
+      }
+    ]);
+
     const totalEmployees = await EMPLOYEE.countDocuments({
       branch: branchId,
       status: true,
@@ -249,7 +272,7 @@ export const getDashboardSummery = async (req, res, next) => {
 
     return res.status(200).json({
       message: "Dashboard summary retrieved for branch.",
-      data: { totalRooms, totalCustomers, totalEmployees },
+      data: { totalRooms, totalCustomers:totalCustomers[0].total, totalEmployees },
       success: true,
     });
   } catch (err) {

@@ -264,6 +264,8 @@ export const createTransactionForExtraCharge  = async (req, res, next) =>{
 
       customerRent.extraChargeSchemas.push({name, amount})
 
+      await newTransaction.save()
+      await newRentAttempt.save()
       await customerRent.save()
 
       return res.status(200).json({message:"New extra charge added successfully.",success:true,data:newTransaction})

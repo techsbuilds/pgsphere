@@ -49,7 +49,7 @@ function Complaints() {
               </div>
             </div>
             :
-            <div className='flex flex-col gap-4 sm:gap-6 w-full'>
+            <div className='flex flex-col gap-4 w-full'>
               {
                 complaints.map((item, index) => (
                   <ComplaintCard key={index} item={item} onRefresh={handleGetAllComplaints}></ComplaintCard>

@@ -39,7 +39,7 @@ function AccountLayout() {
   return (
     <div className="flex relative w-screen h-screen overflow-hidden">
         <SideBar showSideBar={showSideBar} setShowSideBar={setShowSideBar} type='account'></SideBar>
-        <main className={`flex relative w-full flex-col ml-0 ${showSideBar ? 'md:ml-64' : 'md:ml-0'} h-full transition-all duration-300 ease-in-out`} onClick={handleMainClick}>
+        <main className={`flex relative overflow-y-auto w-full flex-col ml-0 ${showSideBar ? 'md:ml-64' : 'md:ml-0'} h-full transition-all duration-300 ease-in-out`} onClick={handleMainClick}>
             <Header setShowSideBar={setShowSideBar} showSideBar={showSideBar}></Header>
             <div className="p-6 mt-16 w-full overflow-y-auto flex-1 bg-[#F9FAFB]">
               <Outlet></Outlet>
