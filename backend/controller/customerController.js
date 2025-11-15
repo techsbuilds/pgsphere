@@ -18,6 +18,7 @@ import SCANNER from "../models/SCANNER.js";
 import DAILYUPDATE from "../models/DAILYUPDATE.js";
 import COMPLAINT from "../models/COMPLAINT.js";
 import BANKACCOUNT from "../models/BANKACCOUNT.js";
+import OTP from "../models/OTP.js";
 
 dotenv.config();
 
@@ -224,7 +225,7 @@ export const createCustomer = async (req, res, next) => {
       pgcode
     );
 
-    if(variable_deposite_amount){
+    if (variable_deposite_amount) {
       //Create deposite amount
       const newDepositeAmount = await DEPOSITEAMOUNT({
         customer: newCustomer._id,
@@ -248,7 +249,7 @@ export const createCustomer = async (req, res, next) => {
 
       await newDepositeAmount.save();
       await newTransaction.save();
-   }
+    }
 
     await newLogin.save();
     await existRoom.save();
@@ -595,7 +596,7 @@ export const updateCustomerDetails = async (req, res, next) => {
     }
 
     const customer = await CUSTOMER.findById(customerId)
-    .session(session);
+      .session(session);
 
     if (!customer) {
       await session.abortTransaction();
@@ -656,9 +657,9 @@ export const updateCustomerDetails = async (req, res, next) => {
 
     //Email address check
     if (email && email !== customer.email) {
-       const existCustomer = await LOGINMAPPING.findOne({email ,status:'active'})
+      const existCustomer = await LOGINMAPPING.findOne({ email, status: 'active' })
 
-       if(existCustomer) {
+      if (existCustomer) {
         await session.abortTransaction();
         session.endSession();
         removeFile(path.join("uploads", "aadhar", req.file.filename));
@@ -666,80 +667,80 @@ export const updateCustomerDetails = async (req, res, next) => {
           message: "Customer already exists with same email address.",
           success: false,
         });
-       }
+      }
 
-       customer.email = email;
-       customerLogin.email = email;
+      customer.email = email;
+      customerLogin.email = email;
 
-    } 
-
-    if (customer_name) customer.customer_name = customer_name;
-    if (deposite_amount && deposite_amount !== customer.deposite_amount){
-       if(deposite_amount < customer.deposite_amount){
-
-          const defaultBankAccount = await BANKACCOUNT.findOne({pgcode, is_default:true}).session(session)
-
-          const newDepositeAmount = await DEPOSITEAMOUNT({
-            customer: customer._id,
-            amount: customer.deposite_amount - deposite_amount,
-          })
-          
-          const newTransaction = await TRANSACTION({
-            transactionType: "withdrawal",
-            type: "deposite",
-            refModel: "Depositeamount",
-            refId: newDepositeAmount._id,
-            payment_mode: "cash",
-            status: "completed",
-            branch: customer.branch,
-            bank_account: defaultBankAccount ? defaultBankAccount._id : null,
-            pgcode,
-            added_by: mongoid,
-            added_by_type: userType,
-          })
-
-          await newDepositeAmount.save({session});
-          await newTransaction.save({session});
-
-       }else{
-          customer.deposite_status = 'Pending'
-       }
-       customer.deposite_amount = deposite_amount;
     }
 
-    if (rent_amount){      
+    if (customer_name) customer.customer_name = customer_name;
+    if (deposite_amount && deposite_amount !== customer.deposite_amount) {
+      if (deposite_amount < customer.deposite_amount) {
 
-       if(rent_amount < customer.rent_amount){
-          await session.abortTransaction();
-          session.endSession();
-          removeFile(path.join("uploads", "aadhar", req.file.filename));
-          return  res.status(400).json({
-            message: "Rent amount cannot be less than previous rent amount.",
-            success: false,
-          });
-       }
+        const defaultBankAccount = await BANKACCOUNT.findOne({ pgcode, is_default: true }).session(session)
 
-       customer.rent_amount = rent_amount;
+        const newDepositeAmount = await DEPOSITEAMOUNT({
+          customer: customer._id,
+          amount: customer.deposite_amount - deposite_amount,
+        })
 
-       const customerRent = await CUSTOMERRENT.findOne({
+        const newTransaction = await TRANSACTION({
+          transactionType: "withdrawal",
+          type: "deposite",
+          refModel: "Depositeamount",
+          refId: newDepositeAmount._id,
+          payment_mode: "cash",
+          status: "completed",
+          branch: customer.branch,
+          bank_account: defaultBankAccount ? defaultBankAccount._id : null,
+          pgcode,
+          added_by: mongoid,
+          added_by_type: userType,
+        })
+
+        await newDepositeAmount.save({ session });
+        await newTransaction.save({ session });
+
+      } else {
+        customer.deposite_status = 'Pending'
+      }
+      customer.deposite_amount = deposite_amount;
+    }
+
+    if (rent_amount) {
+
+      if (rent_amount < customer.rent_amount) {
+        await session.abortTransaction();
+        session.endSession();
+        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        return res.status(400).json({
+          message: "Rent amount cannot be less than previous rent amount.",
+          success: false,
+        });
+      }
+
+      customer.rent_amount = rent_amount;
+
+      const customerRent = await CUSTOMERRENT.findOne({
         customer: customer._id,
         month: new Date().getMonth() + 1,
         year: new Date().getFullYear(),
-       })
+      })
 
-       customerRent.rent_amount = rent_amount;
-       customerRent.status = 'Pending';
+      customerRent.rent_amount = rent_amount;
+      customerRent.status = 'Pending';
 
-       //Reset all marked flags
-       customerRent.setteled = false;
-       customerRent.skipped = false;
-       customerRent.is_deposite = false;
+      //Reset all marked flags
+      customerRent.setteled = false;
+      customerRent.skipped = false;
+      customerRent.is_deposite = false;
 
        await customerRent.save({session});
 
     }
 
-    if(req.file){
+    if (req.file) {
       //Remove old aadhar image
       const oldImagePath = customer.aadharcard_url.split('/uploads/aadhar/')[1];
       await removeFile(path.join('uploads', 'aadhar', oldImagePath));
@@ -814,7 +815,7 @@ export const updateCustomerDetails = async (req, res, next) => {
 
     if (ref_person_name) customer.ref_person_name = ref_person_name;
 
-    if(ref_person_contact_no) customer.ref_person_contact_no = ref_person_contact_no;
+    if (ref_person_contact_no) customer.ref_person_contact_no = ref_person_contact_no;
 
     await customer.save({ session });
     await customerLogin.save({ session });
@@ -1240,7 +1241,7 @@ export const verifyCustomerLogin = async (req, res, next) => {
       year: new Date().getFullYear(),
     });
 
-    if(variable_deposite_amount){
+    if (variable_deposite_amount) {
       customer.paid_deposite_amount = variable_deposite_amount;
       // Create new deposite amount
       const newDepositeAmount = await DEPOSITEAMOUNT({
@@ -1424,11 +1425,11 @@ export const getCustomerDetailsForCustomer = async (req, res, next) => {
       .lean();
 
     if (!customer) {
-        return res
-          .status(404)
-          .json({ message: "Customer Not Found.", success: false });
+      return res
+        .status(404)
+        .json({ message: "Customer Not Found.", success: false });
     }
-  
+
 
     data.customer = customer
 
@@ -1444,7 +1445,7 @@ export const getCustomerDetailsForCustomer = async (req, res, next) => {
     data.pgname = admin.pgname
     data.pglogo = admin.pglogo
 
-   
+
     return res
       .status(200)
       .json({
@@ -1717,3 +1718,31 @@ export const getDashboardSummary = async (req, res, next) => {
     next(error);
   }
 };
+
+export const changeCustomerPassword = async(req,res,next) =>{
+  try {
+          const { mongoid } = req
+  
+          const { password, current_password } = req.body
+  
+          if (!password || !current_password) return res.status(400).json({ message: "Please provide all required fields.", success: false })
+  
+          const loginmapping = await LOGINMAPPING.findOne({ mongoid })
+  
+          if (!loginmapping) return res.status(404).json({ message: "Customer not found.", success: false })
+  
+          const isMatch = await bcryptjs.compare(current_password, loginmapping.password)
+          if (!isMatch) return res.status(401).json({ message: "Current password is incorrect.", success: false })
+  
+          const salt = await bcryptjs.genSalt(10);
+          const hashedPassword = await bcryptjs.hash(password, salt);
+  
+          loginmapping.password = hashedPassword
+          await loginmapping.save()
+  
+          return res.status(200).json({ message: "Password changed successfully.", success: true })
+  
+      } catch (err) {
+          next(err)
+      }
+}

@@ -1,5 +1,5 @@
 import express from 'express'
-import { customerLogin, loginUser, genLink, logoutPortal, signUpCustomer, signupUser, validateToken, verifyOtp, verifyCustomerSignup } from '../controller/authController.js'
+import { customerLogin, loginUser, genLink, logoutPortal, signUpCustomer, signupUser, validateToken, verifyOtp, verifyCustomerSignup, verifyTokenForPassword, forgetPasswordCustomer, sendEmailForgetPassword } from '../controller/authController.js'
 import { aadharCardMulter } from '../middleware/upload.js'
 import { verifyOwner } from '../middleware/verifyUser.js'
 
@@ -35,5 +35,15 @@ app.get('/verify/customer/signup/:token', verifyCustomerSignup)
 
 // //get Branch-details
 // app.get('/:token',verifyCustomerRegister)
+
+
+//For send password reset link to customer email
+app.post('/sendmail',sendEmailForgetPassword)
+
+//For verify token for password reset
+app.get('/verify-token',verifyTokenForPassword)
+
+//For forget password customer
+app.post('/reset-password',forgetPasswordCustomer)
 
 export default app
