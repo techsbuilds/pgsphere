@@ -18,7 +18,7 @@ export const createMealConfig = async (req, res, next) => {
             return res.status(400).json({ message: "All Meal Times are Required", success: false })
         }
 
-        let mealconfig = await MEALCONFIG({
+        let mealconfig = new MEALCONFIG({
             breakfast_time,
             lunch_time,
             dinner_time,
