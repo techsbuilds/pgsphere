@@ -63,10 +63,14 @@ export const getAllComplaintsbyBranch = async (req, res, next) => {
 export const getAllComplaints = async (req, res, next) => {
     try {
         const { pgcode, mongoid, userType } = req
-        const { branch } = req.query
+        const { branch, status } = req.query
 
         let filter = {}
         filter.pgcode = pgcode
+
+        if (status) {
+            filter.status = status
+        }
 
         if (userType === "Account") {
             const acmanager = await ACCOUNT.findById(mongoid)
@@ -92,7 +96,16 @@ export const getAllComplaints = async (req, res, next) => {
             }
         }
 
-        const complaintsData = await COMPLAINT.find(filter).populate('added_by').sort({ createdAt: -1 })
+        const complaintsData = await COMPLAINT.find(filter)
+            .populate('branch')
+            .populate({
+                path: 'added_by',
+                populate: {
+                    path: 'room',
+                    model: 'Room'   // optional if room has a ref in schema
+                }
+            })
+            .sort({ createdAt: -1 }).lean()
 
         return res.status(200).json({ message: "Successfully Retrive Complaints-Data.", data: complaintsData, success: true })
 
@@ -124,6 +137,7 @@ export const closeComplaints = async (req, res, next) => {
         const branch = complaint.branch
 
         if (userType === 'Account') {
+
             const acmanager = await ACCOUNT.findById(mongoid)
 
             if (!acmanager) {
@@ -144,6 +158,7 @@ export const closeComplaints = async (req, res, next) => {
 
         await complaint.save()
 
+        console.log("Solve")
         return res.status(200).json({ message: "Complaint Solve !.", success: true })
 
     } catch (error) {

@@ -18,6 +18,7 @@ function Scanner() {
     setLoading(true)
     try {
       const data = await getAllScanner(searchQuery)
+      console.log(data)
       setScanner(data)
     } catch (error) {
       toast.error(error?.message)

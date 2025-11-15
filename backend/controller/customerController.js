@@ -92,6 +92,14 @@ export const createCustomer = async (req, res, next) => {
       });
     }
 
+    if(variable_deposite_amount > deposite_amount){
+      await removeFile(path.join("uploads", "aadhar", req.file.filename));
+      return res.status(400).json({
+        message: "Pay deposite amount cannot be greater than deposite amount.",
+        success: false,
+      });
+    }
+
     if (userType === "Account") {
       const account = await ACCOUNT.findById(mongoid);
 
@@ -164,7 +172,7 @@ export const createCustomer = async (req, res, next) => {
     const saltRounds = 10;
     const hashedPassword = await bcryptjs.hash(pgcode, saltRounds);
 
-    let isDepositePaid = deposite_amount == variable_deposite_amount ? "Paid" : "Pending"
+    let isDepositePaid = deposite_amount === variable_deposite_amount ? "Paid" : "Pending"
 
     const newCustomer = await CUSTOMER({
       customer_name,
@@ -727,6 +735,8 @@ export const updateCustomerDetails = async (req, res, next) => {
        customerRent.skipped = false;
        customerRent.is_deposite = false;
 
+       await customerRent.save({session});
+
     }
 
     if(req.file){
@@ -1178,7 +1188,7 @@ export const exportCustomersToExcel = async (req, res, next) => {
   }
 };
 
-export const verifyCustomer = async (req, res, next) => {
+export const verifyCustomerLogin = async (req, res, next) => {
   try {
     const { pgcode, mongoid, userType } = req;
     const { customerId } = req.params;

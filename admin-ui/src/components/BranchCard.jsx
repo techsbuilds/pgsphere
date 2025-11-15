@@ -32,13 +32,13 @@ function BranchCard({ openForm, item }) {
         </div>
       }
       {item.branch_image ? (
-        <img className="h-48 object-cover w-full" src={item.branch_image}></img>
+        <img className="h-48 rounded-2xl object-cover w-full" src={item.branch_image}></img>
       ) : (
-        <div className="bg-gradient-to-br from-[#5f9df9] to-[#636ef2] w-full h-48 flex justify-center items-center">
+        <div className="bg-gradient-to-br from-[#5f9df9] to-[#636ef2] rounded-t-2xl w-full h-48 flex justify-center items-center">
           <Image size={40} className="text-white"></Image>
         </div>
       )}
-      <div className="p-4 bg-white flex flex-col gap-2">
+      <div className="p-4 bg-white rounded-b-2xl flex flex-col gap-2">
         <div className="flex items-center gap-2">
           <Building2></Building2>
           {item.branch_name}

@@ -10,6 +10,8 @@ function Breadcrumb({
   setSearchQuery,
   selectedTransactions,
   setSelectedTransactions,
+  selectedStatus,
+  setSelectedStatus,
   onClick,
 }) {
   const location = useLocation();
@@ -54,7 +56,7 @@ function Breadcrumb({
                 </div>
                 <button
                   onClick={() => onClick()}
-                  className="p-2 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                  className="p-2 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
                 >
                   Add New Branch
                 </button>
@@ -62,12 +64,12 @@ function Breadcrumb({
               {/* Mobile: Show only add button on right */}
               <button
                 onClick={() => onClick()}
-                className="md:hidden px-3 py-1.5 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+                className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
               >
                 Add
               </button>
             </div>
-            
+
             {/* Mobile: Bottom row with search only */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 h-10">
@@ -130,7 +132,7 @@ function Breadcrumb({
                 </select>
                 <button
                   onClick={() => onClick()}
-                  className="p-2 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                  className="p-2 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
                 >
                   Add New Customer
                 </button>
@@ -138,12 +140,12 @@ function Breadcrumb({
               {/* Mobile: Show only add button on right */}
               <button
                 onClick={() => onClick()}
-                className="md:hidden px-3 py-1.5 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+                className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
               >
                 Add
               </button>
             </div>
-            
+
             {/* Mobile: Bottom row with search and filter */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 min-w-0 h-10">
@@ -171,6 +173,48 @@ function Breadcrumb({
             </div>
           </>
         );
+
+      case "/admin/customers/meals":
+          return (
+            <div className="flex justify-between items-center w-full">
+                <h1 className="text-2xl md:text-3xl font-semibold">Meal Menu</h1>
+                {/* Desktop: Show search, filter and add button on right */}
+                <div className="hidden md:flex items-center gap-2">
+                  <select
+                    onChange={(e) => setSelectedBranch(e.target.value)}
+                    value={selectedBranch}
+                    className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none"
+                  >
+                    {/* <option value={""}>All Branch</option> */}
+                    {branch.map((item, index) => (
+                      <option key={index} value={item._id}>
+                        {item.branch_name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => onClick()}
+                    className="p-2 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                  >
+                    Add New Meal
+                  </button>
+                </div>
+                {/* Mobile: Show only add button on right */}
+                <button
+                  onClick={() => onClick()}
+                  className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+                >
+                  Add
+                </button>
+            </div>
+        )
+      
+      case "/admin/customers/dailyupdate":
+        return (
+          <div className="flex justify-between items-center w-full">
+              <h1 className="text-2xl md:text-3xl font-semibold">Daily Updates</h1>
+          </div>
+        )
 
       case "/admin/employees/elist":
       case "/account/employees/elist":
@@ -205,7 +249,7 @@ function Breadcrumb({
                 </select>
                 <button
                   onClick={() => onClick()}
-                  className="p-2 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                  className="p-2 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
                 >
                   Add New Employee
                 </button>
@@ -213,12 +257,12 @@ function Breadcrumb({
               {/* Mobile: Show only add button on right */}
               <button
                 onClick={() => onClick()}
-                className="md:hidden px-3 py-1.5 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+                className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
               >
                 Add
               </button>
             </div>
-            
+
             {/* Mobile: Bottom row with search and filter */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 min-w-0 h-10">
@@ -281,7 +325,7 @@ function Breadcrumb({
                 </select>
                 <button
                   onClick={() => onClick()}
-                  className="p-2 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                  className="p-2 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
                 >
                   Add New AcManager
                 </button>
@@ -289,12 +333,12 @@ function Breadcrumb({
               {/* Mobile: Show only add button on right */}
               <button
                 onClick={() => onClick()}
-                className="md:hidden px-3 py-1.5 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+                className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
               >
                 Add
               </button>
             </div>
-            
+
             {/* Mobile: Bottom row with search and filter */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 min-w-0 h-10">
@@ -356,7 +400,7 @@ function Breadcrumb({
                 </select>
               </div>
             </div>
-            
+
             {/* Mobile: Bottom row with search and filter */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 min-w-0 h-10">
@@ -389,7 +433,7 @@ function Breadcrumb({
       case '/account/rent-preview':
         return (
           <div className="w-full flex items-center gap-2">
-            <span className="cursor-pointer hover:text-blue-500" onClick={()=>navigate(-1)}>Rent</span>
+            <span className="cursor-pointer hover:text-blue-500" onClick={() => navigate(-1)}>Rent</span>
             <ChevronRight className="w-4 h-4 text-gray-500"></ChevronRight>
             <span className="font-semibold">Rent Preview</span>
           </div>
@@ -430,7 +474,7 @@ function Breadcrumb({
                 </select>
                 <button
                   onClick={() => onClick()}
-                  className="p-2 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                  className="p-2 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
                 >
                   Create Salary
                 </button>
@@ -443,7 +487,7 @@ function Breadcrumb({
                 Add
               </button>
             </div>
-            
+
             {/* Mobile: Bottom row with search and filter */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 min-w-0 h-10">
@@ -505,7 +549,7 @@ function Breadcrumb({
                 </select>
                 <button
                   onClick={() => onClick()}
-                  className="p-2 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                  className="p-2 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
                 >
                   Create Inventory
                 </button>
@@ -513,12 +557,12 @@ function Breadcrumb({
               {/* Mobile: Show only add button on right */}
               <button
                 onClick={() => onClick()}
-                className="md:hidden px-3 py-1.5 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+                className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
               >
                 Add
               </button>
             </div>
-            
+
             {/* Mobile: Bottom row with search and filter */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 min-w-0 h-10">
@@ -579,7 +623,7 @@ function Breadcrumb({
                 </select>
                 <button
                   onClick={() => onClick()}
-                  className="p-2 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                  className="p-2 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
                 >
                   Create Bill
                 </button>
@@ -587,12 +631,12 @@ function Breadcrumb({
               {/* Mobile: Show only add button on right */}
               <button
                 onClick={() => onClick()}
-                className="md:hidden px-3 py-1.5 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+                className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
               >
                 Add
               </button>
             </div>
-            
+
             {/* Mobile: Bottom row with search and filter */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 min-w-0 h-10">
@@ -641,7 +685,7 @@ function Breadcrumb({
                 </div>
                 <button
                   onClick={() => onClick()}
-                  className="p-2 px-4 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                  className="p-2 px-4 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
                 >
                   Create Cashout
                 </button>
@@ -649,12 +693,12 @@ function Breadcrumb({
               {/* Mobile: Show only add button on right */}
               <button
                 onClick={() => onClick()}
-                className="md:hidden px-3 py-1.5 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+                className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
               >
                 Add
               </button>
             </div>
-            
+
             {/* Mobile: Bottom row with search only */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 h-10">
@@ -706,7 +750,7 @@ function Breadcrumb({
                 </select>
               </div>
             </div>
-            
+
             {/* Mobile: Bottom row with filters */}
             <div className="md:hidden flex items-center gap-2">
               <select
@@ -789,8 +833,8 @@ function Breadcrumb({
           </div>
         );
 
-        case "/admin/scanner":
-          return (
+      case "/admin/scanner":
+        return (
           <>
             {/* Title Row */}
             <div className="flex justify-between items-center w-full">
@@ -822,7 +866,7 @@ function Breadcrumb({
                 Add
               </button>
             </div>
-            
+
             {/* Mobile: Bottom row with search only */}
             <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 h-10">
@@ -838,14 +882,81 @@ function Breadcrumb({
             </div>
           </>
         );
-     
-        case "/admin/settings":
-          return (
+
+      case "/admin/settings":
+        return (
+          <div className="flex justify-between items-center w-full">
+            <h1 className="text-2xl md:text-3xl font-semibold">Settings</h1>
+          </div>
+        )
+
+      case "/admin/customers/complaints":
+        return (
+          <>
+            {/* Title Row */}
             <div className="flex justify-between items-center w-full">
-              <h1 className="text-2xl md:text-3xl font-semibold">Settings</h1>
+              <h1 className="text-2xl md:text-3xl font-semibold">Complaints</h1>
+              {/* Desktop: Show status filter and branch filter on right */}
+              <div className="hidden md:flex items-center gap-2">
+                {setSelectedStatus && (
+                  <select
+                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    value={selectedStatus || ""}
+                    className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none"
+                  >
+                    <option value={""}>All Status</option>
+                    <option value={"Open"}>Open</option>
+                    <option value={"Close"}>Close</option>
+                  </select>
+                )}
+                {setSelectedBranch && (
+                  <select
+                    onChange={(e) => setSelectedBranch(e.target.value)}
+                    value={selectedBranch || ""}
+                    className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none"
+                  >
+                    <option value={""}>All Branch</option>
+                    {branch.map((item, index) => (
+                      <option key={index} value={item._id}>
+                        {item.branch_name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
             </div>
-         )
-   }
+
+            {/* Mobile: Bottom row with status filter and branch filter */}
+            <div className="md:hidden flex items-center gap-2">
+              {setSelectedStatus && (
+                <select
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  value={selectedStatus || ""}
+                  className="p-1.5 flex-1 px-2 border rounded-2xl border-neutral-300 bg-white outline-none text-sm min-w-0 h-10"
+                >
+                  <option value={""}>All Status</option>
+                  <option value={"Open"}>Open</option>
+                  <option value={"Close"}>Close</option>
+                </select>
+              )}
+              {setSelectedBranch && (
+                <select
+                  onChange={(e) => setSelectedBranch(e.target.value)}
+                  value={selectedBranch || ""}
+                  className="p-1.5 flex-1 px-2 border rounded-2xl border-neutral-300 bg-white outline-none text-sm min-w-0 h-10"
+                >
+                  <option value={""}>All Branch</option>
+                  {branch.map((item, index) => (
+                    <option key={index} value={item._id}>
+                      {item.branch_name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          </>
+        )
+    }
   };
 
   return <div className="p-2 flex flex-col gap-3">{getContent()}</div>;

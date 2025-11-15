@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { AgGridReact } from "ag-grid-react";
-import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 
-// ✅ AG Grid CSS (core and theme)
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css"; // Or any other theme
+import { DataGrid } from '@mui/x-data-grid';
+import Box from '@mui/material/Box';
 
 import { useAccountTable } from "../../hooks/useAccountTable";
 import Breadcrumb from "../../components/Breadcrumb";
@@ -45,21 +42,36 @@ function Accountmanager() {
       ></Breadcrumb>
 
       <div className="h-full ag-theme-alpine w-full">
-        <AgGridReact
-          rowData={rows}
-          rowHeight={70}
-          loading={loading}
-          headerHeight={54}
-          columnDefs={columns}
-          modules={[AllCommunityModule]}
-          pagination={true}
-          paginationPageSize={10}
-          defaultColDef={{
-            resizable: true,
-            sortable: true,
-            // filter: true,
-          }}
-        />
+      <Box 
+            sx={{
+             height: "100%",
+             "& .MuiDataGrid-root": {
+            border: "none", 
+            borderRadius: "12px",
+            overflow: "hidden",
+            },
+            "& .MuiDataGrid-columnHeaders": {
+               backgroundColor: "#edf3fd",  // Header background color
+               fontWeight: "bold",  
+               fontSize:'.9rem'
+             },    
+            }}>
+           <DataGrid
+            rows={rows}
+            columns={columns}
+            rowHeight={70}
+            loading={loading}
+            initialState={{
+            pagination: {
+              paginationModel: {
+                pageSize: 5,
+              },
+            },
+           }}
+           pageSizeOptions={[5,10]}
+           disableRowSelectionOnClick
+          />
+         </Box>
       </div>
     </div>
   );

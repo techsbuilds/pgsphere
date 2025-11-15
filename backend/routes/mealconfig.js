@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyAdmin } from "../middleware/verifyUser.js";
+import { verifyAdmin, verifyOwner } from "../middleware/verifyUser.js";
 import { createMealConfig, getMealConfig, updateMealConfig } from "../controller/mealconfigController.js";
 
 const app = express.Router()

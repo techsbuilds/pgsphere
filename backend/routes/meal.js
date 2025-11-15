@@ -1,22 +1,25 @@
 import express from 'express'
-import { verifyHandler } from '../middleware/verifyUser.js'
-import { addMeal, getMealDetailsbyWeekly, updateStatusByCustomer, getMealDetailsbyDay, updateMeal } from '../controller/mealController.js'
+import { verifyCustomer, verifyOwner } from '../middleware/verifyUser.js'
+import { addMeal, getMealDetailsbyWeekly, updateStatusByCustomer, getMealDetailsbyMonthly, getMealDetailsbyDay, updateMeal } from '../controller/mealController.js'
 
 const app = express.Router()
 
 //For add meal
-app.post('/', verifyHandler, addMeal)
+app.post('/', verifyOwner, addMeal)
+
+//For get Meal by Monthly
+app.get('/monthly/:branch', verifyOwner, getMealDetailsbyMonthly)
 
 //For get meal details by weakly
-app.get('/weekly/:branch?', getMealDetailsbyWeekly)
+app.get('/weekly/', verifyCustomer, getMealDetailsbyWeekly)
 
 //For get meal details by day
-app.get('/:date/:branch?', getMealDetailsbyDay)
+app.get('/:date/', verifyCustomer, getMealDetailsbyDay)
 
 //For update meal status by customer
-app.put('/', updateStatusByCustomer)
+app.put('/', verifyCustomer, updateStatusByCustomer)
 
 //For update meal
-app.put('/:mealid/:date', verifyHandler, updateMeal)
+app.put('/:mealid/:date', verifyOwner, updateMeal)
 
 export default app

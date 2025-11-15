@@ -1,8 +1,435 @@
-import React from 'react'
+import React, {useState, useRef, useEffect, useCallback} from 'react'
+import Breadcrumb from '../../components/Breadcrumb'
+import { format, addDays, subDays } from "date-fns"
+import { getMealList, getMealConfig } from '../../services/mealService';
+import { getAllBranch } from '../../services/branchService';
+import MealForm from '../../components/MealForm';
+
+//Importing icons
+import { Calendar, ChevronLeft, Utensils,  ChevronRight, Clock, User, Pen } from 'lucide-react';
+import { toast } from 'react-toastify';
+
 
 function Meal() {
+  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [openMealForm, setOpenMealForm] = useState(false)
+  const [selectedBranch,setSelectedBranch] = useState(null)
+  const [selectedMeal, setSelectedMeal] = useState(null)
+  const [mealConfig, setMealConfig] = useState(null)
+  const [isEdit,setIsEdit] = useState(false)
+  const [loader,setLoader] = useState(false)
+  const [mealData, setMealData] = useState({})
+  const [mealsForSelectedDate, setMealsForSelectedDate] = useState([])
+  const [mealDocument, setMealDocument] = useState(null)
+  const scrollContainerRef = useRef(null)
+  const currentDate = new Date()
+  
+  // Generate 30 days: 15 days before, current date, 14 days after
+  const allDays = Array.from({ length: 30 }, (_, i) => {
+    const date = addDays(subDays(currentDate, 15), i)
+    return {
+      date,
+      dayName: format(date, "EEEE"),
+      dayNum: format(date, "d"),
+      monthShort: format(date, "MMM"),
+      fullDate: format(date, "yyyy-MM-dd"),
+    }
+  })
+
+  // Scroll to selected date when it changes
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      const selectedIndex = allDays.findIndex(
+        day => day.fullDate === format(selectedDate, "yyyy-MM-dd")
+      )
+      
+      if (selectedIndex !== -1) {
+        const cardWidth = scrollContainerRef.current.children[0]?.offsetWidth || 0
+        const gap = 8 // gap-2 = 0.5rem = 8px
+        const scrollPosition = selectedIndex * (cardWidth + gap) - (scrollContainerRef.current.offsetWidth / 2) + (cardWidth / 2)
+        
+        scrollContainerRef.current.scrollTo({
+          left: Math.max(0, scrollPosition),
+          behavior: 'smooth'
+        })
+      }
+    }
+  }, [selectedDate, allDays])
+
+  // Scroll functions
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      const cardWidth = scrollContainerRef.current.children[0]?.offsetWidth || 0
+      const gap = 8
+      scrollContainerRef.current.scrollBy({
+        left: -(cardWidth * 7 + gap * 7), // Scroll by 7 cards
+        behavior: 'smooth'
+      })
+    }
+  }
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      const cardWidth = scrollContainerRef.current.children[0]?.offsetWidth || 0
+      const gap = 8
+      scrollContainerRef.current.scrollBy({
+        left: cardWidth * 7 + gap * 7, // Scroll by 7 cards
+        behavior: 'smooth'
+      })
+    }
+  }
+
+  // Function to get meals for selected date and set default meal
+  const updateMealsForDate = useCallback((date, data) => {
+    const dateKey = format(date, "yyyy-MM-dd")
+    const dateMeals = data[dateKey] || []
+    
+    if (dateMeals.length > 0 && dateMeals[0].meals) {
+      const mealDoc = dateMeals[0]
+      const meals = mealDoc.meals
+      setMealsForSelectedDate(meals)
+      setMealDocument(mealDoc) // Store meal document for updates
+      
+      // Select default meal: Breakfast first, then first meal
+      const breakfastMeal = meals.find(m => m.type?.toLowerCase() === 'breakfast')
+      if (breakfastMeal) {
+        setSelectedMeal(breakfastMeal)
+      } else if (meals.length > 0) {
+        setSelectedMeal(meals[0])
+      } else {
+        setSelectedMeal(null)
+      }
+    } else {
+      setMealsForSelectedDate([])
+      setSelectedMeal(null)
+      setMealDocument(null)
+    }
+  }, [])
+
+  useEffect(()=>{
+    const handleGetMealList = async () =>{
+      try{
+        setLoader(true)
+        //First get branch data 
+        const branchData = await getAllBranch()
+        setSelectedBranch(branchData[0]._id)
+        const data = await getMealList(branchData[0]._id)
+        setMealData(data)
+        // Update meals for current selected date
+        updateMealsForDate(selectedDate, data)
+      }catch(err){
+        console.log(err)
+        toast.error(err?.message)
+      } finally {
+        setLoader(false)
+      }
+    }
+
+     handleGetMealList()
+  },[])
+
+  // Update meals when selected date changes
+  useEffect(() => {
+    if (Object.keys(mealData).length > 0) {
+      updateMealsForDate(selectedDate, mealData)
+    }
+  }, [selectedDate, mealData, updateMealsForDate])
+
+  // Refetch meals when branch changes
+  useEffect(() => {
+    if (selectedBranch) {
+      const handleGetMealList = async () => {
+        try {
+          setLoader(true)
+          const data = await getMealList(selectedBranch)
+          setMealData(data)
+          // Update meals for current selected date after fetching
+          const dateKey = format(selectedDate, "yyyy-MM-dd")
+          const dateMeals = data[dateKey] || []
+          if (dateMeals.length > 0 && dateMeals[0].meals) {
+            const mealDoc = dateMeals[0]
+            const meals = mealDoc.meals
+            setMealsForSelectedDate(meals)
+            setMealDocument(mealDoc)
+            const breakfastMeal = meals.find(m => m.type?.toLowerCase() === 'breakfast')
+            if (breakfastMeal) {
+              setSelectedMeal(breakfastMeal)
+            } else if (meals.length > 0) {
+              setSelectedMeal(meals[0])
+            } else {
+              setSelectedMeal(null)
+            }
+          } else {
+            setMealsForSelectedDate([])
+            setSelectedMeal(null)
+            setMealDocument(null)
+          }
+        } catch(err) {
+          console.log(err)
+          toast.error(err?.message)
+        } finally {
+          setLoader(false)
+        }
+      }
+      handleGetMealList()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedBranch])
+
+  const handleOpenMealForm = (edit=false) =>{
+    setOpenMealForm(true)
+    setIsEdit(edit)
+  }
+
+  const handleCloseMealForm = (refresh = false) =>{
+    setOpenMealForm(false)
+    setIsEdit(false)
+    if (refresh && selectedBranch) {
+      // Refresh meal list after save
+      const handleGetMealList = async () => {
+        try {
+          setLoader(true)
+          const data = await getMealList(selectedBranch)
+          setMealData(data)
+          updateMealsForDate(selectedDate, data)
+        } catch(err) {
+          console.log(err)
+          toast.error(err?.message)
+        } finally {
+          setLoader(false)
+        }
+      }
+      handleGetMealList()
+    }
+  }
+
+  useEffect(()=>{
+    const handleGetMealConfig = async () =>{
+      try{
+        const data = await getMealConfig()
+        console.log('meal config', data)
+        setMealConfig(data)
+      }catch(err){
+        console.log(err)
+        toast.error(err?.message)
+      }
+    }
+    handleGetMealConfig()
+  },[])
+
+  const parseTime = (type) =>{
+     if(type === 'Breakfast'){
+      return mealConfig.breakfast_time
+     }else if(type === 'Lunch'){
+      return mealConfig?.lunch_time
+     }else if(type === 'Dinner'){
+      return mealConfig?.dinner_time
+     }
+  }
+
+
   return (
-    <div>Meal</div>
+    <div className='flex flex-col h-full gap-4 sm:gap-6 lg:gap-8 px-2 sm:px-4 lg:px-0'>
+       <Breadcrumb onClick={handleOpenMealForm} selectedBranch={selectedBranch} setSelectedBranch={setSelectedBranch}></Breadcrumb>
+       <MealForm 
+         isEdit={isEdit} 
+         openForm={openMealForm} 
+         selectedMeal={mealsForSelectedDate} 
+         selectedDate={selectedDate} 
+         selectedBranch={selectedBranch} 
+         mealDocumentId={mealDocument?._id}
+         onClose={handleCloseMealForm}
+       />
+      
+      <div className='flex flex-col gap-4 rounded-2xl bg-white p-4'>
+        <div className='flex items-center gap-2'>
+          <Calendar size={20} className='w-6 h-6 text-gray-600'></Calendar>
+          <h1 className='font-medium'>Select Date</h1>
+        </div>
+        
+        {/* Date Selection Container with Scroll */}
+        <div className='relative'>
+          {/* Left Arrow Button */}
+          <button
+            onClick={scrollLeft}
+            className='absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors'
+            aria-label="Scroll left"
+          >
+            <ChevronLeft size={20} className='text-gray-700' />
+          </button>
+
+          {/* Scrollable Date Cards Container */}
+          <div
+            ref={scrollContainerRef}
+            className="flex gap-2 overflow-x-auto pb-2 px-10 scroll-smooth"
+            style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#d1d5db #f3f4f6',
+              WebkitOverflowScrolling: 'touch'
+            }}
+          >
+            {allDays.map((day, idx) => {
+              const isSelected = format(selectedDate, "yyyy-MM-dd") === day.fullDate
+              const isToday = format(currentDate, "yyyy-MM-dd") === day.fullDate
+              
+              return (
+                <button
+                  key={idx}
+                  onClick={() => setSelectedDate(day.date)}
+                  className={`w-[calc((100%-80px)/7)] min-w-[100px] p-3 rounded-lg border-2 transition-all text-center flex-shrink-0 ${
+                    isSelected
+                      ? "border-[#202947] bg-[#202947] text-white"
+                      : isToday
+                      ? "border-blue-300 bg-blue-50"
+                      : "border-neutral-200 hover:border-gray-300"
+                  }`}
+                >
+                  <div className={`text-xs font-medium ${
+                    isSelected ? "text-white/80" : "text-muted-foreground"
+                  }`}>
+                    {day.dayName}
+                  </div>
+                  <div className='flex justify-center items-center gap-1 mt-1'>
+                    <div className={`text-lg font-bold ${
+                      isSelected ? "text-white" : ""
+                    }`}>
+                      {day.dayNum}
+                    </div>
+                    <div className={`text-sm font-semibold ${
+                      isSelected ? "text-white/90" : ""
+                    }`}>
+                      {day.monthShort}
+                    </div>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Right Arrow Button */}
+          <button
+            onClick={scrollRight}
+            className='absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors'
+            aria-label="Scroll right"
+          >
+            <ChevronRight size={20} className='text-gray-700' />
+          </button>
+        </div>
+
+      </div>
+      
+      <div className='flex items-stretch gap-4'>
+           <div className='flex w-[70%] min-h-[400px] overflow-y-auto bg-white p-4 rounded-2xl flex-col gap-4'>
+             <div className='flex justify-between items-center'>
+              <div className='flex items-center gap-2'>
+                <Utensils className='text-gray-600'></Utensils>
+                <h1 className='font-medium text-lg'>Menu for {format(selectedDate, "EEEE")}, {format(selectedDate, "MMMM")} {format(selectedDate, "d")}th, {selectedDate.getFullYear()}</h1>
+              </div>
+              <button onClick={()=>handleOpenMealForm(true)}>
+               <Pen size={18} className='text-gray-600 cursor-pointer'></Pen>
+              </button>
+             </div>
+             <div className='flex flex-col gap-2'>
+              {mealsForSelectedDate.length > 0 ? (
+                mealsForSelectedDate.map((meal, index) => {
+                  const isSelected = selectedMeal?._id === meal._id
+                  return (
+                    <button
+                      key={meal._id || index}
+                      onClick={() => setSelectedMeal(meal)}
+                      className={`p-4 flex cursor-pointer justify-between border-2 rounded-2xl transition-all text-left ${
+                        isSelected 
+                          ? 'border-[#202947] bg-[#202947]/5' 
+                          : 'border-neutral-300 hover:border-gray-400'
+                      }`}
+                    >
+                      <div className='flex flex-col gap-2'>
+                        <div className='flex flex-col gap-1'>
+                          <h1 className={`font-medium ${isSelected ? 'text-[#202947]' : ''}`}>
+                            {meal.type || 'Meal'}
+                          </h1>
+                          <span className='text-[#737373] text-sm'>
+                            {meal.description || 'No description'}
+                          </span>
+                        </div>
+                        <div className='flex flex-col gap-1'>
+                          <span className='text-sm font-medium text-[#737373]'>Items:</span>
+                          <div className='flex items-center gap-2 flex-wrap'>
+                            {meal.items && meal.items.length > 0 ? (
+                              meal.items.map((item, itemIndex) => (
+                                <span 
+                                  key={itemIndex}
+                                  className='py-1.5 text-sm px-2.5 rounded-2xl bg-[#fcfcfc]'
+                                >
+                                  {item}
+                                </span>
+                              ))
+                            ) : (
+                              <span className='text-sm text-gray-400'>No items</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className='flex items-end flex-col gap-2'>
+                        <div className='flex items-center gap-1'>
+                          <Clock size={18} className='text-neutral-400'></Clock>
+                          <span className='text-neutral-400 text-sm'>Cancel before {parseTime(meal.type)}</span>
+                        </div>
+                        <span className='bg-[#f5f5f5] py-1 px-2 text-sm rounded-2xl'>
+                          {meal.cancelled ? (meal.cancelled.length > 0 ? `${meal.cancelled.length} Cancelled` : '0 Cancelled') : '0 Cancelled'}
+                        </span>
+                      </div>
+                    </button>
+                  )
+                })
+              ) : (
+                <div className='p-8 h-full text-center text-gray-400'>
+                  <p>No meals available for this date</p>
+                </div>
+              )}
+             </div>
+           </div>
+           <div className='flex w-[30%] bg-white rounded-2xl flex-col p-4 gap-4'>
+              <div className='flex flex-col gap-2'>
+                <h1 className='font-medium'>
+                  {selectedMeal ? `${selectedMeal.type} Cancellations` : 'No Meal Selected'}
+                </h1>
+                <span className='text-sm text-gray-500'>
+                  {selectedMeal?.cancelled?.length > 0 
+                    ? `${selectedMeal.cancelled.length} customer${selectedMeal.cancelled.length > 1 ? 's' : ''} cancelled`
+                    : selectedMeal 
+                    ? '0 customers cancelled'
+                    : 'Select a meal to view cancellations'}
+                </span>
+              </div>
+              
+              {selectedMeal && selectedMeal.cancelled && selectedMeal.cancelled.length > 0 && (
+                <div className='flex flex-col gap-2 mt-2'>
+                  <div className='max-h-[400px] overflow-y-auto'>
+                    {selectedMeal.cancelled.map((customer, index) => (
+                      <div 
+                        key={customer._id || index}
+                        className='p-3 bg-gray-50 flex items-center gap-2 rounded-lg border border-gray-200'
+                      >
+                        <User size={18} className='text-gray-700'></User>
+                        <p className='text-sm font-medium text-gray-700'>
+                          {customer.customer_name || 'Unknown Customer'}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {selectedMeal && (!selectedMeal.cancelled || selectedMeal.cancelled.length === 0) && (
+                <div className='flex items-center justify-center py-8 text-gray-400'>
+                  <p className='text-sm'>No cancellations</p>
+                </div>
+              )}
+           </div>
+       </div>
+      
+    </div>
   )
 }
 

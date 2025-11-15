@@ -29,6 +29,16 @@ export const addMeal = async (req, res, next) => {
             date = moment().format("YYYY-MM-DD");
         }
 
+        const today = moment().startOf("day");
+        const selectedDate = moment(date, "YYYY-MM-DD");
+
+        if (selectedDate.isBefore(today)) {
+            return res.status(400).json({
+                message: "Meal cannot be created for a past date.",
+                success: false
+            });
+        }
+
         if (!Array.isArray(meals)) {
             return res.status(400).json({ message: "Please Provide Valid Meal , meal in Array.", success: false })
         }
@@ -367,7 +377,20 @@ export const updateMeal = async (req, res, next) => {
             // Convert to standard format
             date = parsedDate.format("YYYY-MM-DD");
         } else {
+
+            await session.abortTransaction()
+            session.endSession()
             return res.status(400).json({ message: "Please Provide Valid Date !", success: false })
+        }
+
+        const today = moment().startOf("day");
+        const selectedDate = moment(date, "YYYY-MM-DD");
+
+        if (selectedDate.isBefore(today)) {
+
+            await session.abortTransaction()
+            session.endSession()
+            return res.status(400).json({message: "You can't Update Past Meal.",success: false});
         }
 
         if (userType === "Account") {
@@ -443,3 +466,125 @@ export const updateMeal = async (req, res, next) => {
         next(error)
     }
 }
+
+export const getMealDetailsbyMonthly = async (req, res, next) => {
+    try {
+        const { pgcode, userType, mongoid } = req;
+        let { branch } = req.params;
+
+        let filter = {};
+        filter.pgcode = pgcode;
+
+        const today = new Date();
+
+        // Create date range
+        let startDate = new Date(today);
+        startDate.setDate(startDate.getDate() - 15);
+        startDate.setHours(0, 0, 0, 0);
+
+        let endDate = new Date(today);
+        endDate.setDate(endDate.getDate() + 15);
+        endDate.setHours(23, 59, 59, 999);
+
+        // Branch authorization
+        if (userType === 'Account') {
+            const acmanager = await ACCOUNT.findById(mongoid);
+
+            if (!acmanager) {
+                return res.status(404).json({
+                    message: "Account manager not found!",
+                    success: false
+                });
+            }
+
+            const isAuthorized = branch.every(br =>
+                acmanager.branch.includes(br)
+            );
+
+            if (!isAuthorized) {
+                return res.status(400).json({
+                    message: "You are not authorized to access meals for this branch!",
+                    success: false
+                });
+            }
+
+            filter.branch = branch;
+        }
+
+        if (userType === 'Admin') {
+            filter.branch = branch;
+        }
+
+        // ✅ Total customers in branch
+        const totalCustomer = await CUSTOMER.find({ branch }).countDocuments();
+
+        // ✅ Fetch meals in the 30-day window
+        const mealsRaw = await MEAL.find({
+            ...filter,
+            date: { $gte: startDate, $lte: endDate }
+        })
+            .populate('branch')
+            .populate({
+                path: "meals.cancelled",
+                model: "Customer",
+                select: "_id customer_name"
+            })
+            .lean();
+
+        // ✅ Create date → { meals: [], counts:{...} }
+        let mealByDate = {};
+
+        let loopDate = new Date(startDate);
+        while (loopDate <= endDate) {
+            const key = loopDate.toISOString().split("T")[0];
+
+            mealByDate[key] = {
+                meals: [],
+                counts: {
+                    breakfast: 0,
+                    lunch: 0,
+                    dinner: 0
+                }
+            };
+
+            loopDate.setDate(loopDate.getDate() + 1);
+        }
+
+        // ✅ Put meals in mealByDate[date].meals
+        mealsRaw.forEach(meal => {
+            const key = new Date(meal.date).toISOString().split("T")[0];
+            if (mealByDate[key]) {
+                mealByDate[key].meals.push(meal);
+            }
+        });
+
+        // ✅ Calculate per-day counts (merged inside mealByDate)
+        Object.keys(mealByDate).forEach(dateKey => {
+            mealByDate[dateKey].meals.forEach(mealDoc => {
+                mealDoc.meals.forEach(m => {
+                    const cancelledCount = m.cancelled?.length || 0;
+
+                    if (m.type === "Breakfast") {
+                        mealByDate[dateKey].counts.breakfast = totalCustomer - cancelledCount;
+                    }
+                    if (m.type === "Lunch") {
+                        mealByDate[dateKey].counts.lunch = totalCustomer - cancelledCount;
+                    }
+                    if (m.type === "Dinner") {
+                        mealByDate[dateKey].counts.dinner = totalCustomer - cancelledCount;
+                    }
+                });
+            });
+        });
+
+        return res.status(200).json({
+            message: "Meals fetched successfully.",
+            mealByDate,
+            totalCustomer,
+            success: true
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};

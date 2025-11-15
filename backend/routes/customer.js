@@ -1,50 +1,50 @@
 import express from 'express'
-import { verifyHandler } from '../middleware/verifyUser.js'
-import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, getCustomerDetailsForCustomer, getPendingCustomerRentList, updateCustomerDetails, exportCustomersToExcel, verifyCustomer, updateCustomerByCustomer, getCustomerPendingRentListById, getCustomerRentListForCustomer, getDashboardSummary } from '../controller/customerController.js'
+import { verifyCustomer, verifyOwner } from '../middleware/verifyUser.js'
+import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, getCustomerDetailsForCustomer, getPendingCustomerRentList, updateCustomerDetails, exportCustomersToExcel, verifyCustomerLogin, updateCustomerByCustomer, getCustomerPendingRentListById, getCustomerRentListForCustomer, getDashboardSummary } from '../controller/customerController.js'
 import { aadharCardMulter } from '../middleware/upload.js'
 
 const app = express.Router()
 
 //For create new customer
-app.post('/', verifyHandler, aadharCardMulter, createCustomer)
+app.post('/', verifyOwner, aadharCardMulter, createCustomer)
 
 //For get all customer
-app.get('/', verifyHandler, getAllCustomer)
+app.get('/', verifyOwner, getAllCustomer)
 
 //For get customer by room id
-app.get('/room/:roomId', verifyHandler, getCustomerByRoomId)
+app.get('/room/:roomId', verifyOwner, getCustomerByRoomId)
 
 //For get customer by branch id
-app.get('/branch/:branchId', verifyHandler, getCustomerByBranchId)
+app.get('/branch/:branchId', verifyOwner, getCustomerByBranchId)
 
 //For get customer by customer
-app.get('/me', getCustomerDetailsForCustomer)
+app.get('/me', verifyCustomer, getCustomerDetailsForCustomer)
 
 //For change customer status
-app.put('/status/:customerId', verifyHandler, changeStatus)
+app.put('/status/:customerId', verifyOwner, changeStatus)
 
 //For get pending customer rents
-app.get('/pending-rent', verifyHandler, getPendingCustomerRentList)
+app.get('/pending-rent', verifyOwner, getPendingCustomerRentList)
 
 //For export data in excel files
-app.get('/export/excel', verifyHandler, exportCustomersToExcel)
+app.get('/export/excel', verifyOwner, exportCustomersToExcel)
 
 //For verify customer details
-app.post('/verify-customer/:customerId', verifyHandler, verifyCustomer)
+app.post('/verify-customer/:customerId', verifyOwner, verifyCustomerLogin)
 
 //For get pending customer rent list by id
-app.get('/pending-rent/:customerId', verifyHandler, getCustomerPendingRentListById)
+app.get('/pending-rent/:customerId', verifyOwner, getCustomerPendingRentListById)
 
 //For update customer details by customer
-app.put('/me', updateCustomerByCustomer)
+app.put('/me', verifyCustomer, updateCustomerByCustomer)
 
 //For update customer details
-app.put('/:customerId', verifyHandler, aadharCardMulter, updateCustomerDetails)
+app.put('/:customerId', verifyOwner, aadharCardMulter, updateCustomerDetails)
 
 //For get customer rent list for customer portal 
-app.get('/me/rent-list', getCustomerRentListForCustomer)
+app.get('/me/rent-list', verifyCustomer, getCustomerRentListForCustomer)
 
 //For get Dashboard Summary by Customer
-app.get('/dashboard/me', getDashboardSummary)
+app.get('/dashboard/me', verifyCustomer, getDashboardSummary)
 
 export default app

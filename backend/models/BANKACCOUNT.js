@@ -11,6 +11,11 @@ const bankAccountSchema = new mongoose.Schema({
         required:true,
         ref:'Loginmapping'
     },
+    status: {
+        type:String,
+        enum:['active','deleted'],
+        default:'active'
+    },
     is_default:{
         type:Boolean,
         default:false

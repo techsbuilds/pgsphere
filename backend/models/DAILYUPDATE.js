@@ -10,7 +10,7 @@ const dailyUpdateSchema = new mongoose.Schema({
     content_type: {
         type: String,
         required: true,
-        enum: ["Maintainace", "Notice", "General"]
+        enum: ["Maintenance", "Notice", "General"]
     },
     pgcode: {
         type: String,

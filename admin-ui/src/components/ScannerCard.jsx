@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import { useAuth } from "../context/AuthContext"
-import { Image, User, EllipsisVertical, Trash2, Minus, Check, UserPen } from "lucide-react"
+import { Image, User, EllipsisVertical, Trash2, Minus, Check, UserPen, Building2 } from "lucide-react"
 import { updateStatusScanner, deleteScanner } from "../services/scannerServices"
 import { toast } from "react-toastify"
 import ConfirmationBox from "./ConfirmationBox"
@@ -82,13 +82,49 @@ function ScannnerCard({ openForm, item }) {
         setShowDropdown(false)
         openForm(item)
     }
+    const getStatusColor = (status) => {
+        return status === 'active' ? 'bg-green-400' : 'bg-red-400'
+    }
+
+    const capitalizeStatus = (status) => {
+        if (!status) return ''
+        return status.charAt(0).toUpperCase() + status.slice(1)
+    }
+
+    const getBranchesDisplay = (branch) => {
+        if (!branch) return "N/A"
+        
+        // Handle array of branches
+        if (Array.isArray(branch)) {
+            if (branch.length === 0) return "N/A"
+            return branch.map(b => b?.branch_name || b).filter(Boolean).join(", ")
+        }
+        
+        // Handle single branch object
+        if (typeof branch === 'object' && branch.branch_name) {
+            return branch.branch_name
+        }
+        
+        // Handle string
+        if (typeof branch === 'string') {
+            return branch
+        }
+        
+        return "N/A"
+    }
+
     return (
         <div
-            className="rounded-2xl relative hover:scale-[1.02] transition-all duration-300 overflow-visible shadow-sm border cursor-pointer border-neutral-300"
+            className="rounded-2xl relative hover:scale-[1.02] transition-all duration-300 overflow-visible shadow-sm border cursor-pointer border-neutral-300 bg-white"
         >
-                {
-                    auth.user.userType === "Admin" &&
-                    <div className="absolute right-2 top-2 z-30" ref={dropdownRef}>
+            <div className="absolute left-2 top-2 z-30">
+                <span className={`px-3 py-1 leading-5 flex justify-center items-center rounded-full text-white font-medium text-xs ${getStatusColor(item.status)}`}>
+                    {capitalizeStatus(item.status)}
+                </span>
+            </div>
+            {
+                auth.user.userType === "Admin" &&
+                <div className="absolute right-2 top-2 z-30" ref={dropdownRef}>
                         <div className="relative p-1 hover:bg-black/80 transition-all duration-300 bg-black/40 backdrop-blur-sm rounded-md">
                             <EllipsisVertical
                                 onClick={(e) => {
@@ -142,21 +178,24 @@ function ScannnerCard({ openForm, item }) {
                         )}
                     </div>
                 }
-            <div className="overflow-hidden">
+            <div className="overflow-hidden rounded-t-2xl">
                 {item.sc_image ? (
-                    <img className="h-48 object-cover w-full" src={item.sc_image}></img>
+                    <img className="h-48 object-cover w-full" src={item.sc_image} alt="Scanner"></img>
                 ) : (
-                    <div className="bg-gradient-to-br from-[#5f9df9] to-[#636ef2] w-full h-48 flex justify-center items-center">
+                    <div className="bg-gradient-to-br from-[#5f9df9] to-[#636ef2] w-full h-48 flex justify-center items-center rounded-t-2xl">
                         <Image size={40} className="text-white"></Image>
                     </div>
                 )}
             </div>
-            <div className="p-4 bg-white flex flex-col gap-2">
+            <div className="p-4 bg-white flex flex-col gap-2 rounded-b-2xl">
                 <div className="flex items-center gap-2">
                     <User></User>
                     {item.bankaccount?.account_holdername}
                 </div>
-                <span className="text-gray-500 text-sm">{item?.branch?.branch_name}</span>
+                <div className="flex items-center gap-2">
+                    <Building2 className="text-gray-500"></Building2>
+                    <span className="text-gray-500 text-sm">{getBranchesDisplay(item?.branch)}</span>
+                </div>
             </div>
             {openConfirmBox && createPortal(
                 <ConfirmationBox

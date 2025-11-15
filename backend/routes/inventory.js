@@ -1,19 +1,18 @@
 import express from 'express'
-import { verifyHandler } from '../middleware/verifyUser.js'
 import { getAllInventoryTransaction, addInventoryPurchase, distributeInventory, getAllInventoryPurchases } from '../controller/inventoryController.js'
 
 const app = express.Router()
 
 //For get all inventory transaction
-app.get('/', verifyHandler, getAllInventoryTransaction)
+app.get('/', getAllInventoryTransaction)
 
 // For get all inventory purchases
-app.get('/purchases', verifyHandler, getAllInventoryPurchases)
+app.get('/purchases', getAllInventoryPurchases)
 
 // For add inventory purchase
-app.post('/purchase', verifyHandler, addInventoryPurchase)
+app.post('/purchase', addInventoryPurchase)
 
 // For distribute inventory
-app.post('/distribute', verifyHandler, distributeInventory)
+app.post('/distribute', distributeInventory)
 
 export default app

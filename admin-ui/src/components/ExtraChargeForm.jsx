@@ -52,7 +52,6 @@ function ExtraChargeForm({openForm, onClose, rentDetails, customerId}) {
             month: rentDetails.month,
             year: rentDetails.year,
         }
-        console.log(obj)
         const data = await createTransactionForExtraCharge(obj)
         toast.success("Extra charge added successfully.")
         onClose(true)
@@ -132,7 +131,7 @@ function ExtraChargeForm({openForm, onClose, rentDetails, customerId}) {
                </div>
               <div className='flex justify-end items-center gap-4'>
                     <button onClick={()=>onClose(false)} type='button' className='p-2 px-6 rounded-md border border-gray-400'>Cancel</button>
-                    <button type='submit' className='p-2 w-36 px-6 rounded-md text-white bg-[#202947]'>
+                    <button disabled={loading} type='submit' className='p-2 w-36 px-6 rounded-md text-white bg-primary hover:bg-blue-600 transition-all duration-300'>
                         {loading ? <LoaderCircle className="animate-spin mx-auto"></LoaderCircle> : "Add Charge"}
                     </button>
               </div>
