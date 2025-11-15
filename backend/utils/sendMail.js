@@ -12,11 +12,12 @@ const sendEmail = async (options) => {
 
     // Send the email
     const info = await transporter.sendMail({
-        from: process.env.SMTP_FROM,
+        from: process.env.EMAIL_USER,
         to: options.to,
         subject: options.subject,
         html: options.html,
     });
+
 };
 
 export const sendOtopEmail = async (to, otp) => {
@@ -193,8 +194,63 @@ export const sendCustomerWelcomeEmail = async (to, customerName, pgName, branchN
             </div>
             `,
         });
-    }catch (error) {
+    } catch (error) {
         console.error("Error sending customer welcome email:", error);
         return false;
     }
+    return true;
+
+}
+
+export const sendUserPasswordLink = async (to, resetLink) => {
+    console.log("Sending password reset link to:", to);
+    try {
+        await sendEmail({
+            to,
+            subject: "Password Reset Request",
+            html: `
+            <div style="font-family: Arial, sans-serif; background-color: #f7f7f7; padding: 25px;">
+                <div style="max-width: 600px; margin: auto; background-color: #fff; border-radius: 6px; border: 1px solid #eee; overflow: hidden;">
+                    <div style="background-color: #4338ca; color: white; text-align: center; padding: 18px;">
+                        <h2 style="margin: 0;">Reset Your Password</h2>
+                    </div>
+                    <div style="padding: 25px; color: #333;">
+                        <p>Hello,</p>
+                        <p>We received a request to reset your Pgsphere password. You can reset it by clicking the button below:</p>
+
+                        <!-- Show/Hide link using checkbox trick -->
+                        <div style="text-align: center; margin-top: 20px;">
+                            <input type="checkbox" id="showLink" style="display:none;">
+                            <label for="showLink" 
+                                style="background-color: #e5e7eb; color: #111; padding: 10px 20px; border-radius: 5px; cursor: pointer; display: inline-block; font-size: 14px;">
+                                Show Reset Link
+                            </label>
+                            <div style="max-width: 100%; word-break: break-all; color: #4338ca; font-size: 12px; margin-top: 10px; display: none;"
+                                 id="linkBox">
+                                ${resetLink}
+                            </div>
+                        </div>
+
+                        <style>
+                            /* CSS trick to show link when checkbox is checked */
+                            #showLink:checked + label + #linkBox {
+                                display: block !important;
+                            }
+                        </style>
+
+                        <p style="margin-top: 30px;">If you did not make this request, please ignore this email. The link will expire in 30 minutes.</p>
+
+                        <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
+                        <p style="font-size: 12px; color: #888;">© ${new Date().getFullYear()} Pgsphere. All rights reserved.</p>
+                    </div>
+                </div>
+            </div>
+            `
+        })
+    } catch (error) {
+        console.error("Error sending customer password reset email:", error);
+        return false;
+    }
+    return true;
+
 }

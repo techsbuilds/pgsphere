@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import ADMIN from "../models/ADMIN.js";
 import { removeFile } from "../utils/removeFile.js";
 import OTP from "../models/OTP.js";
-import { sendOtopEmail, sendRegistrationEmail } from "../utils/sendMail.js";
+import { sendOtopEmail, sendRegistrationEmail, sendUserPasswordLink } from "../utils/sendMail.js";
 import CUSTOMER from "../models/CUSTOMER.js";
 import ROOM from "../models/ROOM.js";
 import BRANCH from "../models/BRANCH.js";
@@ -174,88 +174,88 @@ export const signupUser = async (req, res, next) => {
 }
 
 //For customer side
-export const signUpCustomer = async (req, res, next) =>{
-   try{
-      const {customer_name, pgcode, email, password, mobile_no, room, branch, ref_person_name, ref_person_contact_no, joining_date, added_by, added_by_type} = req.body
+export const signUpCustomer = async (req, res, next) => {
+  try {
+    const { customer_name, pgcode, email, password, mobile_no, room, branch, ref_person_name, ref_person_contact_no, joining_date, added_by, added_by_type } = req.body
 
-      if(!customer_name || !pgcode || !email || !password || !mobile_no || !room || !branch || !joining_date || !added_by || !added_by_type){
-         await removeFile(path.join("uploads", "aadhar", req.file.filename))
-         return res.status(400).json({message:"Please provide required fields.",success:false})
-      }
+    if (!customer_name || !pgcode || !email || !password || !mobile_no || !room || !branch || !joining_date || !added_by || !added_by_type) {
+      await removeFile(path.join("uploads", "aadhar", req.file.filename))
+      return res.status(400).json({ message: "Please provide required fields.", success: false })
+    }
 
-      if(!req.file) return res.status(400).json({message:"Please upload aadhar card.",success:false})
+    if (!req.file) return res.status(400).json({ message: "Please upload aadhar card.", success: false })
 
-      const existCustomer = await CUSTOMER.findOne({email,mobile_no})
+    const existCustomer = await CUSTOMER.findOne({ email, mobile_no })
 
-      if(existCustomer){
-        await removeFile(path.join("uploads", "aadhar", req.file.filename))
-        return res.status(409).json({message:"User is already exist with same email address or mobile no.",success:false})
-      }
+    if (existCustomer) {
+      await removeFile(path.join("uploads", "aadhar", req.file.filename))
+      return res.status(409).json({ message: "User is already exist with same email address or mobile no.", success: false })
+    }
 
-      const admin = await LOGINMAPPING.findOne({mongoid:added_by})
+    const admin = await LOGINMAPPING.findOne({ mongoid: added_by })
 
-      const existBranch = await BRANCH.findOne({_id:branch,pgcode})
+    const existBranch = await BRANCH.findOne({ _id: branch, pgcode })
 
-      if(!existBranch){
-         await removeFile(path.join("uploads", "aadhar", req.file.filename))
-         return res.status(400).json({message:"Branch not found.",success:false})
-      }
+    if (!existBranch) {
+      await removeFile(path.join("uploads", "aadhar", req.file.filename))
+      return res.status(400).json({ message: "Branch not found.", success: false })
+    }
 
-      const existRoom = await ROOM.findOne({_id:room, pgcode})
+    const existRoom = await ROOM.findOne({ _id: room, pgcode })
 
-      if(!existRoom){
-        await removeFile(path.join("uploads", "aadhar", req.file.filename))
-        return res.status(404).json({message:"Room is not found.",success:false})
-      }
+    if (!existRoom) {
+      await removeFile(path.join("uploads", "aadhar", req.file.filename))
+      return res.status(404).json({ message: "Room is not found.", success: false })
+    }
 
-      if(existRoom.branch.toString() !== branch){
-        await removeFile(path.join("uploads", "aadhar", req.file.filename))
-        return res.status(400).json({message:"Requested room is not in given branch.",success:false})
-      }
+    if (existRoom.branch.toString() !== branch) {
+      await removeFile(path.join("uploads", "aadhar", req.file.filename))
+      return res.status(400).json({ message: "Requested room is not in given branch.", success: false })
+    }
 
-      if(existRoom.filled >= existRoom.capacity){
-        await removeFile(path.join("uploads", "aadhar", req.file.filename))
-        return res.status(400).json({message:"Room capacity full. Please select another room.",success:false})
-      } 
+    if (existRoom.filled >= existRoom.capacity) {
+      await removeFile(path.join("uploads", "aadhar", req.file.filename))
+      return res.status(400).json({ message: "Room capacity full. Please select another room.", success: false })
+    }
 
-      let imageUrl = `${process.env.DOMAIN}/uploads/aadhar/${req.file.filename}`;
+    let imageUrl = `${process.env.DOMAIN}/uploads/aadhar/${req.file.filename}`;
 
-      const saltRounds = 10;
-      const hashedPassword = await bcryptjs.hash(password, saltRounds);
-      
-      const newCustomer = await CUSTOMER({
-        customer_name,
-        mobile_no,
-        email,
-        room,
-        branch,
-        added_by,
-        added_by_type,
-        ref_person_name,
-        ref_person_contact_no,
-        joining_date,
-        aadharcard_url:imageUrl
-      })
+    const saltRounds = 10;
+    const hashedPassword = await bcryptjs.hash(password, saltRounds);
 
-      const newLoginMapping = await LOGINMAPPING({
-        mongoid:newCustomer._id,
-        email,
-        password:hashedPassword,
-        userType:'Customer',
-        status:'pending',
-        pgcode,
-        expiry:admin.expiry,
-        plan:admin.plan
-      })
+    const newCustomer = await CUSTOMER({
+      customer_name,
+      mobile_no,
+      email,
+      room,
+      branch,
+      added_by,
+      added_by_type,
+      ref_person_name,
+      ref_person_contact_no,
+      joining_date,
+      aadharcard_url: imageUrl
+    })
 
-      await newCustomer.save() 
-      await newLoginMapping.save()
+    const newLoginMapping = await LOGINMAPPING({
+      mongoid: newCustomer._id,
+      email,
+      password: hashedPassword,
+      userType: 'Customer',
+      status: 'pending',
+      pgcode,
+      expiry: admin.expiry,
+      plan: admin.plan
+    })
 
-      return res.status(200).json({message:"New customer account created successfully.",success:true})
+    await newCustomer.save()
+    await newLoginMapping.save()
 
-   }catch(err){
-      next(err)
-   }
+    return res.status(200).json({ message: "New customer account created successfully.", success: true })
+
+  } catch (err) {
+    next(err)
+  }
 }
 
 //For customer login
@@ -279,7 +279,7 @@ export const customerLogin = async (req, res, next) => {
 
     if (!isPasswordMatched) return res.status(401).json({ message: "Password is incorrect.", success: false })
 
-    const token = jwt.sign({ mongoid: user.mongoid, userType: user.userType, pgcode: user.pgcode , branch:user.branch }, process.env.JWT, { expiresIn: '30d' })
+    const token = jwt.sign({ mongoid: user.mongoid, userType: user.userType, pgcode: user.pgcode, branch: user.branch }, process.env.JWT, { expiresIn: '30d' })
 
     res.cookie('pgcustomertoken', token, {
       expires: new Date(Date.now() + 2592000000),
@@ -327,38 +327,40 @@ export const genLink = async (req, res, next) => {
   }
 }
 
-export const verifyCustomerSignup = async (req, res, next) =>{
-   try{
-    const {token} = req.params 
+export const verifyCustomerSignup = async (req, res, next) => {
+  try {
+    const { token } = req.params
 
-    if(!token) return res.status(400).json({message:"Please provide token",success:false})
+    if (!token) return res.status(400).json({ message: "Please provide token", success: false })
 
     const decoded = jwt.verify(token, process.env.JWT)
-    
-    const {mongoid, userType, branch, pgcode } = decoded
 
-    const admin = await ADMIN.findById(mongoid) 
+    const { mongoid, userType, branch, pgcode } = decoded
 
-    if(!admin) return res.status(404).json({message:"Your pg is not found.",success:false})
+    const admin = await ADMIN.findById(mongoid)
+
+    if (!admin) return res.status(404).json({ message: "Your pg is not found.", success: false })
 
     const branchDetails = await BRANCH.findById(branch)
 
-    if(!branchDetails) return res.status(404).json({message:"Branch is not found.",success:false})
+    if (!branchDetails) return res.status(404).json({ message: "Branch is not found.", success: false })
 
-    const rooms = await ROOM.find({branch,pgcode})
+    const rooms = await ROOM.find({ branch, pgcode })
 
-    return res.status(200).json({message:"All details retrived successfully.",success:true, data:{
-      branch:branchDetails,
-      pgDetails:admin,
-      pgcode,
-      added_by:mongoid,
-      added_by_type:userType,
-      rooms
-    }})
+    return res.status(200).json({
+      message: "All details retrived successfully.", success: true, data: {
+        branch: branchDetails,
+        pgDetails: admin,
+        pgcode,
+        added_by: mongoid,
+        added_by_type: userType,
+        rooms
+      }
+    })
 
-   }catch(err){
+  } catch (err) {
     next(err)
-   }
+  }
 }
 
 
@@ -374,5 +376,85 @@ export const logoutPortal = async (req, res, next) => {
     return res.status(200).json({ message: "Logout successful", status: 200 });
   } catch (err) {
     next(err);
+  }
+}
+
+export const verifyTokenForPassword = async (req, res, next) => {
+  try {
+
+    const { token } = req.query
+
+    if (!token) return res.status(400).json({ message: "Please provide token", success: false })
+
+    const decoded = jwt.verify(token, process.env.JWT)
+    const { email } = decoded
+
+    return res.status(200).json({ message: "Token verified successfully.", data: { email }, success: true })
+
+  } catch (error) {
+    next(error)
+  }
+}
+
+
+export const sendEmailForgetPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body
+
+    const customerLogin = await LOGINMAPPING.findOne({email})
+
+    if (!customerLogin) return res.status(404).json({
+      message: "No active User found with this email address.",
+      success: false
+    });
+
+    const token = jwt.sign({ email }, process.env.JWT, { expiresIn: '1d' })
+
+    const resetLink = `${process.env.CUSTOMER_PORTAL_URL}/reset-password?token=${token}`
+
+    // Send reset link via email
+    const sentEmail = await sendUserPasswordLink(email, resetLink);
+
+    console.log("Error in sending user password reset email:", sentEmail);
+
+    if (!sentEmail) return res.status(500).json({
+      message: "Error in sending password reset link. Please try again.",
+      success: false
+    });
+
+    return res.status(200).json({
+      message: "Password reset link sent to your email address.",
+      success: true,
+    });
+
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const forgetPasswordCustomer = async (req, res, next) => {
+  try {
+    const { email, newPassword } = req.body
+
+    console.log("Resetting password for email:", email);
+
+    const customerLogin = await LOGINMAPPING.findOne({ email })
+
+    if (!customerLogin) return res.status(404).json({
+      message: "No active User found with this email address.",
+      success: false
+    });
+
+    const saltRounds = 10;
+    const hashedPassword = await bcryptjs.hash(newPassword, saltRounds);
+
+    customerLogin.password = hashedPassword
+
+    await customerLogin.save()
+
+    return res.status(200).json({message: "Password updated successfully.",success: true});
+
+  } catch (error) {
+    next(error)
   }
 }
