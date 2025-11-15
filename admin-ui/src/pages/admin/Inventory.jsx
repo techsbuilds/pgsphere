@@ -1,17 +1,12 @@
 import React, { useEffect, useState } from "react";
 
-import { AgGridReact } from "ag-grid-react";
-import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import InventoryForm from "../../components/InventoryForm";
-
-// ✅ AG Grid CSS (core and theme)
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css"; // Or any other theme
 
 import Breadcrumb from "../../components/Breadcrumb";
 import { useInventoryTable } from "../../hooks/useInventoryTable";
 
-ModuleRegistry.registerModules([AllCommunityModule]);
+//Importing icons
+import { Package } from "lucide-react";
 
 function Inventory() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -44,22 +39,18 @@ function Inventory() {
       onClick={handleOpenForm}
       ></Breadcrumb>
 
-      <div className="h-full ag-theme-alpine w-full">
-        <AgGridReact
-          rowData={rows}
-          rowHeight={70}
-          loading={loading}
-          headerHeight={54}
-          columnDefs={columns}
-          modules={[AllCommunityModule]}
-          pagination={true}
-          paginationPageSize={10}
-          defaultColDef={{
-            resizable: true,
-            sortable: true,
-            // filter: true,
-          }}
-        />
+      <div className="h-full w-full flex justify-center items-center">
+        <div className="flex flex-col items-center justify-center gap-4 p-8">
+          <div className="bg-gradient-to-br from-[#5f9df9] to-[#636ef2] p-6 rounded-full">
+            <Package size={48} className="text-white"></Package>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800">This Feature is Coming Soon</h1>
+            <p className="text-gray-500 text-center text-sm sm:text-base max-w-md">
+              We're working hard to bring you an amazing inventory management experience. Stay tuned!
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   )

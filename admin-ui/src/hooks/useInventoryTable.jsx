@@ -48,28 +48,28 @@ export const useInventoryTable = () => {
     const columns = [
         {
             headerName: 'Item Name',
-            field: 'refId.item_name',
+            field: 'item_name',
             minWidth: 220,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
               <div className="flex items-center w-full h-full">
                 <div className="flex items-center gap-3">
                   <img
-                    src={getItemImage(params.data.refId.item_type)}
+                    src={getItemImage(params.row.refId.item_type)}
                     alt="vendor"
                     className="w-9 h-9 rounded-full"
                   />
-                  <span>{capitalise(params.value)}</span>
+                  <span>{capitalise(params.row.refId.item_name)}</span>
                 </div>
               </div>
             )
         },
         {
             headerName: 'Amount',
-            field: 'refId.amount',
+            field: 'amount',
             minWidth:150,
             cellRenderer: (params) => (
                 <div className="flex items-center w-full h-full">
-                   <span className="font-medium">₹{params.value}</span>
+                   <span className="font-medium">₹{params.row.refId.amount}</span>
                 </div>
             )
         },
@@ -88,7 +88,7 @@ export const useInventoryTable = () => {
             field: 'branch.branch_name',
             minWidth: 260,
             flex: 1,
-            valueGetter: (params) => params.data.branch.branch_name,
+            valueGetter: (params) => params.row.branch.branch_name,
             cellRenderer: (params) => (
              <div className="flex items-center w-full h-full">
                 <Tooltip title={params.value}>
@@ -102,12 +102,12 @@ export const useInventoryTable = () => {
         },
         {
             headerName: "Type",
-            field: 'refId.item_type',
+            field: 'item_type',
             minWidth:200,
             flex: 1,
             cellRenderer: (params) => (
                 <div className="flex items-center w-full h-full">
-                    <span>{params.value}</span>
+                    <span>{params.row.refId.item_type}</span>
                 </div>
             )
         },

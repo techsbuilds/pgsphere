@@ -106,9 +106,6 @@ export const getallScanner = async (req, res, next) => {
 
         const allScanners = await SCANNER.find({ pgcode }).populate('branch').populate('bankaccount').lean()
 
-        if (!allScanners.length) {
-            return res.status(404).json({ message: "Scanners Not Found", success: false })
-        }
 
         return res.status(200).json({ message: "All Scanner Retrived Successfully by Admin", data: allScanners, success: true })
 
@@ -159,7 +156,7 @@ export const getScannerbyBranch = async (req, res, next) => {
 }
 
 export const updateScanner = async (req, res, next) => {
-
+    console.log('req.body',req.body)
     const session = await mongoose.startSession()
     session.startTransaction()
 
@@ -167,7 +164,7 @@ export const updateScanner = async (req, res, next) => {
 
         let { branch, bankaccount } = req.body
         const { scanner_id } = req.params
-        const { mongoid, userType, pgcode } = req
+        const { mongoid, pgcode } = req
         const uploadedfile = req.file
 
         const uploadedFilePath = uploadedfile ? path.join("uploads", "scanner", uploadedfile.filename) : null

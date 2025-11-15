@@ -6,14 +6,13 @@ import TRANSACTION from "../models/TRANSACTION.js";
 export const createMonthlyPayment = async (req, res, next) =>{
     try{
         const {pgcode} = req
-        const {payment_name, notes, amount, starting_date, branch} = req.body
+        const {payment_name, notes, starting_date, branch} = req.body
 
-        if(!payment_name || !branch || !amount || !starting_date) return res.status(400).json({message:"Please provide all required fields.",success:false})
+        if(!payment_name || !branch || !starting_date) return res.status(400).json({message:"Please provide all required fields.",success:false})
 
         const newMonthlyPayment = new MONTHLYPAYMENT({
             payment_name,
             notes,
-            amount,
             starting_date,
             branch,
             pgcode
@@ -62,9 +61,16 @@ export const getMonthlyPaymentsList = async (req, res, next)=>{
 
      const responseData = [];
 
+     // Get current month and year
+     const today = new Date();
+     const currentMonth = today.getMonth() + 1;
+     const currentYear = today.getFullYear();
+
      for(const bill of monthlyPayments){
+        // Get all months from starting_date to current month
         const allMonths = getMonthYearList(bill.starting_date)
 
+        // Find all transactions for this monthly payment
         const monthlyTransaction = await TRANSACTION.find({
             transactionType:'expense',
             type:'monthly_bill',
@@ -77,38 +83,35 @@ export const getMonthlyPaymentsList = async (req, res, next)=>{
             match: {monthly_payment:bill._id}
         })
 
-        const paidMonthlyMap = {} 
+        // Create a set of months that have transactions (paid months)
+        const paidMonthsSet = new Set();
 
         for (const tx of monthlyTransaction){
             const entry = tx.refId 
             if(!entry) continue;
 
             const key = `${entry.month}-${entry.year}`;
-            if(!paidMonthlyMap[key]){
-                paidMonthlyMap[key] = 0
-            }
-
-            paidMonthlyMap[key] += entry.amount
+            paidMonthsSet.add(key);
         }
 
+        // Find pending months (months without transactions, only up to current month)
         const pendingMonths = [];
 
         for(const {month, year} of allMonths) {
-            const key = `${month}-${year}`
-            const paid = paidMonthlyMap[key] || 0
-            const pending = Math.max(bill.amount - paid , 0)
+            // Only include months up to current month (don't show future months)
+            if(year > currentYear || (year === currentYear && month > currentMonth)) {
+                break;
+            }
 
-            if(pending > 0){
-                const today = new Date();
-                const currentMonth = today.getMonth() + 1;
-                const currentYear = today.getFullYear() 
-
+            const key = `${month}-${year}`;
+            
+            // If no transaction exists for this month, it's pending
+            if(!paidMonthsSet.has(key)){
                 const isRequired = !(month === currentMonth && year === currentYear)
 
                 pendingMonths.push({
                     month, 
                     year,
-                    pending,
                     required: isRequired
                 })
             }
@@ -117,7 +120,6 @@ export const getMonthlyPaymentsList = async (req, res, next)=>{
         responseData.push({
             billId: bill._id,
             billName: bill.payment_name,
-            amount: bill.amount,
             notes:bill.notes,
             startingDate:bill.starting_date,
             pendingMonths: pendingMonths,

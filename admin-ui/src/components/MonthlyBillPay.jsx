@@ -107,23 +107,11 @@ function MonthlyBillPay({monthlyBill, onClose}) {
                     <span className='text-lg font-medium'>{monthlyBill.billName}</span>
                 </div>
                 <div className='flex items-center gap-2'>
-                    <Wallet></Wallet>
-                    <span className='text-lg font-medium'>₹{monthlyBill.amount}</span>
-                </div>
-                <div className='flex items-center gap-2'>
                     <House></House>
                     <span className='text-lg font-medium'>{sliceString(monthlyBill.branch.branch_name,20)}</span>
                 </div>
-                <div className='flex items-center gap-2'>
-                    <NotebookPen></NotebookPen>
-                    <span className='text-lg font-medium'>{sliceString(monthlyBill.notes,20)}</span>
-                </div>
             </div>
             <form onSubmit={handleSubmit(handlePayMonthlyBill)} className='flex flex-col gap-4'>
-               <div className='flex flex-col gap-1'>
-                 <label>Pending Amount</label>
-                 <span>₹{selectedAmount?.pending || 0}</span>
-               </div>
                <div className='flex flex-col gap-2'>
                  <label>Amount <span className='text-sm text-red-500'>*</span></label>
                   <div className='flex flex-col'>

@@ -7,7 +7,7 @@ import { updateStatusScanner, deleteScanner } from "../services/scannerServices"
 import { toast } from "react-toastify"
 import ConfirmationBox from "./ConfirmationBox"
 
-function ScannnerCard({ openForm, item }) {
+function ScannnerCard({ openForm, item, handleGetAllScanner }) {
 
     const { auth } = useAuth()
     const [loading, setLoading] = useState(false)
@@ -42,8 +42,7 @@ function ScannnerCard({ openForm, item }) {
         try {
             const data = await updateStatusScanner(item._id)
             toast.success("Scanner status changed successfully.")
-            // Refresh the page or reload data - parent component should handle this
-            window.location.reload()
+            handleGetAllScanner()
         } catch (err) {
             console.log(err)
             toast.error(err?.message || "Something went wrong.")
@@ -60,7 +59,7 @@ function ScannnerCard({ openForm, item }) {
     const handleCloseConfirmationBox = (refresh = false) => {
         setOpenConfirmBox(false)
         if (refresh) {
-            window.location.reload()
+            handleGetAllScanner()
         }
     }
 

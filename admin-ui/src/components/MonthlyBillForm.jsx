@@ -14,6 +14,15 @@ function MonthlyBillForm({monthlyBill,onClose}) {
   const [loading, setLoading] = useState(false)
   const [branches, setBranches] = useState([])
   const [selectedBranch,setSelectedBranch] = useState('')
+  
+  // Get first day of current month for min date
+  const getFirstDayOfCurrentMonth = () => {
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = today.getMonth() + 1
+    return `${year}-${String(month).padStart(2, '0')}-01`
+  }
+
   const {
     register,
     handleSubmit,
@@ -25,9 +34,8 @@ function MonthlyBillForm({monthlyBill,onClose}) {
     defaultValues: {
         payment_name:'',
         notes:"",
-        amount:0,
         branch:'',
-        starting_date:new Date().toISOString().split("T")[0]
+        starting_date:getFirstDayOfCurrentMonth()
     }
   })
 
@@ -36,9 +44,8 @@ function MonthlyBillForm({monthlyBill,onClose}) {
         reset({
             payment_name:monthlyBill.billName,
             notes:monthlyBill.notes,
-            amount:monthlyBill.amount,
             branch:monthlyBill.branch._id,
-            starting_date:monthlyBill.starting_date
+            starting_date:monthlyBill.startingDate ? new Date(monthlyBill.startingDate).toISOString().split("T")[0] : getFirstDayOfCurrentMonth()
         })
         setSelectedBranch(monthlyBill.branch._id)
     }
@@ -108,19 +115,6 @@ function MonthlyBillForm({monthlyBill,onClose}) {
                 </div>
              </div>
              <div className='flex flex-col gap-2'>
-                <label>Amount <span className='text-red-500'>*</span></label>
-                <div className='flex flex-col'>
-                    <input 
-                    disabled={monthlyBill}
-                    {...register('amount', {valueAsNumber: true})}
-                    className='p-2 border disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 border-neutral-300 rounded-md outline-none'
-                    placeholder='Enter bill amount'
-                    type='number'>
-                    </input>
-                    {errors.amount && <span className='text-sm text-red-500'>{errors.amount.message}</span>}
-                </div>
-             </div>
-             <div className='flex flex-col gap-2'>
                 <label>Branch <span className='text-red-500'>*</span></label>
                 <div className='flex flex-col'>
                     <select 
@@ -145,10 +139,12 @@ function MonthlyBillForm({monthlyBill,onClose}) {
                     <input 
                     disabled={monthlyBill}
                     {...register('starting_date', {valueAsDate: true})}
+                    min={getFirstDayOfCurrentMonth()}
                     className='p-2 border disabled:cursor-no-drop disabled:bg-gray-100 disabled:text-gray-400 border-neutral-300 rounded-md outline-none'
                     type='date'>
                     </input>
                     {errors.starting_date && <span className='text-sm text-red-500'>{errors.starting_date.message}</span>}
+                    <span className='text-xs text-gray-500 mt-1'>Select the 1st day of the month (e.g., 01-05-2025)</span>
                 </div>
              </div>
              <div className='flex flex-col gap-2'>
@@ -157,8 +153,8 @@ function MonthlyBillForm({monthlyBill,onClose}) {
                     <textarea 
                     {...register('notes')}
                     className='p-2 border border-neutral-300 rounded-md outline-none'
-                    placeholder='Enter bill amount'
-                    type='number'>
+                    placeholder='Enter notes (optional)'
+                    rows={4}>
                     </textarea>
                 </div>
              </div>
