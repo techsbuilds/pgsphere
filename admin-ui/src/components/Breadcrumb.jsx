@@ -56,7 +56,7 @@ function Breadcrumb({
                 </div>
                 <button
                   onClick={() => onClick()}
-                  className="p-2 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                  className="p-2 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
                 >
                   Add New Branch
                 </button>
@@ -64,7 +64,7 @@ function Breadcrumb({
               {/* Mobile: Show only add button on right */}
               <button
                 onClick={() => onClick()}
-                className="md:hidden px-3 py-1.5 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+                className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
               >
                 Add
               </button>
@@ -132,7 +132,7 @@ function Breadcrumb({
                 </select>
                 <button
                   onClick={() => onClick()}
-                  className="p-2 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                  className="p-2 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
                 >
                   Add New Customer
                 </button>
@@ -140,7 +140,7 @@ function Breadcrumb({
               {/* Mobile: Show only add button on right */}
               <button
                 onClick={() => onClick()}
-                className="md:hidden px-3 py-1.5 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+                className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
               >
                 Add
               </button>
@@ -173,6 +173,48 @@ function Breadcrumb({
             </div>
           </>
         );
+
+      case "/admin/customers/meals":
+          return (
+            <div className="flex justify-between items-center w-full">
+                <h1 className="text-2xl md:text-3xl font-semibold">Meal Menu</h1>
+                {/* Desktop: Show search, filter and add button on right */}
+                <div className="hidden md:flex items-center gap-2">
+                  <select
+                    onChange={(e) => setSelectedBranch(e.target.value)}
+                    value={selectedBranch}
+                    className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none"
+                  >
+                    {/* <option value={""}>All Branch</option> */}
+                    {branch.map((item, index) => (
+                      <option key={index} value={item._id}>
+                        {item.branch_name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => onClick()}
+                    className="p-2 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                  >
+                    Add New Meal
+                  </button>
+                </div>
+                {/* Mobile: Show only add button on right */}
+                <button
+                  onClick={() => onClick()}
+                  className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+                >
+                  Add
+                </button>
+            </div>
+        )
+      
+      case "/admin/customers/dailyupdate":
+        return (
+          <div className="flex justify-between items-center w-full">
+              <h1 className="text-2xl md:text-3xl font-semibold">Daily Updates</h1>
+          </div>
+        )
 
       case "/admin/employees/elist":
       case "/account/employees/elist":
@@ -207,7 +249,7 @@ function Breadcrumb({
                 </select>
                 <button
                   onClick={() => onClick()}
-                  className="p-2 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                  className="p-2 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
                 >
                   Add New Employee
                 </button>
@@ -215,7 +257,7 @@ function Breadcrumb({
               {/* Mobile: Show only add button on right */}
               <button
                 onClick={() => onClick()}
-                className="md:hidden px-3 py-1.5 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+                className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
               >
                 Add
               </button>
@@ -283,7 +325,7 @@ function Breadcrumb({
                 </select>
                 <button
                   onClick={() => onClick()}
-                  className="p-2 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                  className="p-2 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
                 >
                   Add New AcManager
                 </button>
@@ -291,7 +333,7 @@ function Breadcrumb({
               {/* Mobile: Show only add button on right */}
               <button
                 onClick={() => onClick()}
-                className="md:hidden px-3 py-1.5 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+                className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
               >
                 Add
               </button>
@@ -432,7 +474,7 @@ function Breadcrumb({
                 </select>
                 <button
                   onClick={() => onClick()}
-                  className="p-2 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                  className="p-2 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
                 >
                   Create Salary
                 </button>
@@ -507,7 +549,7 @@ function Breadcrumb({
                 </select>
                 <button
                   onClick={() => onClick()}
-                  className="p-2 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                  className="p-2 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
                 >
                   Create Inventory
                 </button>
@@ -515,7 +557,7 @@ function Breadcrumb({
               {/* Mobile: Show only add button on right */}
               <button
                 onClick={() => onClick()}
-                className="md:hidden px-3 py-1.5 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+                className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
               >
                 Add
               </button>
@@ -581,7 +623,7 @@ function Breadcrumb({
                 </select>
                 <button
                   onClick={() => onClick()}
-                  className="p-2 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                  className="p-2 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
                 >
                   Create Bill
                 </button>
@@ -589,7 +631,7 @@ function Breadcrumb({
               {/* Mobile: Show only add button on right */}
               <button
                 onClick={() => onClick()}
-                className="md:hidden px-3 py-1.5 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+                className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
               >
                 Add
               </button>
@@ -643,7 +685,7 @@ function Breadcrumb({
                 </div>
                 <button
                   onClick={() => onClick()}
-                  className="p-2 px-4 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                  className="p-2 px-4 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
                 >
                   Create Cashout
                 </button>
@@ -651,7 +693,7 @@ function Breadcrumb({
               {/* Mobile: Show only add button on right */}
               <button
                 onClick={() => onClick()}
-                className="md:hidden px-3 py-1.5 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+                className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
               >
                 Add
               </button>

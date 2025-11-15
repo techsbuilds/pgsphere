@@ -66,7 +66,7 @@ function BranchRooms({branchId}) {
          <FloorForm openForm={openFloorForm} branch={branchId} onClose={handleCloseFloorForm} floor={selectedFloor}></FloorForm>
          <div className='flex flex-row items-center justify-between gap-4'>
              <h1 className='text-xl sm:text-2xl font-semibold'>Rooms</h1>
-             <button onClick={()=>handleOpenFloorForm(null)} className='md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white w-fit'>
+             <button onClick={()=>handleOpenFloorForm(null)} className='md:p-2 p-1.5 bg-primary transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white w-fit'>
                <span className='hidden md:block'>Add New Floor</span>
                <Plus className='block md:hidden' size={18}></Plus>
              </button>

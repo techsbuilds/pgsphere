@@ -113,6 +113,10 @@ function RentPreview() {
     if (refresh) handleGetCustomerRentDetails();
   }
 
+  useEffect(()=>{
+    setSelectedRent(pendingRentList.find((rent)=>rent.month===Number(selectedMonthYear.split('-')[0]) && rent.year===Number(selectedMonthYear.split('-')[1])))
+  },[selectedMonthYear])
+
   const handleSkipCustomerRent = async () =>{
     try{
       setLoader(true)
@@ -196,7 +200,7 @@ function RentPreview() {
                 <div className="flex items-center gap-1">
                   <BedSingle className="w-4 h-4 text-gray-500"></BedSingle>
                   <span className="text-gray-500 text-sm">
-                    Room {customerDetails?.room?.room_id}
+                    {customerDetails?.room?.room_type==="Room" ? "Room" : "Hall"} {customerDetails?.room?.room_id}
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -224,13 +228,13 @@ function RentPreview() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setOpenPayRentForm(true)}
-              className="p-1.5 px-4 cursor-pointer rounded-md text-white bg-[#202947]"
+              className="p-1.5 px-4 cursor-pointer rounded-md text-white bg-primary hover:bg-blue-600 transition-all duration-300"
             >
-              Pay Rent
+              Collect Rent
             </button>
             <button
               onClick={() => setOpenExtraChargeForm(true)}
-              className="p-1.5 px-4 cursor-pointer rounded-md text-white bg-[#202947]"
+              className="p-1.5 px-4 cursor-pointer rounded-md text-white bg-primary hover:bg-blue-600 transition-all duration-300"
             >
               Add Extra Charge
             </button>

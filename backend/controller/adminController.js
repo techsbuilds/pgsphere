@@ -16,8 +16,8 @@ export const getDashboardSummery = async (req, res, next) => {
         const currentYear = new Date().getFullYear()
 
         const totalEmployees = await EMPLOYEE.find({ status: true, pgcode }).countDocuments()
-        const totalCustomers = await CUSTOMER.find({ status: true, pgcode }).countDocuments()
-        const totalAcmanagers = await LOGINMAPPING.find({ pgcode, status: true, userType: 'Account' }).countDocuments()
+        const totalCustomers = await LOGINMAPPING.find({ status: "active", pgcode, userType:'Customer' }).countDocuments()
+        const totalAcmanagers = await LOGINMAPPING.find({ pgcode, status: "active", userType: 'Account' }).countDocuments()
 
         // vacant-seat by pgcode
         const vacantSeats = await ROOM.aggregate([
@@ -33,7 +33,11 @@ export const getDashboardSummery = async (req, res, next) => {
         ])
 
         const totalBranch = await BRANCH.find({ pgcode }).countDocuments()
-        const transactions = await TRANSACTION.find({ pgcode })
+        const transactions = await TRANSACTION.find(
+            { pgcode, 
+              transactionType: { $in: ['expense', 'income'] },
+              status:'completed'
+            })
             .populate('refId')
             .populate('bank_account')
 
@@ -42,6 +46,26 @@ export const getDashboardSummery = async (req, res, next) => {
             Profit: 0,
             Expenditure: 0,
         }))
+
+        const depositeTransactions = await TRANSACTION.find({
+            transactionType: {$in: ['deposite', 'withdrawal']},
+            pgcode,
+            status:'completed'
+          }).populate("refId")
+            .populate("bank_account")
+            .populate("branch");   
+      
+        let totalDepositeAmount = 0  
+      
+        depositeTransactions.forEach((tx)=>{
+      
+            if(tx.transactionType === 'deposite'){
+              totalDepositeAmount += tx.refId.amount;
+            }else{
+              totalDepositeAmount -= tx.refId.amount;
+            }
+      
+        })
 
         let yearlyMap = {};
         let totalProfit = 0;
@@ -89,7 +113,7 @@ export const getDashboardSummery = async (req, res, next) => {
         }
 
         //Get BANK ACCOUNTS
-        const accounts = await BANKACCOUNT.find({ pgcode });
+        const accounts = await BANKACCOUNT.find({ pgcode, status:'active'});
 
         const accountsData = accounts.map(acc => {
             const accTx = transactions.filter(t =>
@@ -118,7 +142,7 @@ export const getDashboardSummery = async (req, res, next) => {
                 monthlyData,
                 yearlyData,
                 current_balance,
-                vacantSeats,
+                vacantSeats:vacantSeats[0].totalVacant || 0,
                 total_profit: totalProfit,
                 total_expenditure: totalExpenditure,
                 total_current_year_profit: totalCurrentYearProfit,
@@ -127,7 +151,8 @@ export const getDashboardSummery = async (req, res, next) => {
                 totalBranch,
                 totalAcmanagers,
                 totalCustomers,
-                totalEmployees
+                totalEmployees,
+                totalDepositeAmount
             }, message: "Dashboard summery retrived successfully.", success: true
         })
 

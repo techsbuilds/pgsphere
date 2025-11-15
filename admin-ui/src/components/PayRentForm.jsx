@@ -76,7 +76,7 @@ function PayRentForm({openForm, onClose, rentDetails, customerId}) {
         year:rentDetails.year,
       }
       const data = await createTransactionForCustomerPay(customerRentData)
-      onClose(true)
+      handleClose(true)
       toast.success("Rent Paid Successfully")
      }catch(err){
       console.log(err)
@@ -86,14 +86,27 @@ function PayRentForm({openForm, onClose, rentDetails, customerId}) {
      }
   }
 
+  const handleClose = (refresh = false) =>{
+    reset({
+      amount:0,
+      isDeposite:false,
+      isSettled:false,
+      payment_mode:'',
+      bank_account:''
+    })
+    setIsDeposite(false)
+    setIsSettled(false)
+    onClose(refresh)
+  }
+
   console.log(errors)
 
   return (
     <div className='fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center'>
         <div className='flex w-xl flex-col gap-4 bg-white rounded-2xl p-4'>
            <div className="flex items-center gap-2 mb-2">
-             <ChevronLeft size={28} onClick={()=>onClose(false)} className="cursor-pointer"></ChevronLeft>
-             <h1 className="text-2xl font-semibold">Pay Rent of {getShortMonthName(rentDetails?.month)} {rentDetails.year}</h1>
+             <ChevronLeft size={28} onClick={()=>handleClose(false)} className="cursor-pointer"></ChevronLeft>
+             <h1 className="text-2xl font-semibold">Collect Rent of {getShortMonthName(rentDetails?.month)} {rentDetails.year}</h1>
            </div>
            <div className='grid grid-cols-2 items-center gap-4'>
                 <div className='flex p-2 border border-neutral-200 rounded-md items-center gap-2'>
@@ -179,15 +192,15 @@ function PayRentForm({openForm, onClose, rentDetails, customerId}) {
                </div>
              }
              <div className="flex justify-end gap-2 items-center">
-                 <button onClick={()=>onClose(false)} className='p-2 hover:bg-gray-100 transition-all duration-300 text-sm w-32 cursor-pointer flex justify-center items-center rounded-md border border-neutral-300'>
+                 <button onClick={()=>handleClose(false)} className='p-2 hover:bg-gray-100 transition-all duration-300 text-sm w-32 cursor-pointer flex justify-center items-center rounded-md border border-neutral-300'>
                     Cancel
                  </button>
-                 <button type="submit" disabled={loading} className="p-2 min-w-32 text-sm transition-all duration-300 cursor-pointer flex justify-center items-center bg-[#202947] rounded-md text-white font-medium">
+                 <button type="submit" disabled={loading} className="p-2 min-w-32 text-sm transition-all duration-300 cursor-pointer flex justify-center items-center bg-primary hover:bg-blue-600 transition-all duration-300 rounded-md text-white font-medium">
                   {
                     loading ? 
                     <LoaderCircle className="animate-spin"></LoaderCircle> :
                     isDeposite ? "Mark as Deposite" : isSettled ? "Mark as Settled" :
-                    "Pay"
+                    "Collect"
                   }
                  </button>
                </div>

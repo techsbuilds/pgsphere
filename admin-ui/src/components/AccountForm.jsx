@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { accountSchema } from '../validations/accountSchema';
-import { useForm } from "react-hook-form";
+import { useForm , Controller} from "react-hook-form";
+import MultiSelectDropdown from "./MultiSelectDropDown";
 
 //Importing icons
 import { ChevronLeft, LoaderCircle } from "lucide-react";
@@ -12,13 +13,13 @@ import { createAcManager, updateAcmanager } from '../services/accountService';
 function AccountForm({selectedAccount, onClose}) {
   const [loading, setLoading] = useState()  
   const [branches, setBranches] = useState([])
-  const [selectedBranch,setSelectedBranch] = useState('')
   
   const {
     register,
     handleSubmit,
     formState: {errors},
-    reset
+    reset,
+    control
   } = useForm({
     mode:'onChange',
     resolver: zodResolver(accountSchema),
@@ -37,10 +38,9 @@ function AccountForm({selectedAccount, onClose}) {
             full_name:selectedAccount?.full_name,
             contact_no:selectedAccount?.contact_no,
             email:selectedAccount?.email,
-            branch:selectedAccount?.branch?._id,
+            branch:selectedAccount?.branch?.map((item)=>item._id),
             password:'secure'
         })
-        setSelectedBranch(selectedAccount?.branch?._id)
     }
   },[])
 
@@ -48,7 +48,9 @@ function AccountForm({selectedAccount, onClose}) {
     const handleGetAllBranch = async ()=>{
       try{
          const data = await getAllBranch()
-         setBranches(data)
+         setBranches(
+            data.map((item) => ({ label: item.branch_name, value: item._id }))
+          );
       }catch(err){
          console.log(err)
          toast.error(err?.message)
@@ -86,6 +88,8 @@ function AccountForm({selectedAccount, onClose}) {
         setLoading(false)
      }
    }
+
+   console.log(errors)
 
   return (
     <div 
@@ -139,19 +143,25 @@ function AccountForm({selectedAccount, onClose}) {
              </div>
              <div className='flex flex-col gap-2'>
                 <label>Branch <span className='text-sm text-red-500'>*</span></label>
-                <div className='flex flex-col'>
-                  <select 
-                  {...register('branch')}
-                  value={selectedBranch}
-                  className='p-2 border border-neutral-300 rounded-md outline-none'>
-                     <option value={''}>--- Select Branch ---</option>
-                     {
-                        branches.map((item,index) => (
-                            <option key={index} value={item._id}>{item.branch_name}</option>
-                        ))
-                     }
-                  </select>
-                </div>
+                <div className="flex flex-col">
+                 <Controller
+                  name="branch"
+                  control={control}
+                  render={({ field }) => (
+                  <MultiSelectDropdown
+                    options={branches}
+                    selected={field.value || []} // controlled by RHF
+                    onChange={(val) => field.onChange(val)} // update RHF state
+                    placeholder="--Select Branch--"
+                  />
+                )}
+              />
+              {errors.branch && (
+                <span className="text-xs sm:text-sm text-red-500 mt-1">
+                  {errors.branch.message}
+                </span>
+              )}
+              </div>
              </div>
             {
               !selectedAccount && 

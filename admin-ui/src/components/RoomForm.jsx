@@ -156,7 +156,7 @@ function RoomForm({branchId,floor,onClose,selectedRoom}) {
                      rows={3}></textarea>
                 </div>
                 <div className='flex justify-center items-center'>
-                    <button type='submit' disabled={loading} className='p-2 sm:p-3 hover:bg-blue-600 w-full sm:w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-blue-500 rounded-md text-white font-medium text-sm sm:text-base'>
+                    <button type='submit' disabled={loading} className='p-2 hover:bg-blue-600 w-full sm:w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-primary rounded-md text-white font-medium text-sm sm:text-base'>
                         {
                             loading ? 
                             <LoaderCircle className='animate-spin w-4 h-4 sm:w-5 sm:h-5'></LoaderCircle> :

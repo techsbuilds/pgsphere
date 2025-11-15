@@ -5,7 +5,6 @@ import { getAllBranch } from '../../services/branchService'
 import AddNewBranch from '../../components/BranchForm'
 
 //Importing icons
-import { LoaderCircle } from 'lucide-react'
 import { Building2 } from 'lucide-react';
 import BranchCard from '../../components/BranchCard'
 
@@ -51,8 +50,21 @@ function Branch() {
         <Breadcrumb searchQuery={searchQuery} setSearchQuery={setSearchQuery} onClick={handleOpenForm}></Breadcrumb>
         {
           loading ? 
-          <div className='flex h-full w-full justify-center items-center py-8 sm:py-12'>
-             <LoaderCircle size={24} className='sm:w-8 sm:h-8 text-blue-500 animate-spin'></LoaderCircle>
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 items-stretch gap-4 sm:gap-6 lg:gap-8'>
+            {[1, 2, 3, 4, 5, 6].map((item) => (
+              <div key={item} className="rounded-2xl overflow-hidden shadow-sm border border-neutral-300 animate-pulse">
+                {/* Skeleton Image */}
+                <div className="h-48 bg-gray-200 w-full"></div>
+                {/* Skeleton Content */}
+                <div className="p-4 bg-white rounded-b-2xl flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-5 w-5 bg-gray-200 rounded"></div>
+                    <div className="h-5 bg-gray-200 rounded w-32 sm:w-40"></div>
+                  </div>
+                  <div className="h-4 bg-gray-200 rounded w-24 sm:w-32"></div>
+                </div>
+              </div>
+            ))}
           </div>
           :branch.length === 0 ? 
           <div className='flex h-full w-full justify-center items-center py-8 sm:py-12'>
