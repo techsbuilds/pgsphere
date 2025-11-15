@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { accountSchema } from '../validations/accountSchema';
 import { useForm , Controller} from "react-hook-form";
-import MultiSelectDropdown from "./MultiSelectDropDown";
+import MultiSelectDropdown from "./MultiSelectDropdown";
 
 //Importing icons
 import { ChevronLeft, LoaderCircle } from "lucide-react";
