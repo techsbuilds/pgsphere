@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import { timeAgo } from "../../helper";
 import { dailyupdateSchema } from "../../validations/dailyupdateSchema";
-import MultiSelectDropdown from "../../components/MultiSelectDropDown";
+import MultiSelectDropdown from "../../components/MultiSelectDropdown";
 
 //Importing icons
 import { Send, Funnel, Bell, CircleAlert, Wrench } from "lucide-react";
