@@ -36,14 +36,23 @@ export const addScanner = async (req, res, next) => {
             return res.status(400).json({ message: "bank Account Not Found", success: false })
         }
 
-        const isExist = await SCANNER.findOne({bankaccount:bankAc})
+        const isExist = await SCANNER.findOne({ bankaccount: bankAc })
 
-        if(isExist){
-            return res.status(400).json({message:"Scanner Exist in this Bank-Account.",success:false})
+        if (isExist) {
+            return res.status(400).json({ message: "Scanner Exist in this Bank-Account.", success: false })
         }
 
         if (!Array.isArray(branch)) {
             branch = [branch]
+        }
+
+        const isExistBranch = await SCANNER.findOne({ branch: { $in: branch } })
+
+        if (isExistBranch) {
+            if (req.file) {
+                await removeFile(path.join("uploads", "scanner", req.file.filename));
+            }
+            return res.status(400).json({ message: "Scanner Exist in this Branch.", success: false })
         }
 
         if (userType === "Account") {
@@ -156,7 +165,6 @@ export const getScannerbyBranch = async (req, res, next) => {
 }
 
 export const updateScanner = async (req, res, next) => {
-    console.log('req.body',req.body)
     const session = await mongoose.startSession()
     session.startTransaction()
 
@@ -224,6 +232,10 @@ export const updateScanner = async (req, res, next) => {
         }
 
         if (branch) {
+
+            console.log("branch", branch)
+            console.log("old Branch : ", scanner.branch)
+
             if (!Array.isArray(branch)) {
                 branch = [branch]
             }
@@ -246,8 +258,18 @@ export const updateScanner = async (req, res, next) => {
                 return res.status(403).json({ message: "You Are Not Autherized to Update Scanner in This Branch", success: false })
             }
 
+            const isExistBranch = await SCANNER.findOne({ _id: { $ne: scanner_id }, branch: { $in: branch } })
+
+            if (isExistBranch) {
+                if (req.file) {
+                    await removeFile(path.join("uploads", "scanner", req.file.filename));
+                }
+                return res.status(400).json({ message: "Scanner Exist in this Branch.", success: false })
+            }
+
             scanner.branch = branch;
         }
+
         if (bankaccount) {
 
             const bankAc = await BANKACCOUNT.findOne({ _id: bankaccount, pgcode }).session(session)
@@ -264,10 +286,25 @@ export const updateScanner = async (req, res, next) => {
                 return res.status(404).json({ message: "Bank Accound Not Found in this PG", success: false })
             }
 
+            let isExist = await SCANNER.findOne({ bankaccount: bankAc._id, _id: { $ne: scanner._id } }).session(session)
+
+            if (isExist) {
+                if (uploadedFilePath && fs.existsSync(uploadedFilePath)) {
+                    await removeFile(uploadedFilePath);
+                }
+                await session.abortTransaction()
+                session.endSession();
+                return res.status(400).json({ message: "Scanner Exist in this Bank-Account.", success: false })
+            }
+
             scanner.bankaccount = bankaccount
         }
 
-        await scanner.save({session})
+        await scanner.save({ session })
+
+        await session.commitTransaction();
+        session.endSession();
+
         return res.status(200).json({ message: "Update Scanner Successfully", success: true })
 
     } catch (error) {
@@ -314,18 +351,30 @@ export const updateStatusScanner = async (req, res, next) => {
     }
 }
 
-export const deleteScanner = async(req,res,next)=>{
-    try {
-        const {scanner_id} = req.params
+export const deleteScanner = async (req, res, next) => {
 
-        if(!scanner_id){
-            return res.status(400).json({message:"Please Provide Scanner id",success:true})
+    try {
+        const { scanner_id } = req.params
+
+        const scanner = await SCANNER.findById(scanner_id);
+        if (!scanner) {
+            return res.status(404).json({ message: "Scanner Not Found", success: false });
+        }
+
+        // Delete image file if exists
+        if (scanner.sc_image) {
+            const fileName = scanner.sc_image.split("/").pop();
+            const absolutePath = path.join("uploads", "scanner", fileName);
+
+            if (absolutePath && fs.existsSync(absolutePath)) {
+                await removeFile(absolutePath);
+            }
         }
 
         await SCANNER.findByIdAndDelete(scanner_id)
 
-        return res.status(200).json({message:"Scanner Deleted Successfully.",success:true})
+        return res.status(200).json({ message: "Scanner Deleted Successfully.", success: true })
     } catch (error) {
-       next(error)
+        next(error)
     }
 }

@@ -15,7 +15,7 @@ import { createScanner, updateScanner } from "../services/scannerServices";
 
 function ScannerForm({ selectedScanner, onClose }) {
 
-    console.log('selectedScanner',selectedScanner)
+    console.log('selectedScanner', selectedScanner)
     const [file, setFile] = useState(null);
     const [previewImage, setPreviewImage] = useState(null)
     const [loading, setLoading] = useState(false)
@@ -70,10 +70,10 @@ function ScannerForm({ selectedScanner, onClose }) {
             setPreviewImage(selectedScanner?.sc_image)
             reset({
                 bankaccount: selectedScanner.bankaccount?._id,
-                branch: selectedScanner.branch.map((item)=> item._id) || ""
+                branch: selectedScanner.branch.map((item) => item._id) || ""
             })
             setSelectedBankAccount(selectedScanner.bankaccount?._id)
-        }else{
+        } else {
             setPreviewImage(null)
             reset({
                 bankaccount: '',
@@ -84,11 +84,11 @@ function ScannerForm({ selectedScanner, onClose }) {
     }, [selectedScanner])
 
     const handleAddScanner = async (formData) => {
-        if(!file) {
+        if (!file) {
             setImageError("Please upload a scanner image.")
             return
         }
-        else{
+        else {
             setImageError("")
         }
         try {
@@ -96,7 +96,7 @@ function ScannerForm({ selectedScanner, onClose }) {
             const fileData = new FormData()
             if (file) fileData.append('scanner', file)
             fileData.append('bankaccount', formData.bankaccount)
-            for(let i=0; i<formData.branch.length; i++){
+            for (let i = 0; i < formData.branch.length; i++) {
                 fileData.append('branch', formData.branch[i])
             }
             const data = await createScanner(fileData)
@@ -112,20 +112,28 @@ function ScannerForm({ selectedScanner, onClose }) {
     };
 
     const handleUpdateScanner = async (formData) => {
-        console.log('formData',formData)
+
+        if (!previewImage) {
+            setImageError("Please upload a scanner image.")
+            return
+        }
+        else {
+            setImageError("")
+        }
+        console.log('formData', formData)
         try {
             setLoading(true)
             let fileData = new FormData()
 
             fileData.append('bankaccount', formData.bankaccount)
-            for(let i=0; i<formData.branch.length; i++){
+            for (let i = 0; i < formData.branch.length; i++) {
                 fileData.append('branch', formData.branch[i])
             }
 
             if (file) {
                 fileData.append('scanner', file)
             }
-          
+
             const data = await updateScanner(fileData, selectedScanner?._id)
             onClose(true)
             toast.success("Scanner updated successfully.")
@@ -137,7 +145,7 @@ function ScannerForm({ selectedScanner, onClose }) {
         }
     }
 
-   console.log(errors)
+    console.log(errors)
     return (
         <div
             className="fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center p-4 sm:p-6"
@@ -152,52 +160,52 @@ function ScannerForm({ selectedScanner, onClose }) {
                     <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold">{selectedScanner ? "Edit Scanner" : "Add New Scanner"}</h1>
                 </div>
                 <div className="flex flex-col gap-1">
-                 <UploadImage className={'mt-2'} file={file} setFile={setFile} previewImage={selectedScanner ? selectedScanner?.sc_image : null} setPreviewImage={setPreviewImage} ></UploadImage>
-                 {imageError && <span className='text-xs sm:text-sm text-red-500'>{imageError}</span>}
+                    <UploadImage className={'mt-2'} file={file} setFile={setFile} previewImage={selectedScanner ? selectedScanner?.sc_image : null} setPreviewImage={setPreviewImage} ></UploadImage>
+                    {imageError && <span className='text-xs sm:text-sm text-red-500'>{imageError}</span>}
                 </div>
                 <form
                     onSubmit={handleSubmit(selectedScanner ? handleUpdateScanner : handleAddScanner)}
                     className="flex flex-col gap-3 sm:gap-4"
                 >
 
-              <div className='flex flex-col gap-1'>
-                <label>Select Bank Account <span className='text-red-500 text-sm'>*</span></label>
-                <div className='flex flex-col'>
-                   <select 
-                   {...register('bankaccount')}
-                   value={selectedBankAccount}
-                   onChange={(e) => setSelectedBankAccount(e.target.value)}
-                   className='p-2 border border-neutral-300 rounded-md outline-none'>
-                     <option value={''}>-- Select Bank Account --</option>
-                     {
-                        bankAccounts.map((item, index) => (
-                            <option value={item._id} key={index}>{item.account_holdername}</option>
-                        ))
-                     }
-                     
-                   </select>
-                </div>
-              </div>
-                <div className='flex flex-col gap-1'>
+                    <div className='flex flex-col gap-1'>
+                        <label>Select Bank Account <span className='text-red-500 text-sm'>*</span></label>
+                        <div className='flex flex-col'>
+                            <select
+                                {...register('bankaccount')}
+                                value={selectedBankAccount}
+                                onChange={(e) => setSelectedBankAccount(e.target.value)}
+                                className='p-2 border border-neutral-300 rounded-md outline-none'>
+                                <option value={''}>-- Select Bank Account --</option>
+                                {
+                                    bankAccounts.map((item, index) => (
+                                        <option value={item._id} key={index}>{item.account_holdername}</option>
+                                    ))
+                                }
+
+                            </select>
+                        </div>
+                    </div>
+                    <div className='flex flex-col gap-1'>
                         <label>Select Branch <span className='text-red-500 text-sm'>*</span></label>
                         <div className='flex flex-col'>
-                        <Controller
-                  name="branch"
-                  control={control}
-                  render={({ field }) => (
-                  <MultiSelectDropdown
-                    options={branches}
-                    selected={field.value || []} // controlled by RHF
-                    onChange={(val) => field.onChange(val)} // update RHF state
-                    placeholder="--Select Branch--"
-                  />
-                )}
-              />
-              {errors.branch && (
-                <span className="text-xs sm:text-sm text-red-500 mt-1">
-                  {errors.branch.message}
-                </span>
-              )}
+                            <Controller
+                                name="branch"
+                                control={control}
+                                render={({ field }) => (
+                                    <MultiSelectDropdown
+                                        options={branches}
+                                        selected={field.value || []} // controlled by RHF
+                                        onChange={(val) => field.onChange(val)} // update RHF state
+                                        placeholder="--Select Branch--"
+                                    />
+                                )}
+                            />
+                            {errors.branch && (
+                                <span className="text-xs sm:text-sm text-red-500 mt-1">
+                                    {errors.branch.message}
+                                </span>
+                            )}
                         </div>
                     </div>
                     <div className="flex justify-center items-center">
