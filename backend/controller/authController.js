@@ -10,6 +10,8 @@ import ROOM from "../models/ROOM.js";
 import BRANCH from "../models/BRANCH.js";
 import path from 'path'
 import ACCOUNT from "../models/ACCOUNT.js";
+import MEALCONFIG from "../models/MEALCONFIG.js";
+
 
 //For login user 
 export const loginUser = async (req, res, next) => {
@@ -142,7 +144,6 @@ export const signupUser = async (req, res, next) => {
       address
     })
 
-
     await newUser.save()
 
     const pgcode = `PG${newUser._id.toString().slice(-6).toUpperCase()}`
@@ -156,6 +157,17 @@ export const signupUser = async (req, res, next) => {
     })
 
     await newLogin.save()
+
+    const mealConfig = new MEALCONFIG({
+      breakfast_time: '07:00am',
+      lunch_time: '12:00pm',
+      dinner_time: '07:00pm',
+      pgcode,
+      added_by: newUser._id,
+      added_by_type: 'Admin'
+    })
+
+    await mealConfig.save()
 
     const DASHBOARD_URL = process.env.NODE_ENV === "production" ? "https://app.pgsphere.com" : "http://localhost:5173";
 
