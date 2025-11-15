@@ -3,6 +3,7 @@ import LOGINMAPPING from "../models/LOGINMAPPING.js";
 import bcryptjs from 'bcryptjs'
 import CUSTOMER from "../models/CUSTOMER.js";
 import EMPLOYEE from "../models/EMPLOYEE.js";
+import mongoose from "mongoose";
 
 export const createAccountManager = async (req, res, next) => {
     try {
@@ -116,43 +117,71 @@ export const getAllAcmanager = async (req, res, next) => {
 
 
 export const updateAcManager = async (req, res, next) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
         //WIP: For add existing in only contact no and email validation
         const { pgcode } = req
         const { acmanagerId } = req.params
 
-        if (!acmanagerId) return res.status(400).json({ message: "Please provide acmanager id.", success: false })
+        if (!acmanagerId) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(400).json({ message: "Please provide acmanager id.", success: false })
+        }
 
         const { full_name, contact_no, email, branch } = req.body
 
-        const acmanager = await ACCOUNT.findById(acmanagerId)
+        const acmanager = await ACCOUNT.findById(acmanagerId).session(session)
+        const acLogin = await LOGINMAPPING.findOne({ mongoid: acmanagerId, pgcode, userType: 'Account' }).session(session)
 
-        if (!acmanager) return res.status(404).json({ message: "Acmanager not found.", success: false })
+        if (!acmanager || !acLogin) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(404).json({ message: "Acmanager not found.", success: false })
+        }
 
         if (contact_no && acmanager.contact_no !== contact_no) {
-            const existAcmanager = await ACCOUNT.findOne({ contact_no })
+            const existAcmanager = await ACCOUNT.findOne({ contact_no }).session(session)
 
-            if (existAcmanager) return res.status(409).json({ message: "Account mamanager is already exist same mobile no.", success: false })
+            if (existAcmanager) {
+                await session.abortTransaction();
+                session.endSession();
+                return res.status(409).json({ message: "Account mamanager is already exist same mobile no.", success: false })
+            }
 
             acmanager.contact_no = contact_no
         }
 
         if (email && acmanager.email !== email) {
-            const existUser = await LOGINMAPPING.findOne({ email })
+            const existUser = await LOGINMAPPING.findOne({ email }).session(session)
 
-            if (existUser) return res.status(409).json({ message: "User is already exist with same mobileno.", success: false })
+            if (existUser) {
+                await session.abortTransaction();
+                session.endSession();
+                return res.status(409).json({ message: "User is already exist with same mobileno.", success: false })
+            }
 
             acmanager.email = email
+            acLogin.email = email
+
+            await acLogin.save({ session })
         }
 
         if (full_name) acmanager.full_name = full_name
         if (branch) acmanager.branch = branch
 
-        await acmanager.save()
+        await acmanager.save({ session })
+
+        await session.commitTransaction();
+        session.endSession();
 
         return res.status(200).json({ message: "Acmanager details updated successfully.", success: true, data: acmanager })
 
     } catch (err) {
+        await session.abortTransaction();
+        session.endSession();
         next(err)
     }
 }

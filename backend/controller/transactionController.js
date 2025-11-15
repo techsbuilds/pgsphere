@@ -543,8 +543,11 @@ export const createTransactionForMonthlyPayment = async (req, res, next) =>{
        refId:newMonthlyPaymentReceipt,
        payment_mode,
        branch,
+       status:'completed',
        bank_account,
-       pgcode
+       pgcode,
+       added_by:mongoid,
+       added_by_type:userType
      })
 
      await newTransaction.save()
@@ -559,7 +562,7 @@ export const createTransactionForMonthlyPayment = async (req, res, next) =>{
 
 export const createTransactionForCashout = async (req, res, next) =>{
    try{
-      const {pgcode} = req
+      const {pgcode, userType, mongoid} = req
       const {amount, person_name , payment_mode, bank_account, notes, mobile_no, transactionType} = req.body
 
       if(!amount || !person_name || !payment_mode || !bank_account || !transactionType) return res.status(400).json({message:"Please provide required fields.",success:false})
@@ -580,9 +583,12 @@ export const createTransactionForCashout = async (req, res, next) =>{
          type:'cash_given',
          refModel:'Cashout',
          refId:newCashOut,
+         status:'completed',
          payment_mode,
          bank_account,
-         pgcode
+         pgcode,
+         added_by:mongoid,
+         added_by_type:userType
       })
 
       await newTransaction.save()

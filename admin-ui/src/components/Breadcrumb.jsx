@@ -524,7 +524,7 @@ function Breadcrumb({
             <div className="flex justify-between items-center w-full">
               <h1 className="text-2xl md:text-3xl font-semibold">Inventory</h1>
               {/* Desktop: Show search, filter and add button on right */}
-              <div className="hidden md:flex items-center gap-2">
+              {/* <div className="hidden md:flex items-center gap-2">
                 <div className="border rounded-2xl border-neutral-300 bg-white p-2 w-72 flex items-center gap-2">
                   <Search className="text-gray-500" size={20}></Search>
                   <input
@@ -553,18 +553,18 @@ function Breadcrumb({
                 >
                   Create Inventory
                 </button>
-              </div>
+              </div> */}
               {/* Mobile: Show only add button on right */}
-              <button
+              {/* <button
                 onClick={() => onClick()}
                 className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
               >
                 Add
-              </button>
+              </button> */}
             </div>
 
             {/* Mobile: Bottom row with search and filter */}
-            <div className="md:hidden flex items-center gap-2">
+            {/* <div className="md:hidden flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 min-w-0 h-10">
                 <Search className="text-gray-500 flex-shrink-0" size={20}></Search>
                 <input
@@ -587,7 +587,7 @@ function Breadcrumb({
                   </option>
                 ))}
               </select>
-            </div>
+            </div> */}
           </>
         );
 
