@@ -143,7 +143,7 @@ function CustomerForm({selectedCustomer, onClose}) {
   }
 
   const handleEditCustomer = async (customerData) => {
-     if(!file) {
+     if(!preview) {
       setImageError("Please upload aadhar card image.")
       return 
      }else{

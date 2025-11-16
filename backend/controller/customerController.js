@@ -1413,6 +1413,8 @@ export const getCustomerDetailsForCustomer = async (req, res, next) => {
         });
     }
 
+    const customerLogin = await LOGINMAPPING.findOne({mongoid})
+
     // find Customer
     const customer = await CUSTOMER.findById(mongoid)
       .populate("branch")
@@ -1444,6 +1446,7 @@ export const getCustomerDetailsForCustomer = async (req, res, next) => {
 
     data.pgname = admin.pgname
     data.pglogo = admin.pglogo
+    data.status = customerLogin.status
 
 
     return res

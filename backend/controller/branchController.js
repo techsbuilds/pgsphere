@@ -272,7 +272,7 @@ export const getDashboardSummery = async (req, res, next) => {
 
     return res.status(200).json({
       message: "Dashboard summary retrieved for branch.",
-      data: { totalRooms, totalCustomers:totalCustomers[0].total, totalEmployees },
+      data: { totalRooms, totalCustomers:totalCustomers.length > 0 ? totalCustomers[0].total : 0, totalEmployees },
       success: true,
     });
   } catch (err) {

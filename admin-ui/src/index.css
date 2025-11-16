@@ -412,7 +412,7 @@ input[type=number] {
 }
 
 /* Branch Selection Dropdown Styles */
-@media (max-width: 640px) {
+/*@media (max-width: 640px) {
   select {
     max-width: 100% !important;
     overflow: hidden !important;
@@ -427,7 +427,7 @@ input[type=number] {
     white-space: nowrap !important;
   }
   
-  /* Fix dropdown positioning for mobile */
+  
   .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-size-selector {
     position: relative !important;
     z-index: 1 !important;
@@ -439,13 +439,13 @@ input[type=number] {
     max-width: 100% !important;
   }
   
-  /* Ensure dropdown doesn't overflow */
+  
   .customer-grid .ag-theme-alpine .ag-paging-panel .ag-paging-page-size-selector select:focus {
     position: relative !important;
     z-index: 10 !important;
   }
   
-  /* Fix any dropdown that might overflow */
+  
   select:focus {
     position: relative !important;
     z-index: 10 !important;
@@ -454,7 +454,7 @@ input[type=number] {
     right: 0 !important;
   }
   
-  /* Fix Breadcrumb branch selection dropdown */
+  
   .relative select {
     position: relative !important;
     z-index: 1 !important;
@@ -470,13 +470,13 @@ input[type=number] {
     right: 0 !important;
   }
   
-  /* Ensure dropdown container doesn't overflow */
+  
   .relative {
     position: relative !important;
     overflow: visible !important;
     max-width: 100% !important;
   }
-}
+}*/
 
 .ag-theme-alpine .ag-root-wrapper {
   background-color: white;
