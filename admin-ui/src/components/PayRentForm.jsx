@@ -102,31 +102,32 @@ function PayRentForm({openForm, onClose, rentDetails, customerId}) {
   console.log(errors)
 
   return (
-    <div className='fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center'>
-        <div className='flex w-xl flex-col gap-4 bg-white rounded-2xl p-4'>
-           <div className="flex items-center gap-2 mb-2">
-             <ChevronLeft size={28} onClick={()=>handleClose(false)} className="cursor-pointer"></ChevronLeft>
-             <h1 className="text-2xl font-semibold">Collect Rent of {getShortMonthName(rentDetails?.month)} {rentDetails.year}</h1>
+    <div className='fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center p-3 sm:p-4'>
+        <div className='flex w-full max-w-md lg:max-w-lg flex-col gap-3 sm:gap-4 bg-white rounded-2xl p-3 sm:p-4 max-h-[90vh] overflow-y-auto'>
+           <div className="flex items-center gap-2 mb-1 sm:mb-2">
+             <ChevronLeft size={24} className="sm:w-7 sm:h-7 cursor-pointer flex-shrink-0" onClick={()=>handleClose(false)}></ChevronLeft>
+             <h1 className="text-base sm:text-lg lg:text-xl font-semibold leading-tight">Collect Rent of {getShortMonthName(rentDetails?.month)} {rentDetails.year}</h1>
            </div>
-           <div className='grid grid-cols-2 items-center gap-4'>
-                <div className='flex p-2 border border-neutral-200 rounded-md items-center gap-2'>
+           <div className='grid grid-cols-2 items-center gap-2 sm:gap-4'>
+                <div className='flex p-2 border border-neutral-200 rounded-md items-center gap-2 text-xs sm:text-sm'>
                     <span>Rent Amount:</span>
                     <span className='font-medium'>₹{rentDetails.rent_amount}</span>
                 </div>
-                <div className='flex items-center gap-2 border border-neutral-200 rounded-md p-2'>
+                <div className='flex items-center gap-2 border border-neutral-200 rounded-md p-2 text-xs sm:text-sm'>
                     <span>Pending Amount</span>
                     <span className='font-medium'>₹{rentDetails.pending}</span>
                 </div>
            </div>
-           <div className='flex items-center gap-4'>
+           <div className='flex items-start sm:items-center gap-3 sm:gap-4'>
              <div className='flex items-center gap-2'>
                 <input 
                 id='deposite' 
                 checked={isDeposite}
                 {...register("isDeposite")}
                 onChange={handleMarkAsDeposite} 
-                type='checkbox'></input>
-                <label htmlFor='deposite'>Deposite</label>
+                type='checkbox'
+                className='w-4 h-4 sm:w-5 sm:h-5'></input>
+                <label htmlFor='deposite' className='text-sm sm:text-base cursor-pointer'>Deposite</label>
              </div>
              <div className='flex items-center gap-2'>
                 <input 
@@ -134,33 +135,34 @@ function PayRentForm({openForm, onClose, rentDetails, customerId}) {
                 checked={isSettled} 
                 {...register("isSettled")}
                 onChange={handleMarkAsSettled} 
-                type='checkbox'></input>
-                <label htmlFor='settled'>Settled</label>
+                type='checkbox'
+                className='w-4 h-4 sm:w-5 sm:h-5'></input>
+                <label htmlFor='settled' className='text-sm sm:text-base cursor-pointer'>Settled</label>
              </div>
            </div>
-           <form onSubmit={handleSubmit(handlePay)} className='flex flex-col gap-4'>
+           <form onSubmit={handleSubmit(handlePay)} className='flex flex-col gap-3 sm:gap-4'>
              {
                !isDeposite &&
-               <div className='flex mb-2 flex-col gap-4'>
+               <div className='flex mb-2 flex-col gap-3 sm:gap-4'>
                <div className='flex flex-col gap-2'>
-                  <label>Amount <span className='text-sm text-red-500'>*</span></label>
+                  <label className='text-sm sm:text-base'>Amount <span className='text-xs sm:text-sm text-red-500'>*</span></label>
                   <div className='flex flex-col'>
                       <input
                       type='number'
                       {...register("amount",{ valueAsNumber: true })}
-                      className="p-2 border border-neutral-300 rounded-md outline-none"
+                      className="p-2 text-sm sm:text-base border border-neutral-300 rounded-md outline-none"
                       placeholder='Enter amount'
                       ></input>
-                      {errors.amount && <span className='text-sm text-red-500'>{errors.amount.message}</span>}
+                      {errors.amount && <span className='text-xs sm:text-sm text-red-500'>{errors.amount.message}</span>}
                   </div>
                </div>
-               <div className='grid grid-cols-2 items-center gap-4'>
+               <div className='grid grid-cols-1 sm:grid-cols-2 items-center gap-3 sm:gap-4'>
                   <div className='flex flex-col gap-2'>
-                      <label>Bank Account <span className='text-sm text-red-500'>*</span></label>
+                      <label className='text-sm sm:text-base'>Bank Account <span className='text-xs sm:text-sm text-red-500'>*</span></label>
                       <div className='flex flex-col'>
                           <select
                           {...register("bank_account")}
-                          className='p-2 border border-neutral-300 rounded-md outline-none'
+                          className='p-2 text-sm sm:text-base border border-neutral-300 rounded-md outline-none'
                           >
                             <option value={''}>-- Select Bank Account --</option>
                             {
@@ -169,36 +171,36 @@ function PayRentForm({openForm, onClose, rentDetails, customerId}) {
                                 ))
                             }
                           </select>
-                          {errors.bank_account && <span className='text-sm text-red-500'>{errors.bank_account.message}</span>}
+                          {errors.bank_account && <span className='text-xs sm:text-sm text-red-500'>{errors.bank_account.message}</span>}
                       </div>
                   </div>
                   <div className='flex flex-col gap-2'>
-                      <label>Payment Mode <span className='text-sm text-red-500'>*</span></label>
+                      <label className='text-sm sm:text-base'>Payment Mode <span className='text-xs sm:text-sm text-red-500'>*</span></label>
                       <div className='flex flex-col'>
                           <select
                           {...register("payment_mode")}
-                          className='p-2 border border-neutral-300 rounded-md outline-none'
+                          className='p-2 text-sm sm:text-base border border-neutral-300 rounded-md outline-none'
                           >
                             <option value={''}>-- Select Payment Mode --</option>
                             <option value={'cash'}>Cash</option>
                             <option value={'upi'}>UPI</option>
                             <option value={'bank_transfer'}>Bank Transfer</option>
                           </select>
-                          {errors.payment_mode && <span className='text-sm text-red-500'>{errors.payment_mode.message}</span>}
+                          {errors.payment_mode && <span className='text-xs sm:text-sm text-red-500'>{errors.payment_mode.message}</span>}
                       </div>
                   </div>
                </div>
-               {errors.general_error && <span className='text-sm text-red-500'> {errors.general_error.message}</span>}
+               {errors.general_error && <span className='text-xs sm:text-sm text-red-500'> {errors.general_error.message}</span>}
                </div>
              }
-             <div className="flex justify-end gap-2 items-center">
-                 <button onClick={()=>handleClose(false)} className='p-2 hover:bg-gray-100 transition-all duration-300 text-sm w-32 cursor-pointer flex justify-center items-center rounded-md border border-neutral-300'>
+             <div className="flex justify-end gap-2 items-stretch sm:items-center">
+                 <button onClick={()=>handleClose(false)} className='p-2 hover:bg-gray-100 transition-all duration-300 text-xs sm:text-sm w-32 cursor-pointer flex justify-center items-center rounded-md border border-neutral-300'>
                     Cancel
                  </button>
-                 <button type="submit" disabled={loading} className="p-2 min-w-32 text-sm transition-all duration-300 cursor-pointer flex justify-center items-center bg-primary hover:bg-blue-600 transition-all duration-300 rounded-md text-white font-medium">
+                 <button type="submit" disabled={loading} className="p-2 w-32 text-xs sm:text-sm transition-all duration-300 cursor-pointer flex justify-center items-center bg-primary hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-md text-white font-medium">
                   {
                     loading ? 
-                    <LoaderCircle className="animate-spin"></LoaderCircle> :
+                    <LoaderCircle className="animate-spin w-4 h-4 sm:w-5 sm:h-5"></LoaderCircle> :
                     isDeposite ? "Mark as Deposite" : isSettled ? "Mark as Settled" :
                     "Collect"
                   }

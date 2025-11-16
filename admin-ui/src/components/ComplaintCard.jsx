@@ -67,7 +67,7 @@ function ComplaintCard({ item, onRefresh }) {
       <div className={`flex items-start mb-3 w-full relative ${!isClosed ? 'pr-32' : ''}`}>
         {/* Description on Left */}
         <div className="flex-1">
-          <p className="text-gray-900 text-base font-medium inline">
+          <p className="text-gray-900 md:text-base text-sm font-medium inline">
             {displayDescription}
             {shouldTruncate && !isDescriptionExpanded && <span>...</span>}
             {shouldTruncate && (
@@ -88,7 +88,7 @@ function ComplaintCard({ item, onRefresh }) {
       {/* Customer Name */}
       <div className="mb-2 w-full flex items-center gap-1">
         <User className="text-gray-600" size={20} />
-        <p className="text-gray-900 text-base">
+        <p className="text-gray-900 md:text-base text-sm">
           {item?.added_by?.customer_name || 'N/A'}
         </p>
       </div>
@@ -98,7 +98,7 @@ function ComplaintCard({ item, onRefresh }) {
 
         <div className="flex items-center gap-1">
         <BedSingle className="text-gray-600" size={18} />
-          <span className="text-gray-600 text-sm">
+          <span className="text-gray-600 md:text-sm text-xs">
             {item?.added_by?.room?.room_type==="Room" ? "Room" : "Hall"} {item?.added_by?.room?.room_id || 'N/A'}
           </span>
         </div>
@@ -114,12 +114,12 @@ function ComplaintCard({ item, onRefresh }) {
       <div className="flex items-center gap-2 text-gray-500 text-xs w-full">
         {item?.category && (
           <>
-            <span className='text-sm'>Category: {item.category}</span>
+            <span className='md:text-sm text-xs'>Category: {item.category}</span>
             <span className="text-gray-400">•</span>
           </>
         )}
         {item?.createdAt && (
-          <span className='text-sm'>Submitted: {formatDate(item.createdAt)}</span>
+          <span className='md:text-sm text-xs'>Submitted: {formatDate(item.createdAt)}</span>
         )}
 
 

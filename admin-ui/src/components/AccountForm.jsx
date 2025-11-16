@@ -27,7 +27,7 @@ function AccountForm({selectedAccount, onClose}) {
        full_name:'',
        contact_no:'',
        email:'',
-       branch:'',
+       branch:[],
        password:''
     }
   })

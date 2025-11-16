@@ -1,5 +1,6 @@
 import { useEffect, useState, } from "react";
 import Tooltip from '@mui/material/Tooltip';
+import { GridActionsCellItem } from "@mui/x-data-grid";
 import { toast } from "react-toastify";
 import { sliceString } from "../helper";
 
@@ -15,12 +16,12 @@ import { formatDate } from "../helper";
 import { capitalise } from "../helper";
 
 //Importing icons
-import { UserPen } from 'lucide-react';
+import { UserPen, Wallet } from 'lucide-react';
 import { Minus } from 'lucide-react';
 import { Check } from 'lucide-react';
 import { changeEmployeeStatus, getAllEmployee } from "../services/employeeService";
 
-export const useEmployeeTable = (handleOpenForm) => {
+export const useEmployeeTable = (handleOpenForm, handleOpenAdvanceRentForm) => {
     const [rows, setRows] = useState([])
     const [loading, setLoading] = useState(false)
    
@@ -54,40 +55,57 @@ export const useEmployeeTable = (handleOpenForm) => {
         setLoading(false)
        }
     }
+
+    const renderAction = (data) =>{
+
+      let actionArr = []
+
+       actionArr.push(
+           <GridActionsCellItem
+           icon={<UserPen size={22}></UserPen>}
+           label="Edit"
+           onClick={()=>handleOpenForm(data.row)}
+           showInMenu
+           ></GridActionsCellItem>,
+           <GridActionsCellItem
+           icon={data.row.status?<Minus size={22}></Minus>:<Check size={22}></Check>}
+           label={data.row.status? "Deactivate" : "Activate"}
+           onClick={()=>handleChangeEmployeeStatus(data.row._id, !data.row.status)}
+           showInMenu
+           ></GridActionsCellItem>
+         )
+       
+
+       return actionArr
+
+     }
     
     const columns = [
         {
             headerName: 'Full Name',
             field: 'employee_name',
-            minWidth: 220,
-            cellRenderer: (params) => (
+            minWidth: 250,
+            renderCell: (params) => (
               <div className="flex items-center w-full h-full">
                  <div className="flex items-center gap-3">
-                   <img src={params.data.employee_type==="Co-Worker"?WORKER:CHEF} alt="vendor" className="w-9 h-9 rounded-full" />
-                   <span>{capitalise(params.value)}</span>
+                   <img src={params.row.employee_type==="Co-Worker"?WORKER:CHEF} alt="vendor" className="w-9 h-9 rounded-full" />
+                   <div className="flex flex-col">
+                      <span className="leading-5">{capitalise(params.value)}</span>
+                      <div className="flex text-gray-600 items-center gap-0.5">
+                       <span className="text-sm leading-5">+91</span>
+                       <span className="text-sm leading-5 tracking-wide">{params.row.mobile_no}</span>
+                      </div>
+                   </div>
                  </div>
-              </div>
-            ),
-        },
-        {
-            headerName: 'Mobile No',
-            field: 'mobile_no',
-            minWidth: 200,
-            cellRenderer: (params) => (
-              <div className="flex w-full h-full items-center">
-                <div className="flex items-center gap-2">
-                <img src={PHONE} alt="phone" className="w-7 h-7 rounded-full" />
-                <span>{params.value}</span>
-                </div>
               </div>
             ),
         },
         {
             headerName: 'Salary',
             field: 'salary',
-            minWidth: 200,
+            minWidth: 180,
             flex: 1,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
               <div className="flex items-center w-full h-full">
                 <div className="flex items-center gap-2">
                  <span>₹{params.value}</span>
@@ -96,97 +114,43 @@ export const useEmployeeTable = (handleOpenForm) => {
             ),
         },
         {
-            headerName: 'Employee Type',
-            field: 'employee_type',
-            minWidth: 200,
-            flex: 1,
-            cellRenderer: (params) => (
+          headerName:'Status',
+          field: 'status',
+          minWidth: 140,
+          flex: 1,
+          renderCell: (params) => {
+            const isActive = params.value;
+            return (
               <div className="flex items-center w-full h-full">
-                <div className="flex items-center gap-2">
-                 <span className="font-medium">{params.value}</span>
-                </div>
+                <span className={`px-3 py-1 leading-5 flex justify-center items-center rounded-full w-20 text-white font-medium ${isActive===true ? 'bg-green-500' : 'bg-yellow-500'}`}>
+                  {params.value === true ? "Active" : "Inactive"}
+                </span>
               </div>
-            ),
+            );
+          },
         },
         {
             headerName: 'Branch',
-            field: 'branch.branch_name',
-            minWidth: 260,
+            field: 'branch',
+            minWidth: 240,
             flex: 1,
-            valueGetter: (params) => params.data.branch?.branch_name,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
              <div className="flex items-center w-full h-full">
-                <Tooltip title={params.value}>
+                <Tooltip title={params.value.branch_name}>
                  <div className="flex items-center gap-2">
                    <img src={BRANCH} alt="branch" className="w-7 h-7 rounded-full" />
-                   <span>{sliceString(params.value,20)}</span>
+                   <span>{sliceString(params.value.branch_name,20)}</span>
                  </div>
                 </Tooltip>
              </div>
             ),
         },
         {
-            headerName: 'Added By',
-            field: 'added_by.full_name',
-            minWidth: 200,
-            flex: 1,
-            valueGetter: (params) => params.data.added_by?.full_name,
-            cellRenderer: (params) => (
-              <div className="flex w-full h-full items-center">
-                <div className="flex items-center gap-2">
-                  <img src={ADMIN} alt="admin" className="w-7 h-7 rounded-full" />
-                  <div className="flex flex-col">
-                  <span className="font-medium">{params.value}</span>
-                  <span className="text-sm">{params?.data?.added_by_type}</span>
-                  </div>
-              </div>
-              </div>
-            ),
-        },
-        {
-            headerName: 'Created At',
-            field:'createdAt',
-            minWidth: 200,
-            flex: 1,
-            cellRenderer: (params) => (
-                <div className="flex items-center w-full h-full">
-                  <div className="flex items-center gap-2">
-                    <img src={CALENDAR} alt="calendar" className="w-7 h-7" />
-                    <span className="font-medium">{formatDate(params.value)}</span>
-                  </div>
-                </div>
-            ),
-        },
-        {
-            headerName: 'Action',
-            field: 'action',
-            minWidth: 200,
-            flex: 1,
-            cellRenderer: (params) => {
-              const isActive = params.data.status;
-              return (
-                <div className="flex items-center w-full h-full">
-                 <div className="flex items-center gap-2">
-                  <Tooltip title="Edit">
-                    <button onClick={()=>handleOpenForm(params.data)} className="flex cursor-pointer bg-blue-500 text-white p-1 justify-center items-center rounded-full">
-                      <UserPen size={18} />
-                    </button>
-                  </Tooltip>
-                  <Tooltip title={isActive ? 'Inactivate' : 'Activate'}>
-                    <button
-                      disabled={loading}
-                      onClick={()=>handleChangeEmployeeStatus(params.data._id, !params.data.status)}
-                      className={`flex cursor-pointer p-1 justify-center items-center rounded-full ${
-                        isActive ? 'bg-red-500' : 'bg-green-500'
-                      } text-white`}
-                    >
-                      {isActive ? <Minus size={18} /> : <Check size={18} />}
-                    </button>
-                  </Tooltip>
-                </div>
-                </div>
-              );
-            },
+          headerName: 'Actions',
+          field: 'actions',
+          type:'actions',
+          minWidth: 150,
+          getActions: (params) => renderAction(params)
         }
     ]
 

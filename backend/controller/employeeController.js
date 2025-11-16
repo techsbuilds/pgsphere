@@ -4,6 +4,7 @@ import TRANSACTION from "../models/TRANSACTION.js";
 import ACCOUNT from "../models/ACCOUNT.js";
 import mongoose from "mongoose";
 import ExcelJS from "exceljs";
+import EMPLOYEESALARY from "../models/EMPLOYEESALARY.js";
 
 export const createEmployee = async (req, res, next) => {
   try {
@@ -48,6 +49,15 @@ export const createEmployee = async (req, res, next) => {
       added_by: mongoid,
       added_by_type: userType
     })
+
+    const newEmployeeSalary = new EMPLOYEESALARY({
+      employee: newEmployee._id,
+      salary,
+      month: (new Date()).getMonth() + 1,
+      year: (new Date()).getFullYear()
+    })
+
+    await newEmployeeSalary.save()
 
     await newEmployee.save()
 

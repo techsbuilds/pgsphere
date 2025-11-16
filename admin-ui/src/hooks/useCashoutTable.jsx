@@ -5,7 +5,6 @@ import { sliceString, formatDate } from "../helper";
 
 //Importing images
 import BOY from '../assets/boy.png'
-import PHONE from '../assets/call.png'
 import BANK from '../assets/bank.png'
 import CALENDAR from '../assets/calendar.png'
 
@@ -20,6 +19,7 @@ export const useCashoutTable = () =>{
         try{
             setLoading(true)
             const data = await getAllCashout(searchQuery, branch)
+            console.log(data)
             setRows(data)
         }catch(err){
             console.log(err)
@@ -36,74 +36,54 @@ export const useCashoutTable = () =>{
     const columns = [
         {
             headerName: 'Person Name',
-            field: 'refId.person_name',
+            field: 'person_name',
             minWidth: 220,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
               <div className="flex items-center w-full h-full">
                  <div className="flex items-center gap-3">
                    <img src={BOY} alt="vendor" className="w-9 h-9 rounded-full" />
-                   <span>{capitalise(params.value)}</span>
+                   <div className="flex flex-col">
+                     <span className="leading-5">{capitalise(params.row.refId.person_name)}</span>
+                     <div className="flex text-gray-600 items-center gap-0.5">
+                        <span className="text-sm">+91</span>
+                        <span className="text-sm tracking-wide">{params.row.refId.mobile_no}</span>
+                     </div>
+                   </div>
                  </div>
               </div>
             ),
         },
         {
             headerName: 'Amount',
-            field: 'refId.amount',
-            minWidth: 200,
+            field: 'amount',
+            minWidth: 150,
             flex: 1,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
               <div className="flex items-center w-full h-full">
                 <div className="flex items-center gap-2">
-                 <span className={`${params.data.transactionType === "expense" ? "text-red-500" : "text-green-500"}`}>{params.data.transactionType === "expense" ? "-" : "+"} ₹{params.value}</span>
+                 <span className={`${params.row.transactionType === "expense" ? "text-red-500" : "text-green-500"}`}>{params.row.transactionType === "expense" ? "-" : "+"} ₹{params.row.refId.amount}</span>
                 </div>
               </div>
             ),
-        },
-        {
-            headerName: "Payment Mode",
-            field: 'payment_mode',
-            minWidth:200,
-            flex:1,
-            cellRenderer: (params) => (
-                <div className="flex items-center w-full h-full">
-                    <div className="flex items-center gap-2">
-                        <span>{capitalise(params.value)}</span>
-                    </div>
-                </div>
-            )
         },
         {
             headerName: 'Bank Account',
-            field: 'bank_account.account_holdername',
+            field: 'account_holdername',
             minWidth:240,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
                 <div className="flex items-center w-full h-full">
                     <div className="flex items-center gap-2">
                         <img src={BANK} alt="bank" className="w-7 h-7" />
-                        <span>{params.value}</span>
+                        <span>{params.row.bank_account.account_holdername}</span>
                     </div>
                 </div>
             )
-        },
-        {
-            headerName: 'Mobile No',
-            field: 'refId.mobile_no',
-            minWidth: 220,
-            cellRenderer: (params) => (
-              <div className="flex w-full h-full items-center">
-               <div className="flex items-center gap-2">
-                <img src={PHONE} alt="phone" className="w-7 h-7 rounded-full" />
-                <span>{params.value}</span>
-               </div>
-              </div>
-            ),
         },
         {
             headerName: 'Notes',
             field: "refId.notes",
             minWidth: 200,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
                 <div className="flex w-full h-full items-center">
                     <div className="flex items-center gap-2">
                         <Tooltip title={params.value}>
@@ -118,7 +98,7 @@ export const useCashoutTable = () =>{
             field:'createdAt',
             minWidth: 200,
             flex: 1,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
                 <div className="flex items-center w-full h-full">
                   <div className="flex items-center gap-2">
                     <img src={CALENDAR} alt="calendar" className="w-7 h-7" />

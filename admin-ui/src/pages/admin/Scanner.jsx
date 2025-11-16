@@ -18,7 +18,6 @@ function Scanner() {
     setLoading(true)
     try {
       const data = await getAllScanner(searchQuery)
-      console.log(data)
       setScanner(data)
     } catch (error) {
       toast.error(error?.message)
@@ -28,6 +27,7 @@ function Scanner() {
   }
 
   const handleOpenForm = (scanner = null) => {
+    console.log(scanner)
     setSelectedScanner(scanner)
     setOpenForm(true)
   }
@@ -61,7 +61,7 @@ function Scanner() {
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 items-stretch gap-4 sm:gap-6 lg:gap-8'>
               {
                 scanner.map((item, index) => (
-                  <ScannnerCard openForm={handleOpenForm} key={index} item={item}></ScannnerCard>
+                  <ScannnerCard openForm={handleOpenForm} key={index} item={item} handleGetAllScanner={handleGetAllScanner}></ScannnerCard>
                 ))
               }
             </div>
