@@ -176,14 +176,13 @@ function Breadcrumb({
 
       case "/admin/customers/meals":
           return (
-            <div className="flex justify-between items-center w-full">
-                <h1 className="text-2xl md:text-3xl font-semibold">Meal Menu</h1>
-                {/* Desktop: Show search, filter and add button on right */}
-                <div className="hidden md:flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full gap-3 sm:gap-0">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold">Meal Menu</h1>
+                <div className="flex items-stretch sm:items-center gap-2 w-full sm:w-auto">
                   <select
                     onChange={(e) => setSelectedBranch(e.target.value)}
                     value={selectedBranch}
-                    className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none"
+                    className="p-2 w-full sm:w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none text-sm sm:text-base"
                   >
                     {/* <option value={""}>All Branch</option> */}
                     {branch.map((item, index) => (
@@ -194,18 +193,12 @@ function Breadcrumb({
                   </select>
                   <button
                     onClick={() => onClick()}
-                    className="p-2 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white"
+                    className="p-2 px-3 sm:px-4 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm sm:text-base whitespace-nowrap"
                   >
-                    Add New Meal
+                    <span className="hidden sm:inline">Add New Meal</span>
+                    <span className="sm:hidden">Add</span>
                   </button>
                 </div>
-                {/* Mobile: Show only add button on right */}
-                <button
-                  onClick={() => onClick()}
-                  className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
-                >
-                  Add
-                </button>
             </div>
         )
       

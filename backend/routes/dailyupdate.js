@@ -1,6 +1,6 @@
 import express from 'express';
 import { verifyCustomer, verifyOwner } from '../middleware/verifyUser.js';
-import { addDailyUpdate, getAllDailyUpdatesbyBranch, getAllDailyUpdate } from '../controller/dailyUpdateController.js';
+import { addDailyUpdate, getAllDailyUpdatesbyBranch, getAllDailyUpdate, deleteDailyUpdate } from '../controller/dailyUpdateController.js';
 
 const app = express.Router();
 
@@ -11,5 +11,8 @@ app.get('/', verifyOwner, getAllDailyUpdate)
 
 //For Customer get Details
 app.get('/customer', verifyCustomer, getAllDailyUpdatesbyBranch)
+
+//For Delete Daily Update
+app.delete('/:id', verifyOwner, deleteDailyUpdate)
 
 export default app;

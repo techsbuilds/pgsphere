@@ -52,13 +52,17 @@ export const useMonthlyBillTable = (handleOpenForm, handleOpenConfirmationBox, h
             onClick={()=>handleOpenConfirmationBox(data.row)}
             showInMenu
             ></GridActionsCellItem>,
-            <GridActionsCellItem
-            icon={<HandCoins size={22}></HandCoins>}
-            label="Pay Bill"
-            onClick={()=>handleOpenPayForm(data.row)}
-            showInMenu
-            ></GridActionsCellItem>
         ]
+        if(data.row.pendingMonths.length > 0){
+            actionArr.push(
+                <GridActionsCellItem
+                icon={<HandCoins size={22}></HandCoins>}
+                label="Pay Bill"
+                onClick={()=>handleOpenPayForm(data.row)}
+                showInMenu
+                ></GridActionsCellItem>
+            )
+        }
         return actionArr
     }
 

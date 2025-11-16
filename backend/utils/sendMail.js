@@ -203,48 +203,86 @@ export const sendCustomerWelcomeEmail = async (to, customerName, pgName, branchN
 }
 
 export const sendUserPasswordLink = async (to, resetLink) => {
-    console.log("Sending password reset link to:", to);
     try {
         await sendEmail({
             to,
             subject: "Password Reset Request",
             html: `
-            <div style="font-family: Arial, sans-serif; background-color: #f7f7f7; padding: 25px;">
-                <div style="max-width: 600px; margin: auto; background-color: #fff; border-radius: 6px; border: 1px solid #eee; overflow: hidden;">
-                    <div style="background-color: #4338ca; color: white; text-align: center; padding: 18px;">
-                        <h2 style="margin: 0;">Reset Your Password</h2>
-                    </div>
-                    <div style="padding: 25px; color: #333;">
-                        <p>Hello,</p>
-                        <p>We received a request to reset your Pgsphere password. You can reset it by clicking the button below:</p>
-
-                        <!-- Show/Hide link using checkbox trick -->
-                        <div style="text-align: center; margin-top: 20px;">
-                            <input type="checkbox" id="showLink" style="display:none;">
-                            <label for="showLink" 
-                                style="background-color: #e5e7eb; color: #111; padding: 10px 20px; border-radius: 5px; cursor: pointer; display: inline-block; font-size: 14px;">
-                                Show Reset Link
-                            </label>
-                            <div style="max-width: 100%; word-break: break-all; color: #4338ca; font-size: 12px; margin-top: 10px; display: none;"
-                                 id="linkBox">
-                                ${resetLink}
-                            </div>
-                        </div>
-
-                        <style>
-                            /* CSS trick to show link when checkbox is checked */
-                            #showLink:checked + label + #linkBox {
-                                display: block !important;
-                            }
-                        </style>
-
-                        <p style="margin-top: 30px;">If you did not make this request, please ignore this email. The link will expire in 30 minutes.</p>
-
-                        <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
-                        <p style="font-size: 12px; color: #888;">© ${new Date().getFullYear()} Pgsphere. All rights reserved.</p>
-                    </div>
-                </div>
-            </div>
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                <style>
+                    @media only screen and (max-width: 600px) {
+                        .email-container {
+                            width: 100% !important;
+                            padding: 10px !important;
+                        }
+                        .email-content {
+                            padding: 20px !important;
+                        }
+                        .reset-button {
+                            padding: 14px 28px !important;
+                            font-size: 16px !important;
+                        }
+                        .header-title {
+                            font-size: 20px !important;
+                            padding: 15px !important;
+                        }
+                    }
+                </style>
+            </head>
+            <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f7f7f7;">
+                <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f7f7f7; padding: 20px;">
+                    <tr>
+                        <td align="center" class="email-container" style="max-width: 600px; margin: 0 auto;">
+                            <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;">
+                                <!-- Header with Pgsphere Branding -->
+                                <tr>
+                                    <td align="center" class="header-title" style="background-color: #4338ca; color: #ffffff; padding: 25px; text-align: center;">
+                                        <h1 style="margin: 0; font-size: 28px; font-weight: bold; letter-spacing: 1px;">Pgsphere</h1>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Title Section -->
+                                <tr>
+                                    <td align="center" style="background-color: #4f46e5; color: #ffffff; padding: 20px; text-align: center;">
+                                        <h2 style="margin: 0; font-size: 22px; font-weight: 600;">Reset Your Password</h2>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Content -->
+                                <tr>
+                                    <td class="email-content" style="padding: 30px; color: #333333; line-height: 1.6;">
+                                        <p style="font-size: 16px; margin: 0 0 15px 0;">Hello,</p>
+                                        <p style="font-size: 16px; margin: 0 0 20px 0;">We received a request to reset your Pgsphere password. You can reset it by clicking the button below:</p>
+                                        
+                                        <!-- Reset Password Button -->
+                                        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 30px 0;">
+                                            <tr>
+                                                <td align="center">
+                                                    <a href="${resetLink}" class="reset-button" style="display: inline-block; background-color: #4338ca; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 6px; font-size: 18px; font-weight: bold; text-align: center; transition: background-color 0.3s;">
+                                                        Reset Password
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        
+                                        <p style="font-size: 14px; color: #666666; margin: 30px 0 0 0;">If you did not make this request, please ignore this email. The link will expire in 30 minutes.</p>
+                                        
+                                        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+                                        
+                                        <p style="font-size: 12px; color: #888888; text-align: center; margin: 0;">© ${new Date().getFullYear()} Pgsphere. All rights reserved.</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
             `
         })
     } catch (error) {

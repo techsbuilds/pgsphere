@@ -95,3 +95,29 @@ export const getAllDailyUpdate = async (req, res, next) => {
         next(error)
     }
 }
+
+export const deleteDailyUpdate = async (req, res, next) => {
+    try {
+        const { id } = req.params
+        const { pgcode } = req
+
+        if (!id) {
+            return res.status(400).json({ message: "Please provide daily update id.", success: false })
+        }
+
+        const dailyUpdate = await DAILYUPDATE.findOne({ _id: id, pgcode })
+
+        if (!dailyUpdate) {
+            return res.status(404).json({ message: "Daily Update not found.", success: false })
+        }
+
+        await DAILYUPDATE.findByIdAndDelete(id)
+
+        return res.status(200).json({ message: "Daily Update deleted successfully.", success: true })
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+
