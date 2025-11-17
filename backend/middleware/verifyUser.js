@@ -27,7 +27,7 @@ export const verifyOwner = async (req, res, next) => {
         }
 
         if (req.userType === "Account") {
-            let isActiveAccount = await LOGINMAPPING.findOne({ mongoid: req.mongoid, pgcode: req.pgcode, status: true })
+            let isActiveAccount = await LOGINMAPPING.findOne({ mongoid: req.mongoid, pgcode: req.pgcode,status:"active"})
 
             if (!isActiveAccount) return res.status(403).json({ message: "Your account is not active.", success: false })
         }
