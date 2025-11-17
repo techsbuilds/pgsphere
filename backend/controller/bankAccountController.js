@@ -1,138 +1,148 @@
 import BANKACCOUNT from "../models/BANKACCOUNT.js";
 import TRANSACTION from "../models/TRANSACTION.js";
 
-export const createBankAccount = async (req, res, next) =>{
-    try{
-        const {pgcode} = req 
-        const {account_holdername} = req.body
+export const createBankAccount = async (req, res, next) => {
+    try {
+        const { pgcode } = req
+        const { account_holdername } = req.body
 
-        if(!account_holdername) return res.status(400).json({message:"Please provide account holder name.",success:false})
+        if (!account_holdername) return res.status(400).json({ message: "Please provide account holder name.", success: false })
 
-        const existBankAccount = await BANKACCOUNT.findOne({account_holdername, pgcode })
+        const existBankAccount = await BANKACCOUNT.findOne({ account_holdername, pgcode })
 
-        if(existBankAccount) return res.status(409).json({message:"Account is already exist.",success:false})
+        if (existBankAccount) return res.status(409).json({ message: "Account is already exist.", success: false })
 
         //Check default account is exist or not
-        const defaultBankAccount = await BANKACCOUNT.findOne({is_default:true, pgcode})
+        const defaultBankAccount = await BANKACCOUNT.findOne({ is_default: true, pgcode })
 
         const newBankAccount = new BANKACCOUNT({
             account_holdername,
             pgcode,
-            is_default: defaultBankAccount ? false : true 
+            is_default: defaultBankAccount ? false : true
         })
 
         await newBankAccount.save()
 
-        return res.status(200).json({message:"New bank account created successfully.",success:true,data:newBankAccount})
+        return res.status(200).json({ message: "New bank account created successfully.", success: true, data: newBankAccount })
 
-    }catch(err){
+    } catch (err) {
         next(err)
     }
 }
 
 
-export const getAllBankAccount = async (req, res, next) =>{
-    try{
-        const {pgcode} = req
-        const allAccounts = await BANKACCOUNT.find({pgcode})
+export const getAllBankAccount = async (req, res, next) => {
+    try {
+        const { pgcode, userType } = req
+        const allAccounts = await BANKACCOUNT.find({ pgcode })
 
-        const transactions = await TRANSACTION.find({pgcode})
-        .populate('refId')
-        .populate('bank_account')
+        const transactions = await TRANSACTION.find({ pgcode })
+            .populate('refId')
+            .populate('bank_account')
 
         const accountData = allAccounts.map(acc => {
-            const accTx = transactions.filter(t => 
+            const accTx = transactions.filter(t =>
                 t.bank_account && t.bank_account._id.toString() === acc._id.toString())
-    
-                let balance = 0;
-                accTx.forEach(tx => {
-                    if(!tx.refId?.amount) return 
-                    if(tx.transactionType === "income"){
-                        balance += tx.refId.amount
-                    }else{
-                        balance -= tx.refId.amount
-                    }
-                });
-    
+
+            let balance = 0;
+            accTx.forEach(tx => {
+                if (!tx.refId?.amount) return
+                if (tx.transactionType === "income") {
+                    balance += tx.refId.amount
+                } else {
+                    balance -= tx.refId.amount
+                }
+            });
+
+            if (userType === "Admin") {
+
                 return {
-                    _id:acc._id,
+                    _id: acc._id,
                     account_holdername: acc.account_holdername,
                     current_balance: balance
                 }
+
+            } else {
+                return {
+                    _id: acc._id,
+                    account_holdername: acc.account_holdername
+                }
+            }
+
         })
 
-        return res.status(200).json({message:"All bank accounts retrived successfully.",success:true, data:accountData})
-    }catch(err){
+        return res.status(200).json({ message: "All bank accounts retrived successfully.", success: true, data: accountData })
+    } catch (err) {
         next(err)
     }
 }
 
 
-export const updateBankAccount = async (req, res, next) =>{
-    try{
-        const {pgcode} = req
-        const {accountId} = req.params 
-        const {account_holdername, is_default} = req.body 
+export const updateBankAccount = async (req, res, next) => {
+    try {
+        const { pgcode } = req
+        const { accountId } = req.params
+        const { account_holdername, is_default } = req.body
 
-        if(!accountId) return res.status(400).json({message:"Please provide account id.",success:false}) 
+        if (!accountId) return res.status(400).json({ message: "Please provide account id.", success: false })
 
-        const bankAccount = await BANKACCOUNT.findOne({_id:accountId, pgcode}) 
+        const bankAccount = await BANKACCOUNT.findOne({ _id: accountId, pgcode })
 
-        if(!bankAccount) return res.status(404).json({message:"Bank account not found.",status:false})
+        if (!bankAccount) return res.status(404).json({ message: "Bank account not found.", status: false })
 
-        if(account_holdername){
+        if (account_holdername) {
 
-            if(bankAccount.account_holdername!== account_holdername){
-                const existingBankAccount = await BANKACCOUNT.findOne({account_holdername:bankAccount})
+            if (bankAccount.account_holdername !== account_holdername) {
+                const existingBankAccount = await BANKACCOUNT.findOne({ account_holdername: bankAccount })
 
-                if(existingBankAccount) return res.status(409).json({message:"Bank account is already exist.",success:false})
+                if (existingBankAccount) return res.status(409).json({ message: "Bank account is already exist.", success: false })
             }
 
-            bankAccount.account_holdername = account_holdername 
+            bankAccount.account_holdername = account_holdername
 
         }
 
-        if(is_default !== undefined){
+        if (is_default !== undefined) {
             bankAccount.is_default = is_default
         }
 
         await bankAccount.save()
 
-        return res.status(200).json({message:"Bank account name updated successfully.",success:true})
-        
+        return res.status(200).json({ message: "Bank account name updated successfully.", success: true })
 
-    }catch(err){
+
+    } catch (err) {
         next(err)
     }
 }
 
-export const deleteBackAccount = async (req, res, next) =>{
-    try{
-        const {accountId} = req.params 
-        const {pgcode} = req
+export const deleteBackAccount = async (req, res, next) => {
+    try {
+        const { accountId } = req.params
+        const { pgcode } = req
 
-        if(!accountId) return res.status(400).json({message:"Please provide account id.",success:false}) 
+        if (!accountId) return res.status(400).json({ message: "Please provide account id.", success: false })
 
-        const bankAccount = await BANKACCOUNT.findOne({_id:accountId, pgcode}) 
+        const bankAccount = await BANKACCOUNT.findOne({ _id: accountId, pgcode })
 
-        if(!bankAccount) return res.status(404).json({message:"Bank account not found.",success:false})
+        if (!bankAccount) return res.status(404).json({ message: "Bank account not found.", success: false })
 
-        const transactions = await TRANSACTION.find({bank_account:accountId,pgcode})
-        .populate('refId')
-        .populate('bank_account')
+        const transactions = await TRANSACTION.find({ bank_account: accountId, pgcode })
+            .populate('refId')
+            .populate('bank_account')
 
         //Fetch all reset once 
-        const resets = await RESETACCOUNT.find({pgcode})
+        const resets = await RESETACCOUNT.find({ pgcode })
 
         const accResets = resets.filter(r => r.bankaccount.some(b => b.toString() === bankAccount._id.toString()))
 
         //If multiple reset then take latest one
-        let latestResetDate = null 
+        let latestResetDate = null
 
         if (accResets.length > 0) {
             latestResetDate = accResets
-              .map(r => new Date(r.resetDate))
-              .sort((a, b) => b - a)[0]
+                .map(r => new Date(r.resetDate))
+                .sort((a, b) => b - a)[0]
         }
 
         // Filter transactions for this account
@@ -148,20 +158,20 @@ export const deleteBackAccount = async (req, res, next) =>{
         //Calculate balance 
         let balance = 0
         accTx.forEach(tx => {
-         if (!tx.refId?.amount) return
-         if (tx.transactionType === "income") {
-         balance += tx.refId.amount
-        } else {
-          balance -= tx.refId.amount
-        }
+            if (!tx.refId?.amount) return
+            if (tx.transactionType === "income") {
+                balance += tx.refId.amount
+            } else {
+                balance -= tx.refId.amount
+            }
         })
 
-        if(balance === 0){
-            if(bankAccount.is_default){
+        if (balance === 0) {
+            if (bankAccount.is_default) {
                 //Find another account to set default true
-                const anotherAccount = await BANKACCOUNT.findOne({_id:{$ne:bankAccount._id}, pgcode, status:{$ne:'deleted'}})
+                const anotherAccount = await BANKACCOUNT.findOne({ _id: { $ne: bankAccount._id }, pgcode, status: { $ne: 'deleted' } })
 
-                if(anotherAccount){
+                if (anotherAccount) {
                     anotherAccount.is_default = true
                     await anotherAccount.save()
                 }
@@ -169,81 +179,81 @@ export const deleteBackAccount = async (req, res, next) =>{
             bankAccount.status = 'deleted'
             await bankAccount.save()
 
-            return res.status(200).json({message:"Your account is deleted successfully.",status:true})
+            return res.status(200).json({ message: "Your account is deleted successfully.", status: true })
 
-        }else{
-            return res.status(200).json({message:"You can't delete your account. first of all you need to reset your account.",status:false})
+        } else {
+            return res.status(200).json({ message: "You can't delete your account. first of all you need to reset your account.", status: false })
         }
-    }catch(err){
+    } catch (err) {
         next(err)
     }
 }
 
-export const resetBankAccount = async (req, res, next) =>{
-    try{
-        const {accountId} = req.params 
-        const {pgcode} = req
+export const resetBankAccount = async (req, res, next) => {
+    try {
+        const { accountId } = req.params
+        const { pgcode } = req
 
-        if(!accountId) return res.status(400).json({message:"Please provide account id.",success:false})
+        if (!accountId) return res.status(400).json({ message: "Please provide account id.", success: false })
 
         const accountIds = [accountId]
 
-        const newResetBankAccount = new RESETACCOUNT({bankaccount:accountIds,pgcode})
+        const newResetBankAccount = new RESETACCOUNT({ bankaccount: accountIds, pgcode })
 
         await newResetBankAccount.save()
 
-        return res.status(200).json({message:"Bank account reset successfully.",success:true,data:newResetBankAccount})
+        return res.status(200).json({ message: "Bank account reset successfully.", success: true, data: newResetBankAccount })
 
-    }catch(err){
+    } catch (err) {
         next(err)
     }
 }
 
-export const resetAllBankAccount = async (req, res, next) =>{
-    try{
-        const {pgcode} = req
+export const resetAllBankAccount = async (req, res, next) => {
+    try {
+        const { pgcode } = req
 
-        const allAccounts = await BANKACCOUNT.find({pgcode})
+        const allAccounts = await BANKACCOUNT.find({ pgcode })
 
-        if(allAccounts.length === 0) return res.status(400).json({message:"No bank account found.", success: false})
+        if (allAccounts.length === 0) return res.status(400).json({ message: "No bank account found.", success: false })
 
         const accountIds = allAccounts.map(acc => acc._id)
 
         const newResetBankAccount = new RESETACCOUNT({
-            bankaccount:accountIds,
+            bankaccount: accountIds,
             pgcode
         })
 
         await newResetBankAccount.save()
 
-        return res.status(200).json({message:"All bank account reset successfully.", success: true})
+        return res.status(200).json({ message: "All bank account reset successfully.", success: true })
 
-    }catch(err){
+    } catch (err) {
         next(err)
     }
 }
 
-export const setDefaultBankAccount = async (req, res, next) =>{
-    try{
-        const {accountId} = req.params 
-        const {pgcode} = req
+export const setDefaultBankAccount = async (req, res, next) => {
+    try {
+        const { accountId } = req.params
+        const { pgcode } = req
 
-        if(!accountId) return res.status(400).json({message:"Please provide account id.",success:false}) 
+        if (!accountId) return res.status(400).json({ message: "Please provide account id.", success: false })
 
-        const bankAccount = await BANKACCOUNT.findOne({_id:accountId, pgcode}) 
+        const bankAccount = await BANKACCOUNT.findOne({ _id: accountId, pgcode })
 
-        if(!bankAccount) return res.status(404).json({message:"Bank account not found.",success:false})
+        if (!bankAccount) return res.status(404).json({ message: "Bank account not found.", success: false })
 
         //Unset previous default account
-        await BANKACCOUNT.updateMany({is_default:true, pgcode}, {$set:{is_default:false}})
+        await BANKACCOUNT.updateMany({ is_default: true, pgcode }, { $set: { is_default: false } })
 
         //Set new default account
         bankAccount.is_default = true
         await bankAccount.save()
 
-        return res.status(200).json({message:"Bank account set as default successfully.",success:true})
+        return res.status(200).json({ message: "Bank account set as default successfully.", success: true })
 
-    }catch(err){
+    } catch (err) {
         next(err)
     }
 }

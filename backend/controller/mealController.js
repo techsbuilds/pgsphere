@@ -287,18 +287,10 @@ export const getMealDetailsbyDay = async (req, res, next) => {
     try {
 
         const { mongoid, userType, pgcode } = req
-        const { date, branch } = req.params
+        const { date } = req.params
 
         if (!date) {
             return res.status(400).json({ message: "Please Provide Date ", success: false })
-        }
-
-        if (userType !== "Customer") {
-
-            if (!branch) {
-                return res.status(400).json({ message: "please provide Branch.", success: false })
-            }
-
         }
 
         let filter = {}
@@ -328,6 +320,50 @@ export const getMealDetailsbyDay = async (req, res, next) => {
 
             filter.branch = customer.branch
         }
+
+        const meal = await MEAL.find(filter)
+
+        return res.status(200).json({ message: "Get Meal Successfully by Day.", meal, success: true })
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const getMealDetailsbyDayForOwner = async (req, res, next) => {
+    try {
+
+        const { mongoid, userType, pgcode } = req
+
+        let filter = {}
+        filter.pgcode = pgcode
+
+        let { date, branch } = req.params
+
+        if (!branch) {
+            return res.status(400).json({ message: "Please Provide Branch !", success: false })
+        }
+
+        if (!date) {
+            return res.status(400).json({ message: "Please Provide Date ", success: false })
+        }
+
+
+        if (!date) {
+            filter.date = moment().format("YYYY-MM-DD");
+        } else {
+            // Try parsing in multiple formats
+            const parsedDate = moment(date, ["YYYY-MM-DD", "DD-MM-YYYY", "DD/MM/YYYY", "MM-DD-YYYY", "MM/DD/YYYY"], true);
+
+            if (parsedDate.isValid()) {
+                // Convert to standard format
+                filter.date = parsedDate.format("YYYY-MM-DD");
+            } else {
+                // If invalid, fallback to today
+                filter.date = moment().format("YYYY-MM-DD");
+            }
+        }
+
         if (userType === 'Account') {
 
             const acmanager = await ACCOUNT.findById(mongoid)
@@ -346,12 +382,36 @@ export const getMealDetailsbyDay = async (req, res, next) => {
             filter.branch = branch
         }
 
-        const mealsDetails = await MEAL.find(filter)
+        const totalCustomer = await CUSTOMER.find({ branch: filter.branch }).countDocuments();
 
-        return res.status(200).json({ message: "Get Meal Successfully by Day.", meal: mealsDetails, success: true })
+        const meals = await MEAL.find(filter).populate({ path: "meals.cancelled", model: "Customer", select: "_id customer_name" }).lean();
+
+        let response = {
+            date: filter.date,
+            branch: filter.branch,
+            counts: { breakfast: 0, lunch: 0, dinner: 0 }, meals
+        };
+
+        meals.forEach(mealDoc => {
+            mealDoc.meals.forEach(m => {
+                const cancelledCount = m.cancelled?.length || 0;
+
+                if (m.type === "Breakfast") {
+                    response.counts.breakfast = totalCustomer - cancelledCount;
+                }
+                if (m.type === "Lunch") {
+                    response.counts.lunch = totalCustomer - cancelledCount;
+                }
+                if (m.type === "Dinner") {
+                    response.counts.dinner = totalCustomer - cancelledCount;
+                }
+            });
+        });
+
+        return res.status(200).json({ message: "Get Meal Successfully by Day.", meal: response, success: true })
 
     } catch (error) {
-        next(error)
+
     }
 }
 
@@ -390,7 +450,7 @@ export const updateMeal = async (req, res, next) => {
 
             await session.abortTransaction()
             session.endSession()
-            return res.status(400).json({message: "You can't Update Past Meal.",success: false});
+            return res.status(400).json({ message: "You can't Update Past Meal.", success: false });
         }
 
         if (userType === "Account") {
@@ -471,6 +531,10 @@ export const getMealDetailsbyMonthly = async (req, res, next) => {
     try {
         const { pgcode, userType, mongoid } = req;
         let { branch } = req.params;
+
+        if (!Array.isArray(branch)) {
+            branch = [branch]
+        }
 
         let filter = {};
         filter.pgcode = pgcode;
