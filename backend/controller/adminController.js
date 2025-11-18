@@ -135,6 +135,8 @@ export const getDashboardSummery = async (req, res, next) => {
             }
         })
 
+        console.log(vacantSeats)
+
         const current_balance = totalProfit - totalExpenditure
 
         return res.status(200).json({
@@ -142,7 +144,7 @@ export const getDashboardSummery = async (req, res, next) => {
                 monthlyData,
                 yearlyData,
                 current_balance,
-                vacantSeats:vacantSeats[0].totalVacant || 0,
+                vacantSeats:vacantSeats.length > 0 ? (vacantSeats[0].totalVacant || 0) : 0,
                 total_profit: totalProfit,
                 total_expenditure: totalExpenditure,
                 total_current_year_profit: totalCurrentYearProfit,
