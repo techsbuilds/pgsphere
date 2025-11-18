@@ -113,12 +113,12 @@ function Settings() {
   },[])
 
   const renderTimePicker = (meal) => (
-    <div className='flex items-center gap-2'>
+    <div className='flex items-center gap-1.5 sm:gap-2 flex-shrink-0'>
       {/* Hour */}
       <select
         value={times[meal].hour}
         onChange={(e) => handleTimeChange(meal, 'hour', e.target.value)}
-        className='border border-neutral-300 rounded-md px-2 py-1 text-sm bg-white cursor-pointer'
+        className='border border-neutral-300 rounded-md px-2 py-1.5 sm:py-1 text-xs sm:text-sm bg-white cursor-pointer focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
       >
         {[...Array(12)].map((_, i) => {
           const val = (i + 1).toString().padStart(2, '0');
@@ -130,13 +130,13 @@ function Settings() {
         })}
       </select>
 
-      <span className='text-gray-500'>:</span>
+      <span className='text-gray-500 text-xs sm:text-sm'>:</span>
 
       {/* Minute */}
       <select
         value={times[meal].minute}
         onChange={(e) => handleTimeChange(meal, 'minute', e.target.value)}
-        className='border border-neutral-300 rounded-md px-2 py-1 text-sm bg-white cursor-pointer'
+        className='border border-neutral-300 rounded-md px-2 py-1.5 sm:py-1 text-xs sm:text-sm bg-white cursor-pointer focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
       >
         {['00', '15', '30', '45'].map((m) => (
           <option key={m} value={m}>
@@ -149,7 +149,7 @@ function Settings() {
       <select
         value={times[meal].period}
         onChange={(e) => handleTimeChange(meal, 'period', e.target.value)}
-        className='border border-neutral-300 rounded-md px-2 py-1 text-sm bg-white cursor-pointer'
+        className='border border-neutral-300 rounded-md px-2 py-1.5 sm:py-1 text-xs sm:text-sm bg-white cursor-pointer focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
       >
         <option value='AM'>AM</option>
         <option value='PM'>PM</option>
@@ -177,14 +177,14 @@ function Settings() {
   return (
     <div className='flex flex-col h-full gap-4 sm:gap-6 lg:gap-8 px-2 sm:px-4 lg:px-0'>
        <Breadcrumb></Breadcrumb>
-       <div className='rounded-2xl bg-white shadow-sm flex flex-col gap-6 p-4 w-full'>
-         <div className='flex flex-col gap-0.5'>
-           <h1 className='text-lg font-medium'>Generat Customer Portal Link</h1>
-           <span className='text-[#737373] text-[14px]'>Create a signup link for your customers. Select a branch to generate the unique portal link.</span>
+       <div className='rounded-xl sm:rounded-2xl bg-white shadow-sm flex flex-col gap-4 sm:gap-6 p-3 sm:p-4 w-full'>
+         <div className='flex flex-col gap-1 sm:gap-0.5'>
+           <h1 className='text-base sm:text-lg font-medium'>Generat Customer Portal Link</h1>
+           <span className='text-[#737373] text-xs sm:text-sm'>Create a signup link for your customers. Select a branch to generate the unique portal link.</span>
          </div>
-         <div className='flex flex-col gap-1'>
-           <label className='font-medium'>Select Branch</label>
-           <select onChange={(e)=>setSelectBranch(e.target.value)} className='p-2 w-72 text-sm text-[#737373] rounded-md border border-neutral-300 outline-none'>
+         <div className='flex flex-col gap-1 sm:gap-2'>
+           <label className='font-medium text-sm sm:text-base'>Select Branch</label>
+           <select onChange={(e)=>setSelectBranch(e.target.value)} className='p-2.5 sm:p-2 w-full sm:w-72 text-sm text-[#737373] rounded-md border border-neutral-300 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500'>
               <option value={''}>Choose a Branch</option>
               {
                 branches.map((branch)=>(
@@ -193,28 +193,30 @@ function Settings() {
               }
            </select>
          </div>
-        <button onClick={handleGenerateLink} className={`w-48 ${selectBranch ? "bg-[#202947] cursor-pointer" : "bg-gray-500 cursor-not-allowed"} transition-all duration-300 text-white py-2 rounded-md`}>Generate Link</button>
+        <button onClick={handleGenerateLink} disabled={loader} className={`w-full sm:w-48 ${selectBranch ? "bg-[#202947] cursor-pointer hover:bg-[#2a3457]" : "bg-gray-500 cursor-not-allowed"} transition-all duration-300 text-white py-2.5 sm:py-2 rounded-md text-sm sm:text-base font-medium`}>
+          {loader ? <LoaderCircle className='animate-spin mx-auto' size={20} /> : 'Generate Link'}
+        </button>
         {
           generatedLink && 
-          <div className='rounded-2xl flex flex-col gap-2 p-4 border border-neutral-300 bg-[#fafafa]'>
-          <h1 className='font-semibold text-lg'>Portal Link Generated</h1>
-          <div className='flex w-full items-center gap-2'>
-            <div className='p-2 w-11/12 rounded-md bg-white border border-neutral-300'>
-              <span className='text-sm break-all'>{sliceString(generatedLink, 120)}</span>
+          <div className='rounded-xl sm:rounded-2xl flex flex-col gap-2 sm:gap-3 p-3 sm:p-4 border border-neutral-300 bg-[#fafafa]'>
+          <h1 className='font-semibold text-base sm:text-lg'>Portal Link Generated</h1>
+          <div className='flex w-full items-stretch sm:items-center gap-2'>
+            <div className='p-2.5 sm:p-2 flex-1 rounded-md bg-white border border-neutral-300 min-w-0'>
+              <span className='text-xs sm:text-sm break-all'>{sliceString(generatedLink, 120)}</span>
             </div>
     
             {/* Copy Button */}
             <div
               onClick={handleCopy}
-              className={`rounded-md border border-neutral-300 cursor-pointer p-2 bg-white transition-all duration-200 ${
+              className={`rounded-md border border-neutral-300 cursor-pointer p-2.5 sm:p-2 bg-white transition-all duration-200 flex-shrink-0 ${
                 copied ? 'bg-green-100 border-green-400' : 'hover:bg-gray-100'
               }`}
               title={copied ? 'Copied!' : 'Copy to clipboard'}
             >
               {copied ? (
-                <Check size={22} className='text-green-500' />
+                <Check size={20} className='sm:w-[22px] sm:h-[22px] text-green-500' />
               ) : (
-                <Copy size={22} className='text-gray-700' />
+                <Copy size={20} className='sm:w-[22px] sm:h-[22px] text-gray-700' />
               )}
             </div>
           </div>
@@ -222,34 +224,34 @@ function Settings() {
         </div>
         }
        </div>
-       <div className='rounded-2xl bg-white shadow-sm flex flex-col gap-4 p-4 w-full'>
-         <div className='flex mb-2 flex-col gap-0.5'>
-           <h1 className='text-lg font-medium'>Meal Cancellation Configuration</h1>
-           <span className='text-[#737373] text-[14px]'>Set the cancellation deadline time for each meal type. Customers can cancel their meal orders before this time.</span>
+       <div className='rounded-xl sm:rounded-2xl bg-white shadow-sm flex flex-col gap-3 sm:gap-4 p-3 sm:p-4 w-full'>
+         <div className='flex mb-1 sm:mb-2 flex-col gap-0.5 sm:gap-1'>
+           <h1 className='text-base sm:text-lg font-medium'>Meal Cancellation Configuration</h1>
+           <span className='text-[#737373] text-xs sm:text-sm'>Set the cancellation deadline time for each meal type. Customers can cancel their meal orders before this time.</span>
          </div>
-         <div className='p-4 rounded-2xl border border-neutral-300'>
-          <div className='flex justify-between'>
-             <div className='flex flex-col gap-1'>
-               <h1>Breakfast Cancellation Deadline</h1>
-               <span className='text-sm text-[#737373]'>Set the time before which customers can cancel their breakfast</span>
+         <div className='p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-neutral-300'>
+          <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4'>
+             <div className='flex flex-col gap-1 flex-1'>
+               <h1 className='text-sm sm:text-base font-medium'>Breakfast Cancellation Deadline</h1>
+               <span className='text-xs sm:text-sm text-[#737373]'>Set the time before which customers can cancel their breakfast</span>
              </div>
              {renderTimePicker('breakfast')}
           </div>
          </div>
-         <div className='p-4 rounded-2xl border border-neutral-300'>
-          <div className='flex justify-between'>
-             <div className='flex flex-col gap-1'>
-               <h1>Lunch Cancellation Deadline</h1>
-               <span className='text-sm text-[#737373]'>Set the time before which customers can cancel their lunch</span>
+         <div className='p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-neutral-300'>
+          <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4'>
+             <div className='flex flex-col gap-1 flex-1'>
+               <h1 className='text-sm sm:text-base font-medium'>Lunch Cancellation Deadline</h1>
+               <span className='text-xs sm:text-sm text-[#737373]'>Set the time before which customers can cancel their lunch</span>
              </div>
              {renderTimePicker('lunch')}
           </div>
          </div>
-         <div className='p-4 rounded-2xl border border-neutral-300'>
-          <div className='flex justify-between'>
-             <div className='flex flex-col gap-1'>
-               <h1>Dinner Cancellation Deadline</h1>
-               <span className='text-sm text-[#737373]'>Set the time before which customers can cancel their dinner</span>
+         <div className='p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-neutral-300'>
+          <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4'>
+             <div className='flex flex-col gap-1 flex-1'>
+               <h1 className='text-sm sm:text-base font-medium'>Dinner Cancellation Deadline</h1>
+               <span className='text-xs sm:text-sm text-[#737373]'>Set the time before which customers can cancel their dinner</span>
              </div>
              {renderTimePicker('dinner')}
           </div>
@@ -257,10 +259,10 @@ function Settings() {
          <button 
          onClick={handleUpdateMealConfig}
          disabled={mealLoader}
-         className='w-52 flex justify-center items-center bg-[#202947] cursor-pointer p-2 transition-all duration-300 text-white py-2 rounded-md'>
+         className='w-full sm:w-52 flex justify-center items-center bg-[#202947] cursor-pointer p-2.5 sm:p-2 transition-all duration-300 text-white py-2.5 sm:py-2 rounded-md text-sm sm:text-base font-medium hover:bg-[#2a3457] disabled:opacity-50 disabled:cursor-not-allowed'>
           {
             mealLoader ? 
-            <LoaderCircle className='animate-spin'></LoaderCircle>
+            <LoaderCircle className='animate-spin' size={20} />
             :"Save Meal Configuration"
           }
          </button>

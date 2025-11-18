@@ -208,32 +208,32 @@ function MealForm({ openForm, selectedMeal, selectedDate, isEdit, selectedBranch
 
   return (
     <div 
-      className='fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center p-4 sm:p-6'
+      className='fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center p-2 sm:p-4 md:p-6'
       onClick={() => onClose(false)}
     >
       <div 
-        className='flex w-full max-w-2xl flex-col gap-3 sm:gap-4 bg-white rounded-2xl p-3 sm:p-4 max-h-[90vh] overflow-y-auto mx-2 sm:mx-4 my-4'
+        className='flex w-full max-w-2xl flex-col gap-3 sm:gap-4 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto'
         onClick={(e) => e.stopPropagation()}
       >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 sm:gap-3">
           <ChevronLeft 
-            size={24} 
-            className="sm:w-7 sm:h-7 cursor-pointer" 
+            size={20} 
+            className="sm:w-6 sm:h-6 md:w-7 md:h-7 cursor-pointer flex-shrink-0" 
             onClick={() => onClose(false)}
           />
-          <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold">
+          <h1 className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold truncate">
             {isEdit ? "Edit Meal Menu" : "Add Meal Menu"}
           </h1>
         </div>
 
-        <p className="text-sm text-gray-600">
+        <p className="text-xs sm:text-sm text-gray-600">
           {isEdit ? "Edit" : "Add"} meal menu for {format(formDate, "MMMM d, yyyy")}
         </p>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:gap-4">
           {/* Date Input */}
           <div className="flex flex-col gap-1 sm:gap-2">
-            <label className="text-sm sm:text-base font-medium">
+            <label className="text-xs sm:text-sm md:text-base font-medium">
               Date <span className="text-red-500">*</span>
             </label>
             <input
@@ -242,33 +242,33 @@ function MealForm({ openForm, selectedMeal, selectedDate, isEdit, selectedBranch
               min={minDate}
               max={maxDate}
               onChange={(e) => setFormDate(new Date(e.target.value))}
-              className="p-2 sm:p-3 border border-neutral-300 rounded-md outline-none text-sm sm:text-base focus:border-[#202947]"
+              className="p-2.5 sm:p-3 border border-neutral-300 rounded-md outline-none text-sm sm:text-base focus:border-[#202947] focus:ring-1 focus:ring-[#202947]"
               required
             />
           </div>
 
           {/* Meals List */}
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <label className="text-sm sm:text-base font-medium">
+          <div className="flex flex-col gap-3 sm:gap-4">
+            <div className="flex items-center justify-between gap-2 sm:gap-0">
+              <label className="text-xs sm:text-sm md:text-base font-medium">
                 Meals <span className="text-red-500">*</span>
               </label>
               <button
                 type="button"
                 onClick={handleAddMeal}
-                className="flex items-center gap-1 px-3 py-1.5 text-sm bg-primary text-white rounded-md hover:bg-blue-600 transition-colors"
+                className="flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs sm:text-sm bg-primary text-white rounded-md hover:bg-blue-600 transition-colors"
               >
-                <Plus size={16} />
+                <Plus size={14} className="sm:w-4 sm:h-4" />
                 <span>Add Meal</span>
               </button>
             </div>
 
             {meals.length === 0 ? (
-              <div className="p-8 text-center text-gray-400 border-2 border-dashed border-gray-300 rounded-lg">
-                <p>No meals added. Click "Add Meal" to get started.</p>
+              <div className="p-6 sm:p-8 text-center text-gray-400 border-2 border-dashed border-gray-300 rounded-lg">
+                <p className="text-xs sm:text-sm">No meals added. Click "Add Meal" to get started.</p>
               </div>
             ) : (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 sm:gap-4">
                 {meals.map((meal, mealIndex) => (
                   <MealItem
                     key={mealIndex}
@@ -289,26 +289,26 @@ function MealForm({ openForm, selectedMeal, selectedDate, isEdit, selectedBranch
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-2 sm:gap-3 pt-2">
             <button
               type="button"
               onClick={() => onClose(false)}
-              className="flex-1 p-2 sm:p-3 border border-neutral-300 rounded-md text-sm sm:text-base font-medium hover:bg-gray-50 transition-colors"
+              className="flex-1 p-2.5 sm:p-3 border border-neutral-300 rounded-md text-xs sm:text-sm md:text-base font-medium hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 p-2 sm:p-3 bg-primary text-white rounded-md text-sm sm:text-base font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 p-2.5 sm:p-3 bg-primary text-white rounded-md text-xs sm:text-sm md:text-base font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
                   <LoaderCircle className="animate-spin w-4 h-4 sm:w-5 sm:h-5" />
-                  <span>Saving...</span>
+                  <span className="text-xs sm:text-sm">Saving...</span>
                 </>
               ) : (
-                isEdit ? 'Update Menu' : 'Add Menu'
+                <span className="text-xs sm:text-sm">{isEdit ? 'Update Menu' : 'Add Menu'}</span>
               )}
             </button>
           </div>
@@ -340,26 +340,26 @@ function MealItem({
   )
 
   return (
-    <div className="p-4 border-2 border-neutral-200 rounded-lg bg-gray-50">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm font-medium text-gray-700">Meal {mealIndex + 1}</span>
+    <div className="p-3 sm:p-4 border-2 border-neutral-200 rounded-lg sm:rounded-xl bg-gray-50">
+      <div className="flex items-start justify-between gap-2 sm:gap-3 mb-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2 sm:mb-3">
+            <span className="text-xs sm:text-sm font-medium text-gray-700">Meal {mealIndex + 1}</span>
           </div>
 
           {/* Meal Type Dropdown */}
-          <div className="relative mb-3">
+          <div className="relative mb-2 sm:mb-3">
             <label className="text-xs text-gray-600 mb-1 block">Meal Type <span className="text-red-500">*</span></label>
             <button
               type="button"
               onClick={() => setShowTypeDropdown(!showTypeDropdown)}
-              className="w-full p-2 border border-neutral-300 rounded-md outline-none text-sm flex items-center justify-between focus:border-[#202947] bg-white"
+              className="w-full p-2.5 sm:p-2 border border-neutral-300 rounded-md outline-none text-xs sm:text-sm flex items-center justify-between focus:border-[#202947] focus:ring-1 focus:ring-[#202947] bg-white"
             >
-              <span>{meal.type}</span>
-              <ChevronDown size={16} className="text-gray-500" />
+              <span className="truncate">{meal.type}</span>
+              <ChevronDown size={14} className="sm:w-4 sm:h-4 text-gray-500 flex-shrink-0 ml-2" />
             </button>
             {showTypeDropdown && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg">
+              <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
                 {availableTypes.map((type) => (
                   <button
                     key={type}
@@ -368,7 +368,7 @@ function MealItem({
                       onTypeChange(mealIndex, type)
                       setShowTypeDropdown(false)
                     }}
-                    className={`w-full text-left p-2 hover:bg-gray-50 text-sm ${
+                    className={`w-full text-left p-2.5 sm:p-2 hover:bg-gray-50 text-xs sm:text-sm transition-colors ${
                       meal.type === type ? 'bg-[#202947]/10 font-medium' : ''
                     }`}
                   >
@@ -380,12 +380,12 @@ function MealItem({
           </div>
 
           {/* Description */}
-          <div className="mb-3">
+          <div className="mb-2 sm:mb-3">
             <label className="text-xs text-gray-600 mb-1 block">Description</label>
             <textarea
               value={meal.description}
               onChange={(e) => onDescriptionChange(mealIndex, e.target.value)}
-              className="w-full p-2 border border-neutral-300 rounded-md outline-none text-sm resize-none focus:border-[#202947]"
+              className="w-full p-2.5 sm:p-2 border border-neutral-300 rounded-md outline-none text-xs sm:text-sm resize-none focus:border-[#202947] focus:ring-1 focus:ring-[#202947]"
               placeholder="Enter meal description..."
               rows={2}
             />
@@ -396,7 +396,7 @@ function MealItem({
             <label className="text-xs text-gray-600 mb-1 block">
               Items <span className="text-red-500">*</span>
             </label>
-            <div className="flex gap-2 mb-2">
+            <div className="flex gap-1.5 sm:gap-2 mb-2">
               <input
                 type="text"
                 value={itemInput}
@@ -404,7 +404,7 @@ function MealItem({
                 onKeyPress={(e) => {
                   onItemKeyPress(e, mealIndex, itemInput, setItemInput)
                 }}
-                className="flex-1 p-2 border border-neutral-300 rounded-md outline-none text-sm focus:border-[#202947]"
+                className="flex-1 p-2.5 sm:p-2 border border-neutral-300 rounded-md outline-none text-xs sm:text-sm focus:border-[#202947] focus:ring-1 focus:ring-[#202947]"
                 placeholder="Add item..."
               />
               <button
@@ -413,27 +413,29 @@ function MealItem({
                   onAddItem(mealIndex, itemInput)
                   setItemInput('')
                 }}
-                className="p-2 bg-primary text-white rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center"
+                className="p-2.5 sm:p-2 bg-primary text-white rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center flex-shrink-0"
+                title="Add item"
               >
-                <Plus size={16} />
+                <Plus size={14} className="sm:w-4 sm:h-4" />
               </button>
             </div>
             
             {/* Display Items */}
             {meal.items && meal.items.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {meal.items.map((item, itemIndex) => (
                   <span
                     key={itemIndex}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white border border-gray-300 rounded-full text-sm"
+                    className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1 sm:py-1.5 bg-white border border-gray-300 rounded-full text-xs sm:text-sm"
                   >
-                    {item}
+                    <span className="max-w-[150px] sm:max-w-none truncate">{item}</span>
                     <button
                       type="button"
                       onClick={() => onRemoveItem(mealIndex, itemIndex)}
-                      className="ml-1 hover:text-red-500"
+                      className="ml-0.5 sm:ml-1 hover:text-red-500 transition-colors flex-shrink-0"
+                      title="Remove item"
                     >
-                      <X size={14} />
+                      <X size={12} className="sm:w-3.5 sm:h-3.5" />
                     </button>
                   </span>
                 ))}
@@ -448,12 +450,12 @@ function MealItem({
         <button
           type="button"
           onClick={() => onRemoveMeal(mealIndex)}
-          className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+          className="p-2 sm:p-2.5 text-red-500 hover:bg-red-50 rounded-md transition-colors flex-shrink-0"
           title="Remove meal"
         >
-          <X size={18} />
+          <X size={16} className="sm:w-5 sm:h-5" />
         </button>
-        </div>
+      </div>
     </div>
   )
 }

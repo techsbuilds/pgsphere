@@ -136,7 +136,7 @@ app.use('/api/dailyupdate', dailyUpdateRoute)
 app.use('/api/floor', verifyOwner, floorRoute)
 app.use('/api/meal', mealRoute)
 app.use('/api/complaint', complaintRoute)
-app.use('/api/scanner', verifyOwner, scannerRoute)
+app.use('/api/scanner', verifyOwner, verifyAdmin, scannerRoute)
 app.use('/api/mealconfig', verifyOwner, mealconfigRoute)
 
 // Middleware to catch errors

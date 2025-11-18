@@ -125,47 +125,93 @@ export const getAllEmployee = async (req, res, next) => {
 };
 
 export const updateEmployee = async (req, res, next) => {
+  const session = await mongoose.startSession()
+  session.startTransaction()
+
   try {
     const { employeeId } = req.params
     const { userType, mongoid } = req
 
     const { employee_name, salary, branch, mobile_no, employee_type } = req.body
 
-    if (!employeeId) return res.status(400).json({ message: "please provide employee id", success: false })
+    if (!employeeId) {
+      await session.abortTransaction()
+      session.endSession()
+      return res.status(400).json({ message: "please provide employee id", success: false })
+    }
 
-    const employee = await EMPLOYEE.findById(employeeId)
+    const employee = await EMPLOYEE.findById(employeeId).session(session)
 
-    if (!employee) return res.status(404).json({ message: "Employee not found.", success: false })
+    if (!employee) {
+      await session.abortTransaction()
+      session.endSession()
+      return res.status(404).json({ message: "Employee not found.", success: false })
+    }
 
     if (userType === 'Account') {
-      const acmanager = await ACCOUNT.findById(mongoid)
+      const acmanager = await ACCOUNT.findById(mongoid).session(session)
 
       if (!acmanager) {
+        await session.abortTransaction()
+        session.endSession()
         return res.status(404).json({ message: "Account manager not found.", success: false })
       }
 
       if (!acmanager.branch.includes(employee.branch)) {
+        await session.abortTransaction()
+        session.endSession()
         return res.status(403).json({ message: "You are not Autherized to Update Employee in this Branch.", success: false })
       }
     }
 
     if (mobile_no && employee.mobile_no !== mobile_no) {
-      const existEmployee = await EMPLOYEE.findOne({ mobile_no })
+      const existEmployee = await EMPLOYEE.findOne({ mobile_no }).session(session)
 
-      if (existEmployee) return res.status(409).json({ message: "Employee already exists with the same mobile no.", success: false })
+      if (existEmployee) {
+        await session.abortTransaction()
+        session.endSession()
+        return res.status(409).json({ message: "Employee already exists with the same mobile no.", success: false })
+      }
     }
 
     if (employee_name) employee.employee_name = employee_name
-    if (salary) employee.salary = salary
+    if (salary){
+      if (salary < employee.salary) {
+        await session.abortTransaction()
+        session.endSession()
+        return res.status(400).json({
+          message: "Salary amount cannot be less than previous salary amount.",
+          success: false,
+        });
+      }
+
+      employee.salary = salary
+      const employeeSalary = await EMPLOYEESALARY.findOne({
+        employee: employee._id, 
+        month: new Date().getMonth() + 1, 
+        year: new Date().getFullYear()
+      }).session(session)
+      
+      if(employeeSalary){
+        employeeSalary.status = 'Pending'
+        employeeSalary.salary = salary
+        await employeeSalary.save({ session })
+      }
+    } 
     if (branch) employee.branch = branch
     if (mobile_no) employee.mobile_no = mobile_no
     if (employee_type) employee.employee_type = employee_type
 
-    await employee.save()
+    await employee.save({ session })
 
-    return res.status(200).json({ message: "Employee details updated successfully.", success: false, data: employee })
+    await session.commitTransaction()
+    session.endSession()
+
+    return res.status(200).json({ message: "Employee details updated successfully.", success: true, data: employee })
 
   } catch (err) {
+    await session.abortTransaction()
+    session.endSession()
     next(err)
   }
 }

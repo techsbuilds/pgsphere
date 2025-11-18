@@ -33,6 +33,7 @@ function VerifyCustomer({ openForm, customer, onClose }) {
     defaultValues:{
         rent_amount:0,
         deposite_amount:0,
+        variable_deposite_amount:0,
         bank_account:'',
         payment_mode:''
     }
@@ -145,9 +146,10 @@ function VerifyCustomer({ openForm, customer, onClose }) {
                 {errors.rent_amount && <span className="text-sm text-red-500">{errors.rent_amount.message}</span>}
               </div>
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="grid grid-cols-2 gap-4 items-center">
+             <div className="flex flex-col gap-2">
               <label>
-                Deposite Amount <span className="text-sm text-red-500">*</span>
+               Fixed Deposite Amount <span className="text-sm text-red-500">*</span>
               </label>
               <div className="flex flex-col">
                 <input
@@ -158,6 +160,19 @@ function VerifyCustomer({ openForm, customer, onClose }) {
                 ></input>
                 {errors.deposite_amount && <span className="text-sm text-red-500">{errors.deposite_amount.message}</span>}
               </div>
+             </div>
+             <div className="flex flex-col gap-2">
+              <label>Pay Deposite Amount <span className="text-sm text-red-500">*</span></label>
+              <div className="flex flex-col">
+                <input
+                  {...register("variable_deposite_amount",{ valueAsNumber: true })}
+                  type="number"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none "
+                  placeholder="Enter Variable Deposite Amount"
+                ></input>
+              </div>
+              {errors.variable_deposite_amount && <span className="text-sm text-red-500">{errors.variable_deposite_amount.message}</span>}
+             </div>
             </div>
             <div className="grid mb-2 grid-cols-2 gap-4 items-center">
               <div className="flex flex-col gap-2">
@@ -198,7 +213,9 @@ function VerifyCustomer({ openForm, customer, onClose }) {
               Cancel
             </button>
             <button disabled={loader} type="submit" className="p-2 min-w-32 text-sm transition-all duration-300 cursor-pointer flex justify-center items-center bg-[#202947] rounded-md text-white font-medium">
-              Approve
+              {
+                loader ? <LoaderCircle className="animate-spin"></LoaderCircle> : "Approve"
+              }
             </button>
           </div>
           </form>

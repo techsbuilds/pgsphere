@@ -133,7 +133,7 @@ function BranchForm({selectedBranch, onClose}) {
            </div>
           </div>
           <div className="flex justify-center items-center">
-             <button type="submit" disabled={loading} className="p-2 hover:bg-blue-600 w-full sm:w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-[#3B82F6] rounded-md text-white font-medium text-sm sm:text-base">
+             <button type="submit" disabled={loading} className="p-2 hover:bg-primary/90 w-full sm:w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-primary rounded-md text-white font-medium text-sm sm:text-base">
                 {
                   loading ? 
                   <LoaderCircle className="animate-spin w-4 h-4 sm:w-5 sm:h-5"></LoaderCircle> :

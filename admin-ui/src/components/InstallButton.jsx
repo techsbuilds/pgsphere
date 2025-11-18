@@ -32,7 +32,7 @@ const InstallButton = () => {
         </span>
         
         {/* Pulse animation ring */}
-        <div className="absolute inset-0 rounded-full bg-[#374856] opacity-30 animate-ping"></div>
+        <div className="absolute inset-0 rounded-full bg-[#202947] opacity-30 animate-ping"></div>
       </button>
     </div>
   );

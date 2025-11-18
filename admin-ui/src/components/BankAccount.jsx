@@ -3,7 +3,6 @@ import BankAccountForm from './BankAccountForm';
 
 //Import icons
 import { Pencil } from 'lucide-react';
-import { Lock } from 'lucide-react';
 import { RotateCw, Plus, Trash } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { getAllBankAccount } from '../services/bankAccountService';
@@ -81,7 +80,14 @@ function BankAccount() {
           bankAccounts.map((acc, index) => (
           <div key={index} className='flex w-full p-2 sm:p-3 rounded-md bg-gray-50 border border-neutral-200 justify-between items-center'>
             <div className='flex flex-col gap-1 min-w-0 flex-1'>
+              <div className='flex items-center gap-2'>
               <h1 className='text-sm sm:text-base font-medium truncate'>{acc.account_holdername}</h1>
+              {
+                acc.is_default && (
+                  <span className='text-xs bg-green-100 p-1 rounded-md sm:text-sm text-green-500'>Default</span>
+                )
+              }
+              </div>
               <span className='font-bold text-sm sm:text-base'>{convertIntoRupees(acc.current_balance)}</span>
             </div>
             <div className='flex items-center gap-1 sm:gap-2 flex-shrink-0'>

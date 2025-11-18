@@ -131,11 +131,11 @@ function AdminDashboard() {
               </div>
             </div>
             <div className="p-3 sm:p-4 bg-white border border-neutral-300 rounded-md flex items-center">
-              <div className="flex flex-col gap-2 sm:gap-4">
+              <div className="flex w-full flex-col gap-2 sm:gap-4">
                 <span className="text-[#7E7E85] text-sm sm:text-base">Total Customer</span>
-                <div className="flex items-center gap-2">
+                <div className="flex w-full items-center justify-between">
                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold">{dashboardData?.totalCustomers}</h1>
-                 <span className="p-1.5 text-sm rounded-md bg-gray-200">
+                 <span className="p-1.5 md:text-sm text-xs text-primary bg-slate-50 rounded-md">
                    {dashboardData?.vacantSeats} Vacant Bed{dashboardData?.vacantSeats > 1 ? 's' : ''}
                  </span>
                 </div>

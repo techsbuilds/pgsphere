@@ -60,7 +60,6 @@ export const addMeal = async (req, res, next) => {
                 return res.status(404).json({ message: "Acmagaer Not Found !", success: false })
             }
 
-            console.log("Acmanager Branch: ", acmanager.branch)
 
             const isAuthorized = branch.every((br) => acmanager.branch.includes(br));
 
