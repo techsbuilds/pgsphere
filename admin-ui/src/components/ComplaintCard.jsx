@@ -45,7 +45,7 @@ function ComplaintCard({ item, onRefresh }) {
 
 
   return (
-    <div className="w-full rounded-2xl relative hover:scale-[1.02] transition-all duration-300 overflow-visible shadow-sm border cursor-pointer border-neutral-300 bg-white p-5">
+    <div className="w-full rounded-2xl relative transition-all duration-300 overflow-visible shadow-sm border cursor-pointer border-neutral-300 bg-white p-5">
       {/* Icon + Button - Vertically Centered on Right */}
       {!isClosed && (
         <div className="absolute right-2 top-10 -translate-y-1/2 z-30 flex justify-center items-center gap-2">

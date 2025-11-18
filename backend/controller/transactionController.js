@@ -10,6 +10,8 @@ import TRANSACTION from "../models/TRANSACTION.js";
 import ACCOUNT from "../models/ACCOUNT.js"
 import RENTATTEMPT from "../models/RENTATTEMPT.js";
 import DEPOSITEAMOUNT from "../models/DEPOSITEAMOUNT.js";
+import SALARYATTEMPT from "../models/SALARYATTEMPT.js";
+import BANKACCOUNT from "../models/BANKACCOUNT.js";
 
 export const createTransactionForCustomerRent = async (req, res, next) =>{
    try{
@@ -57,7 +59,39 @@ export const createTransactionForCustomerRent = async (req, res, next) =>{
      if(isDeposite){
       customerRent.is_deposite = true 
       customerRent.status = 'Paid'
+
+      const defaultBankAccount = await BANKACCOUNT.findOne({is_default:true})
+
+      const depositeAmount = new DEPOSITEAMOUNT({
+        customer,
+        amount: existCustomer.deposite_amount
+      })
+
+      const depositeTransaction = new TRANSACTION({
+        transactionType:'withdrawal',
+        type:'deposite',
+        refModel:'Depositeamount',
+        refId:depositeAmount,
+        payment_mode:'cash',
+        status:'completed',
+        branch:existCustomer.branch,
+        pgcode,
+        bank_account:defaultBankAccount,
+        added_by:mongoid,
+        added_by_type:userType
+      })
+
+      const rentAttempt = new RENTATTEMPT({
+        customer,
+        amount:existCustomer.deposite_amount,
+        month,
+        year
+      })
+
       await customerRent.save() 
+      await depositeAmount.save()
+      await depositeTransaction.save()
+      await rentAttempt.save()
 
       return res.status(200).json({message:"Customer rent marked as desposite successfully.",success:true})
      }
@@ -400,8 +434,8 @@ export const verifyCustomerTransaction = async (req, res, next) =>{
 
 export const createTransactionForEmployeeSalary = async (req, res, next) =>{
    try{
-      const {amount, payment_mode, employee, year, bank_account, month} = req.body
       const {mongoid, userType, pgcode} = req
+      const {amount, payment_mode, employee, year, bank_account, month} = req.body
 
       if(!amount || !payment_mode || !bank_account || !employee || !year || !month){
           return res.status(400).json({message:"Please provide required fields.",success:false})
@@ -412,12 +446,12 @@ export const createTransactionForEmployeeSalary = async (req, res, next) =>{
       if(!existEmployee) return res.status(404).json({message:"Employee is not found.",success:false})
 
       if(userType === "Account"){
-         const account = await ACCOUNT.findById(mongoid)
+         const account = await ACCOUNT.findById(mongoid) 
 
-         if(!account) return res.status(404).json({message:"Account not found.",success:false})
+         if(!account) return res.status(404).json({message:"Account manager not found."})
 
-         if(!account.branch.includes(existEmployee.branch.toString())){
-            return res.status(403).json({message:"You are not authorized to create transaction for this employee.",success:false})
+         if(!account.branch.includes(existEmployee.branch)){
+            return res.status(403).json({message:"You have not access to give salary for this employee.",success:false})
          }
       }
 
@@ -425,26 +459,47 @@ export const createTransactionForEmployeeSalary = async (req, res, next) =>{
 
       if(month < 1 || month > 12) return res.status(400).json({message:"Invalid month value",success:false})
 
-      const newEmployeeSalaryRecipt = new EMPLOYEESALARY({
+      const employeeSalary = await EMPLOYEESALARY.findOne({employee, month, year})
+
+      if(!employeeSalary) return res.status(404).json({message:"Employee salary is not found for this month.",success:false})
+
+      if(employeeSalary.status === "Paid") return res.status(200).json({message:"Employee salary is already paid for this month.",success:true})
+
+      let pendingAmount = employeeSalary.salary - employeeSalary.paid_amount
+
+      if(amount > pendingAmount){   
+         return res.status(400).json({message:`You have only pending amount of ${pendingAmount}`,success:false})
+      }
+
+      employeeSalary.paid_amount += amount
+
+      if(pendingAmount === amount){
+         employeeSalary.status = "Paid"
+      }
+
+      const newSalaryAttempt = new SALARYATTEMPT({
          employee,
          amount,
          month,
          year
       })
 
-      await newEmployeeSalaryRecipt.save()
-
-      const newTransaction = new TRANSACTION({
+      const newTransaction = new TRANSACTION({     
          transactionType:'expense',
-         type:'employee_salary',
-         refModel:'Employeesalary',
-         refId:newEmployeeSalaryRecipt,
+         type:'salary_attempt',
+         refModel:'Salaryattempt',
+         refId:newSalaryAttempt._id,
          payment_mode,
+         status:'completed',
          branch:existEmployee.branch,
          bank_account,
-         pgcode
+         pgcode,
+         added_by:mongoid,
+         added_by_type:userType
       })
 
+      await employeeSalary.save()
+      await newSalaryAttempt.save()
       await newTransaction.save()
 
       return res.status(200).json({message:"New Transaction created for employee salary.",success:true, data:newTransaction})

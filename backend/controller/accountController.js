@@ -3,6 +3,7 @@ import LOGINMAPPING from "../models/LOGINMAPPING.js";
 import bcryptjs from 'bcryptjs'
 import CUSTOMER from "../models/CUSTOMER.js";
 import EMPLOYEE from "../models/EMPLOYEE.js";
+import ROOM from "../models/ROOM.js";
 import mongoose from "mongoose";
 
 export const createAccountManager = async (req, res, next) => {
@@ -57,6 +58,40 @@ export const createAccountManager = async (req, res, next) => {
         return res.status(200).json({ message: "New account manager created succcessfully.", success: true })
 
     } catch (err) {
+        next(err)
+    }
+}
+
+export const getDashboardSummery = async (req, res, next) => {
+    try{
+       const { pgcode, mongoid } = req
+ 
+       const acmanager = await ACCOUNT.findOne({ _id: mongoid })
+
+       if(!acmanager) return res.status(404).json({ message: "Account manager not found.", success: false })
+
+       const totalBranches = acmanager.branch.length
+
+       const customerIds = await LOGINMAPPING.find({ userType: 'Customer', pgcode, status: 'active' }).select('mongoid')
+
+       const totalCustomers = await CUSTOMER.find({ _id: { $in: customerIds.map(item => item.mongoid) }, branch: { $in: acmanager.branch } }).countDocuments()
+
+       const totalEmployees = await EMPLOYEE.find({ pgcode, status: true, branch: { $in: acmanager.branch } }).countDocuments()
+
+       const totalRooms = await ROOM.find({ pgcode, branch: { $in: acmanager.branch } }).countDocuments()
+
+       const vacantSeats = await ROOM.aggregate([
+        {
+            $match: { pgcode, branch: { $in: acmanager.branch } }
+        },
+        {
+            $group: { _id: null, totalVacant: { $sum: { $subtract: ["$capacity", "$filled"] } } }
+        }
+       ])
+
+       return res.status(200).json({ message: "Dashboard summery retrived successfully.", success: true, data: { totalCustomers, totalBranches, totalEmployees, totalRooms, vacantSeats: vacantSeats[0].totalVacant || 0 } })
+    
+    }catch(err){
         next(err)
     }
 }
@@ -231,15 +266,30 @@ export const getDashboardSearchAcmanger = async (req, res, next) => {
         switch (role) {
             case 'Customers': {
 
+               // First, find all active customer login mappings
+               const activeCustomerLogins = await LOGINMAPPING.find({
+                userType: 'Customer',
+                status: 'active',
+                pgcode
+            }).select('mongoid')
+
+            // Extract customer IDs from login mappings
+            const customerIds = activeCustomerLogins.map(login => login.mongoid)
+
+            // If no active customers found, return empty results
+            if (customerIds.length === 0) {
+                results = []
+            } else {
+                // Search customers using the filtered IDs and apply search query
                 results = await CUSTOMER.find({
+                    _id: { $in: customerIds },
+                    branch: { $in: branches },
                     $or: [
                         { customer_name: { $regex: searchQuery, $options: 'i' } },
                         { mobile_no: { $regex: searchQuery, $options: 'i' } }
-                    ],
-                    pgcode,
-                    branch: { $in: branches },
-                    status: true
+                    ]
                 }).populate('room').populate('branch')
+            }
 
             }
                 break;
@@ -252,7 +302,7 @@ export const getDashboardSearchAcmanger = async (req, res, next) => {
                         { mobile_no: { $regex: searchQuery, $options: 'i' } }
                     ],
                     pgcode,
-                    branch: branches,
+                    branch: { $in: branches },
                     status: true
                 }).populate('branch')
 

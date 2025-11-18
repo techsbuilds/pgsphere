@@ -197,7 +197,7 @@ export const signUpCustomer = async (req, res, next) => {
 
     if (!req.file) return res.status(400).json({ message: "Please upload aadhar card.", success: false })
 
-    const existCustomer = await CUSTOMER.findOne({ email, mobile_no })
+    const existCustomer = await LOGINMAPPING.findOne({ email })
 
     if (existCustomer) {
       await removeFile(path.join("uploads", "aadhar", req.file.filename))

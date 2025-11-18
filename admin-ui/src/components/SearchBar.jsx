@@ -42,7 +42,7 @@ function SearchBar({ setOpenSearchBar }) {
       } else {
         data = await getDashboardSearch(role, query)
       }
-
+      console.log(data)
       setSearchResults(data)
     } catch (err) {
       console.log(err)

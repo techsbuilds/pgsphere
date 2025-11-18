@@ -197,7 +197,7 @@ function PayRentForm({openForm, onClose, rentDetails, customerId}) {
                  <button onClick={()=>handleClose(false)} className='p-2 hover:bg-gray-100 transition-all duration-300 text-xs sm:text-sm w-32 cursor-pointer flex justify-center items-center rounded-md border border-neutral-300'>
                     Cancel
                  </button>
-                 <button type="submit" disabled={loading} className="p-2 w-32 text-xs sm:text-sm transition-all duration-300 cursor-pointer flex justify-center items-center bg-primary hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-md text-white font-medium">
+                 <button type="submit" disabled={loading} className="p-2 w-32 text-xs sm:text-sm transition-all duration-300 cursor-pointer flex justify-center items-center bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-md text-white font-medium">
                   {
                     loading ? 
                     <LoaderCircle className="animate-spin w-4 h-4 sm:w-5 sm:h-5"></LoaderCircle> :

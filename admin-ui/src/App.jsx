@@ -91,13 +91,20 @@ function App() {
             <Route path='branches' element={<Branch></Branch>}></Route>
             <Route path='branches/preview' element={<BranchPreview></BranchPreview>}></Route>
             <Route path='branches/room/preview' element={<RoomPreview></RoomPreview>}></Route>
-            <Route path='customers' element={<Customer></Customer>}></Route>
-            <Route path='employees' element={<Employee></Employee>}></Route>
+            <Route path='customers/clist' element={<Customer></Customer>}></Route>
+            <Route path='customers/rents' element={<CustomerRent></CustomerRent>}></Route>
+            <Route path='customers/meals' element={<Meal></Meal>}></Route>
+            <Route path='customers/complaints' element={<Complaints></Complaints>}></Route>
+            <Route path='customers/dailyupdate' element={<DailyUpdate></DailyUpdate>}></Route>
+            <Route path='employees/elist' element={<Employee></Employee>}></Route>
+            <Route path='employees/salary' element={<EmployeeSalary></EmployeeSalary>}></Route>
             <Route path='rents' element={<Customer></Customer>}></Route>
             <Route path='salary' element={<EmployeeSalary></EmployeeSalary>}></Route>
             <Route path='inventory' element={<Inventory></Inventory>}></Route>
+            <Route path='cashout' element={<CashOut></CashOut>}></Route>
             <Route path='monthlybill' element={<MonthlyBill></MonthlyBill>}></Route>
             <Route path='transactions' element={<Transaction></Transaction>}></Route>
+            <Route path='settings' element={<Settings></Settings>}></Route>
          </Route>
 
          <Route path="*" element={<Navigate to={auth?.user?.userType === 'Admin' ? '/admin' : '/account'} />} />

@@ -87,6 +87,63 @@ const adminRoutes = [
   },
 ];
 
+const accountRoutes = [
+  {
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    link: "/account",
+  },
+  {
+    label: "Branches",
+    icon: Building2,
+    link: "/account/branches",
+  },
+  {
+    label: "Customers",
+    icon: Users,
+    children: [
+      { label: "Customers", link: "/account/customers/clist" },
+      { label: "Rents", link: "/account/customers/rents" },
+      { label: "Meals", link: "/account/customers/meals" },
+      { label: "Complaints", link: "/account/customers/complaints" },
+      { label: "Daily Update", link: "/account/customers/dailyupdate" },
+    ],
+  },
+  {
+    label: "Employees",
+    icon: IdCardLanyard,
+    children: [
+      { label: "Employees", link: "/account/employees/elist" },
+      { label: "Salary", link: "/account/employees/salary" },
+    ],
+  },
+  {
+    label: "Inventory",
+    icon: Box,
+    link: "/account/inventory",
+  },
+  {
+    label: "Monthly Bills",
+    icon: BookText,
+    link: "/account/monthlybill",
+  },
+  {
+    label: "Cashout",
+    icon: HandCoins,
+    link: "/account/cashout",
+  },
+  {
+    label: "Transactions",
+    icon: ArrowLeftRight,
+    link: "/account/transactions",
+  },
+  {
+    label: "Settings",
+    icon: Settings,
+    link: "/account/settings",
+  },
+];
+
 function SideBar({ showSideBar, setShowSideBar, type }) {
   const location = useLocation();
   const [openSubmenu, setOpenSubmenu] = useState(null);
@@ -112,7 +169,7 @@ function SideBar({ showSideBar, setShowSideBar, type }) {
     }
   };
 
-  const routes = adminRoutes; // if you want accountRoutes also, you can switch based on `type`
+  const routes = type === 'account' ? accountRoutes : adminRoutes;
 
   return (
     <div

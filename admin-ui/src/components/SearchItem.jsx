@@ -65,6 +65,10 @@ function SearchItem({role, item}) {
             )
         
           case 'Ac Managers':    
+            const branches = Array.isArray(item.branch) ? item.branch : [item.branch].filter(Boolean);
+            const firstBranch = branches[0];
+            const remainingCount = branches.length - 1;
+            
             return (
                 <div className='p-2 border border-neutral-300 rounded-lg flex items-center justify-between'>
                    <div className='flex items-center gap-2'>
@@ -76,8 +80,13 @@ function SearchItem({role, item}) {
                    </div>
                    <div className='flex items-center gap-1'>
                     <Building2 size={16} className='text-gray-500'></Building2>
-                    <span className='text-sm text-gray-500'>{sliceString(item.branch?.branch_name, 20)}</span>
-                </div>
+                    <span className='text-sm text-gray-500'>
+                      {firstBranch?.branch_name ? sliceString(firstBranch.branch_name, 20) : ''}
+                      {remainingCount > 0 && (
+                        <span className='text-gray-400 ml-1'>+{remainingCount}</span>
+                      )}
+                    </span>
+                  </div>
                 </div>
             )  
 

@@ -15,7 +15,7 @@ export default defineConfig({
         name: 'Pgsphere',
         short_name: 'Pgsphere',
         description: 'PG Management System',
-        theme_color: '#374856',
+        theme_color: '#202947',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',

@@ -183,9 +183,14 @@ export const useCustomerTable = (handleOpenForm, room, handleOpenVerifyCustomer,
               const status = params.value;
               return (
                 <div className="flex items-center w-full h-full">
-                  <span className={`px-3 py-1 leading-5 flex justify-center items-center rounded-full w-20 text-white font-medium ${status==="Paid" ? 'bg-green-500' : 'bg-yellow-500'}`}>
-                    {status === "Paid" ? "Paid" : `₹${params.row.deposite_amount - params.row.paid_deposite_amount}` }
+                  <span className={`px-3 py-1 leading-5 flex gap-1 justify-center items-center rounded-full w-24  font-medium ${status==="Paid" ? 'bg-green-500 text-white' : 'bg-yellow-100 border border-yellow-500 text-yellow-500'}`}>
+                    {status === "Paid" ?
+                     "Paid" :
+                      `₹${params.row.deposite_amount - params.row.paid_deposite_amount}`
+                    }
+                    {status === 'Pending' && <small className="text-[10px] text-yellow-500 text-white">Pending</small>}
                   </span>
+
                 </div>
               );
             },

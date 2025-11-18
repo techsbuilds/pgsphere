@@ -174,14 +174,29 @@ export const getDashboardSearch = async (req, res, next) => {
 
         switch (role) {
             case 'Customers': {
-                results = await CUSTOMER.find({
-                    $or: [
-                        { customer_name: { $regex: searchQuery, $options: 'i' } },
-                        { mobile_no: { $regex: searchQuery, $options: 'i' } }
-                    ],
-                    pgcode,
-                    status: true
-                }).populate('room').populate('branch')
+                // First, find all active customer login mappings
+                const activeCustomerLogins = await LOGINMAPPING.find({
+                    userType: 'Customer',
+                    status: 'active',
+                    pgcode
+                }).select('mongoid')
+
+                // Extract customer IDs from login mappings
+                const customerIds = activeCustomerLogins.map(login => login.mongoid)
+
+                // If no active customers found, return empty results
+                if (customerIds.length === 0) {
+                    results = []
+                } else {
+                    // Search customers using the filtered IDs and apply search query
+                    results = await CUSTOMER.find({
+                        _id: { $in: customerIds },
+                        $or: [
+                            { customer_name: { $regex: searchQuery, $options: 'i' } },
+                            { mobile_no: { $regex: searchQuery, $options: 'i' } }
+                        ]
+                    }).populate('room').populate('branch')
+                }
             }
                 break;
 
@@ -198,13 +213,30 @@ export const getDashboardSearch = async (req, res, next) => {
                 break;
 
             case 'Ac Managers': {
-                results = await ACCOUNT.find({
-                    $or: [
-                        { full_name: { $regex: searchQuery, $options: 'i' } },
-                        { contact_no: { $regex: searchQuery, $options: 'i' } },
-                        { email: { $regex: searchQuery, $options: 'i' } }
-                    ],
-                }).populate('branch')
+                // First, find all active account manager login mappings
+                const activeAccountLogins = await LOGINMAPPING.find({
+                    userType: 'Account',
+                    status: 'active',
+                    pgcode
+                }).select('mongoid')
+
+                // Extract account manager IDs from login mappings
+                const accountManagerIds = activeAccountLogins.map(login => login.mongoid)
+
+                // If no active account managers found, return empty results
+                if (accountManagerIds.length === 0) {
+                    results = []
+                } else {
+                    // Search account managers using the filtered IDs and apply search query
+                    results = await ACCOUNT.find({
+                        _id: { $in: accountManagerIds },
+                        $or: [
+                            { full_name: { $regex: searchQuery, $options: 'i' } },
+                            { contact_no: { $regex: searchQuery, $options: 'i' } },
+                            { email: { $regex: searchQuery, $options: 'i' } }
+                        ]
+                    }).populate('branch')
+                }
             }
                 break;
 

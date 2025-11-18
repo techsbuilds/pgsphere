@@ -131,7 +131,7 @@ function ExtraChargeForm({openForm, onClose, rentDetails, customerId}) {
                </div>
               <div className='flex justify-end items-stretch sm:items-center gap-2 sm:gap-4'>
                     <button onClick={()=>onClose(false)} type='button' className='p-2 hover:bg-gray-100 transition-all duration-300 text-xs sm:text-sm w-full sm:w-auto sm:px-6 rounded-md border border-gray-400 cursor-pointer flex justify-center items-center'>Cancel</button>
-                    <button disabled={loading} type='submit' className='p-2 w-full sm:w-36 sm:px-6 text-xs sm:text-sm rounded-md text-white bg-primary hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 cursor-pointer flex justify-center items-center font-medium'>
+                    <button disabled={loading} type='submit' className='p-2 w-full sm:w-36 sm:px-6 text-xs sm:text-sm rounded-md text-white bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 cursor-pointer flex justify-center items-center font-medium'>
                         {loading ? <LoaderCircle className="animate-spin w-4 h-4 sm:w-5 sm:h-5"></LoaderCircle> : "Add Charge"}
                     </button>
               </div>
