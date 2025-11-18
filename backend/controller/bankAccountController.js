@@ -36,7 +36,10 @@ export const getAllBankAccount = async (req, res, next) => {
         const { pgcode, userType } = req
         const allAccounts = await BANKACCOUNT.find({ pgcode })
 
-        const transactions = await TRANSACTION.find({ pgcode })
+        const transactions = await TRANSACTION.find({  pgcode, 
+            transactionType: { $in: ['expense', 'income'] },
+            status:'completed'
+          })
             .populate('refId')
             .populate('bank_account')
 
@@ -78,43 +81,54 @@ export const getAllBankAccount = async (req, res, next) => {
 }
 
 
-export const updateBankAccount = async (req, res, next) => {
-    try {
-        const { pgcode } = req
-        const { accountId } = req.params
-        const { account_holdername, is_default } = req.body
+export const updateBankAccount = async (req, res, next) =>{
+    try{
+        const {pgcode} = req
+        const {accountId} = req.params 
+        const {account_holdername, is_default} = req.body 
 
-        if (!accountId) return res.status(400).json({ message: "Please provide account id.", success: false })
+        if(!accountId) return res.status(400).json({message:"Please provide account id.",success:false}) 
 
-        const bankAccount = await BANKACCOUNT.findOne({ _id: accountId, pgcode })
+        const bankAccount = await BANKACCOUNT.findOne({_id:accountId, pgcode}) 
 
-        if (!bankAccount) return res.status(404).json({ message: "Bank account not found.", status: false })
+        if(!bankAccount) return res.status(404).json({message:"Bank account not found.",status:false})
 
-        if (account_holdername) {
+        if(account_holdername){
 
-            if (bankAccount.account_holdername !== account_holdername) {
-                const existingBankAccount = await BANKACCOUNT.findOne({ account_holdername: bankAccount })
+            if(bankAccount.account_holdername!== account_holdername){
+                const existingBankAccount = await BANKACCOUNT.findOne({account_holdername:bankAccount})
 
-                if (existingBankAccount) return res.status(409).json({ message: "Bank account is already exist.", success: false })
+                if(existingBankAccount) return res.status(409).json({message:"Bank account is already exist.",success:false})
             }
 
-            bankAccount.account_holdername = account_holdername
+            bankAccount.account_holdername = account_holdername 
 
         }
 
-        if (is_default !== undefined) {
+        if(is_default !== undefined){
+            if(!is_default && bankAccount.is_default){
+                //Find another account to set default true
+                const anotherAccount = await BANKACCOUNT.findOne({_id:{$ne:bankAccount._id}, pgcode, status:{$ne:'deleted'}})
+
+                if(anotherAccount){
+                    anotherAccount.is_default = true
+                    await anotherAccount.save()
+                }
+            }
             bankAccount.is_default = is_default
         }
 
         await bankAccount.save()
 
-        return res.status(200).json({ message: "Bank account name updated successfully.", success: true })
+        return res.status(200).json({message:"Bank account name updated successfully.",success:true})
+        
 
-
-    } catch (err) {
+    }catch(err){
         next(err)
     }
 }
+
+
 
 export const deleteBackAccount = async (req, res, next) => {
     try {

@@ -20,14 +20,16 @@ function BankAccountForm({selectedBankAccount, onClose}) {
     mode: "onChange",
     resolver: zodResolver(bankAccountSchema),
     defaultValues: {
-      account_holdername:''
+      account_holdername:'',
+      is_default:false
     }
   });
 
   useEffect(()=>{
     if(selectedBankAccount){
         reset({
-            account_holdername:selectedBankAccount.account_holdername
+            account_holdername:selectedBankAccount.account_holdername,
+            is_default:selectedBankAccount.is_default
         })
     }
   },[])
@@ -81,6 +83,19 @@ function BankAccountForm({selectedBankAccount, onClose}) {
                     {errors.account_holdername && <span className="text-sm text-red-500">{errors.account_holdername.message}</span>}
                 </div>
              </div>
+             {
+               selectedBankAccount && (
+                  <div className="flex items-center gap-2">
+                  <input
+                   type="checkbox"
+                   {...register('is_default')}
+                   className="p-2 border border-neutral-300 rounded-md outline-none"
+                   ></input>
+                   <label>Is Default</label>
+                  </div>
+               )
+             }
+
              <div className="flex justify-center items-center">
              <button type="submit" disabled={loading} className="p-2 hover:bg-blue-600 w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-blue-500 rounded-md text-white font-medium">
                 {

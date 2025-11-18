@@ -57,3 +57,14 @@ export const updateMeal = async (date, branchId, data) =>{
         throw new Error(errMessage)
     }
 }
+
+export const getTodayMeal = async (date, branchId) => {
+    try{
+        const response = await api.get(`/meal/${date}/${branchId}`)
+        return response.data.meal
+    }catch(err){
+        console.log(err)
+        const errMessage = err?.response?.data?.message
+        throw new Error(errMessage)
+    }
+}

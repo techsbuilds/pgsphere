@@ -90,13 +90,15 @@ function DailyUpdate() {
   }, []);
 
   const handleGetDailyUpdates = async () => {
+    setLoader(true);
     try {
       const data = await getDailyUpdates(selectedBranch);
-      console.log(data);
       setDailyUpdate(data);
     } catch (err) {
       console.log(err);
       toast.error(err?.message || "Failed to fetch daily updates");
+    }finally{
+      setLoader(false);
     }
   };
 
@@ -251,7 +253,43 @@ function DailyUpdate() {
               scrollbarColor: "#d1d5db #f3f4f6",
             }}
           >
-            {dailyUpdate.length === 0 ? (
+            {loader ? (
+              // Skeleton Loading Effect
+              Array.from({ length: 5 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-neutral-300 flex flex-col sm:flex-row justify-between items-start gap-3 animate-pulse"
+                >
+                  <div className="flex w-full items-start gap-3 sm:gap-4">
+                    {/* Icon Skeleton */}
+                    <div className="bg-neutral-200 rounded-full p-2 w-10 h-10"></div>
+                    <div className="flex justify-between w-full items-start gap-2">
+                      <div className="flex flex-col gap-2 flex-1">
+                        {/* Title Skeleton */}
+                        <div className="h-4 bg-neutral-200 rounded-md w-3/4"></div>
+                        <div className="h-3 bg-neutral-200 rounded-md w-1/2"></div>
+                        
+                        {/* Branch Tags Skeleton */}
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                          <div className="h-5 bg-neutral-200 rounded-md w-16"></div>
+                          <div className="h-5 bg-neutral-200 rounded-md w-20"></div>
+                          <div className="h-5 bg-neutral-200 rounded-md w-14"></div>
+                        </div>
+                        
+                        {/* Time Skeleton */}
+                        <div className="h-3 bg-neutral-200 rounded-md w-24"></div>
+                      </div>
+                      <div className="flex flex-col md:flex-row items-end md:items-center gap-2">
+                        {/* Badge Skeleton */}
+                        <div className="h-6 bg-neutral-200 rounded-md w-20"></div>
+                        {/* Delete Button Skeleton */}
+                        <div className="h-8 w-8 bg-neutral-200 rounded-md"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : dailyUpdate.length === 0 ? (
               <div className="w-full h-full flex flex-col items-center justify-center gap-2 py-8">
                 <Bell size={40} className="sm:w-12 sm:h-12 text-neutral-400"></Bell>
                 <span className="text-sm sm:text-base text-neutral-500">No updates found</span>
@@ -282,7 +320,7 @@ function DailyUpdate() {
                           {timeAgo(update.createdAt)}
                         </span>
                       </div>
-                      <div className="flex flex-col md:flex-row items-center md:gap-2 gap-1">
+                      <div className="flex flex-col md:flex-row items-end md:items-center gap-2">
                         <span className={`text-xs ${getUpdateColor(update.content_type)} md:p-1.5 p-1 px-2 md:px-2.5 rounded-md whitespace-nowrap`}>
                           {update.content_type}
                         </span>

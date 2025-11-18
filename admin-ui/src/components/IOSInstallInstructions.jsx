@@ -45,7 +45,7 @@ const IOSInstallInstructions = () => {
 
           {/* Step 1 */}
           <div className="flex items-start space-x-4">
-            <div className="flex-shrink-0 w-8 h-8 bg-[#374856] text-white rounded-full flex items-center justify-center text-sm font-semibold">
+            <div className="flex-shrink-0 w-8 h-8 bg-[#202947] text-white rounded-full flex items-center justify-center text-sm font-semibold">
               1
             </div>
             <div className="flex-1">
@@ -61,7 +61,7 @@ const IOSInstallInstructions = () => {
 
           {/* Step 2 */}
           <div className="flex items-start space-x-4">
-            <div className="flex-shrink-0 w-8 h-8 bg-[#374856] text-white rounded-full flex items-center justify-center text-sm font-semibold">
+            <div className="flex-shrink-0 w-8 h-8 bg-[#202947] text-white rounded-full flex items-center justify-center text-sm font-semibold">
               2
             </div>
             <div className="flex-1">
@@ -77,7 +77,7 @@ const IOSInstallInstructions = () => {
 
           {/* Step 3 */}
           <div className="flex items-start space-x-4">
-            <div className="flex-shrink-0 w-8 h-8 bg-[#374856] text-white rounded-full flex items-center justify-center text-sm font-semibold">
+            <div className="flex-shrink-0 w-8 h-8 bg-[#202947] text-white rounded-full flex items-center justify-center text-sm font-semibold">
               3
             </div>
             <div className="flex-1">
@@ -107,7 +107,7 @@ const IOSInstallInstructions = () => {
         <div className="p-6 border-t border-gray-200">
           <button
             onClick={dismissIOSInstructions}
-            className="w-full bg-[#374856] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#40505E] transition-colors duration-200"
+            className="w-full bg-[#202947] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#40505E] transition-colors duration-200"
           >
             Got it!
           </button>

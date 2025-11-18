@@ -1229,7 +1229,7 @@ export const verifyCustomerLogin = async (req, res, next) => {
 
     customerLogin.status = "active";
 
-    customer.deposite_status = variable_deposite_amount == deposite_amount ? "Paid" : "Pending"
+    customer.deposite_status = variable_deposite_amount === deposite_amount ? "Paid" : "Pending"
 
     // Create customer rent
     const newCustomerRent = await CUSTOMERRENT({
@@ -1266,6 +1266,8 @@ export const verifyCustomerLogin = async (req, res, next) => {
 
       await newDepositeAmount.save();
       await newTransaction.save();
+    }else{
+      customer.paid_deposite_amount = 0
     }
 
     await customer.save();

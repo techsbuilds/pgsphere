@@ -136,7 +136,7 @@ export const useCustomerRentTable = (handleRedirectToRentPreview) =>{
             )
           },
           {
-            headerName: 'Action',
+            headerName: 'Collect Rent',
             field: 'actions',
             type:'actions',
             minWidth: 120,
