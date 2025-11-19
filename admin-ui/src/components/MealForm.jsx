@@ -3,11 +3,15 @@ import { ChevronLeft, Plus, X, LoaderCircle, ChevronDown } from 'lucide-react'
 import { format, addDays } from 'date-fns'
 import { toast } from 'react-toastify'
 import { createMeal, updateMeal } from '../services/mealService'
+import { getAllBranch } from '../services/branchService'
+import MultiSelectDropdown from './MultiSelectDropdown'
 
-function MealForm({ openForm, selectedMeal, selectedDate, isEdit, selectedBranch, mealDocumentId, onClose }) {
+function MealForm({ openForm, selectedMeal, selectedDate, isEdit, mealDocument, onClose }) {
   const [meals, setMeals] = useState([])
   const [loading, setLoading] = useState(false)
   const [formDate, setFormDate] = useState(selectedDate || new Date())
+  const [selectedBranches, setSelectedBranches] = useState([])
+  const [branchOptions, setBranchOptions] = useState([])
 
   const mealTypes = ['Breakfast', 'Lunch', 'Dinner']
   const currentDate = new Date()
@@ -16,6 +20,24 @@ function MealForm({ openForm, selectedMeal, selectedDate, isEdit, selectedBranch
   // Calculate min and max dates (today to next 15 days)
   const minDate = format(currentDate, 'yyyy-MM-dd')
   const maxDate = format(addDays(currentDate, 15), 'yyyy-MM-dd')
+
+  // Fetch branches on mount
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        const data = await getAllBranch()
+        setBranchOptions(
+          data.map((item) => ({ label: item.branch_name, value: item._id }))
+        )
+      } catch (err) {
+        console.log(err)
+        toast.error(err?.message || 'Failed to fetch branches')
+      }
+    }
+    if (openForm) {
+      fetchBranches()
+    }
+  }, [openForm])
 
   // Initialize form when props change
   useEffect(() => {
@@ -31,8 +53,13 @@ function MealForm({ openForm, selectedMeal, selectedDate, isEdit, selectedBranch
         }))
         setMeals(formattedMeals)
         
-        // Try to get meal document ID from parent if available
-        // For now, we'll need to find it from the date
+        // Set branches from meal document if available
+        if (mealDocument && mealDocument.branch) {
+          const branchIds = Array.isArray(mealDocument.branch) 
+            ? mealDocument.branch.map(b => typeof b === 'string' ? b : b._id)
+            : [mealDocument.branch]
+          setSelectedBranches(branchIds)
+        }
       } else {
         // Add mode: start with default Breakfast meal
         setMeals([{
@@ -40,10 +67,11 @@ function MealForm({ openForm, selectedMeal, selectedDate, isEdit, selectedBranch
           description: '',
           items: []
         }])
+        setSelectedBranches([])
       }
       setFormDate(selectedDate || new Date())
     }
-  }, [openForm, isEdit, selectedMeal, selectedDate])
+  }, [openForm, isEdit, selectedMeal, selectedDate, mealDocument])
 
   // Add a new meal
   const handleAddMeal = () => {
@@ -136,6 +164,11 @@ function MealForm({ openForm, selectedMeal, selectedDate, isEdit, selectedBranch
       return false
     }
 
+    if (selectedBranches.length === 0) {
+      toast.error('Please select at least one branch')
+      return false
+    }
+
     for (let i = 0; i < meals.length; i++) {
       const meal = meals[i]
       if (!meal.type) {
@@ -159,11 +192,6 @@ function MealForm({ openForm, selectedMeal, selectedDate, isEdit, selectedBranch
       return
     }
 
-    if (!selectedBranch) {
-      toast.error('Please select a branch')
-      return
-    }
-
     try {
       setLoading(true)
       const formattedDate = format(formDate, 'yyyy-MM-dd')
@@ -176,20 +204,20 @@ function MealForm({ openForm, selectedMeal, selectedDate, isEdit, selectedBranch
       }))
 
       if (isEdit) {
-        // Update existing meal
-        // Note: Based on the service, updateMeal takes (date, branchId, data)
-        // Using mealDocumentId if available, otherwise use selectedBranch
-        const updateId = mealDocumentId || selectedBranch
+        // Update existing meal - use first branch ID for update endpoint
+        // The API might need the meal document ID, but we'll use first branch as fallback
+        const updateId = mealDocument?._id || selectedBranches[0]
         await updateMeal(formattedDate, updateId, {
-          meals: formattedMeals
+          meals: formattedMeals,
+          branch: selectedBranches
         })
         toast.success('Meal updated successfully')
       } else {
-        // Create new meal
+        // Create new meal with branch array
         await createMeal({
           date: formattedDate,
           meals: formattedMeals,
-          branch: selectedBranch
+          branch: selectedBranches
         })
         toast.success('Meal created successfully')
       }
@@ -227,24 +255,48 @@ function MealForm({ openForm, selectedMeal, selectedDate, isEdit, selectedBranch
         </div>
 
         <p className="text-xs sm:text-sm text-gray-600">
-          {isEdit ? "Edit" : "Add"} meal menu for {format(formDate, "MMMM d, yyyy")}
+          {isEdit ? "Edit" : "Add"} meal menu for {formDate && !isNaN(formDate.getTime()) ? format(formDate, "MMMM d, yyyy") : 'selected date'}
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:gap-4">
-          {/* Date Input */}
-          <div className="flex flex-col gap-1 sm:gap-2">
-            <label className="text-xs sm:text-sm md:text-base font-medium">
-              Date <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              value={format(formDate, 'yyyy-MM-dd')}
-              min={minDate}
-              max={maxDate}
-              onChange={(e) => setFormDate(new Date(e.target.value))}
-              className="p-2.5 sm:p-3 border border-neutral-300 rounded-md outline-none text-sm sm:text-base focus:border-[#202947] focus:ring-1 focus:ring-[#202947]"
-              required
-            />
+          {/* Date and Branch Selection Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            {/* Date Input */}
+            <div className="flex flex-col gap-1 sm:gap-2">
+              <label className="text-xs sm:text-sm md:text-base font-medium">
+                Date <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                value={formDate && !isNaN(formDate.getTime()) ? format(formDate, 'yyyy-MM-dd') : ''}
+                min={minDate}
+                max={maxDate}
+                onChange={(e) => {
+                  const dateValue = e.target.value
+                  if (dateValue) {
+                    const newDate = new Date(dateValue)
+                    if (!isNaN(newDate.getTime())) {
+                      setFormDate(newDate)
+                    }
+                  }
+                }}
+                className="md:p-1.5 p-2 border border-neutral-300 rounded-md outline-none text-sm sm:text-base focus:border-[#202947] focus:ring-1 focus:ring-[#202947]"
+                required
+              />
+            </div>
+
+            {/* Branch Selection */}
+            <div className="flex flex-col gap-1 sm:gap-2">
+              <label className="text-xs sm:text-sm md:text-base font-medium">
+                Branch <span className="text-red-500">*</span>
+              </label>
+              <MultiSelectDropdown
+                options={branchOptions}
+                selected={selectedBranches}
+                onChange={setSelectedBranches}
+                placeholder="Select branches"
+              />
+            </div>
           </div>
 
           {/* Meals List */}
@@ -256,7 +308,7 @@ function MealForm({ openForm, selectedMeal, selectedDate, isEdit, selectedBranch
               <button
                 type="button"
                 onClick={handleAddMeal}
-                className="flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs sm:text-sm bg-primary text-white rounded-md hover:bg-blue-600 transition-colors"
+                className="flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs sm:text-sm bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
               >
                 <Plus size={14} className="sm:w-4 sm:h-4" />
                 <span>Add Meal</span>
@@ -300,7 +352,7 @@ function MealForm({ openForm, selectedMeal, selectedDate, isEdit, selectedBranch
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 p-2.5 sm:p-3 bg-primary text-white rounded-md text-xs sm:text-sm md:text-base font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 p-2.5 sm:p-3 bg-primary text-white rounded-md text-xs sm:text-sm md:text-base font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -413,7 +465,7 @@ function MealItem({
                   onAddItem(mealIndex, itemInput)
                   setItemInput('')
                 }}
-                className="p-2.5 sm:p-2 bg-primary text-white rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center flex-shrink-0"
+                className="p-2.5 sm:p-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors flex items-center justify-center flex-shrink-0"
                 title="Add item"
               >
                 <Plus size={14} className="sm:w-4 sm:h-4" />

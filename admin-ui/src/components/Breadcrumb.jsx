@@ -188,12 +188,19 @@ function Breadcrumb({
                     value={selectedBranch}
                     className="p-2 w-full sm:w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none text-sm sm:text-base"
                   >
-                    {/* <option value={""}>All Branch</option> */}
-                    {branch.map((item, index) => (
-                      <option key={index} value={item._id}>
-                        {item.branch_name}
-                      </option>
-                    ))}
+                    {
+                      branch.length===0 ? 
+                      <option value={""}>No Branch Found</option>
+                      :
+                      <>
+                        <option value={""}>All Branch</option>
+                        {branch.map((item, index) => (
+                          <option key={index} value={item._id}>
+                            {item.branch_name}
+                          </option>
+                        ))}
+                      </>
+                    }
                   </select>
                   <button
                     onClick={() => onClick()}

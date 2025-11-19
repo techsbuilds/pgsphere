@@ -589,7 +589,7 @@ export const updateCustomerDetails = async (req, res, next) => {
     if (!customerId) {
       await session.abortTransaction();
       session.endSession();
-      removeFile(path.join("uploads", "aadhar", req.file.filename));
+      if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
       return res
         .status(400)
         .json({ message: "Please provide customer id.", success: false });
@@ -601,7 +601,7 @@ export const updateCustomerDetails = async (req, res, next) => {
     if (!customer) {
       await session.abortTransaction();
       session.endSession();
-      removeFile(path.join("uploads", "aadhar", req.file.filename));
+      if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
       return res
         .status(404)
         .json({ message: "Customer not found.", success: false });
@@ -620,7 +620,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (!account) {
         await session.abortTransaction();
         session.endSession();
-        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res
           .status(404)
           .json({ message: "Account manager not found.", success: false });
@@ -629,7 +629,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (!account.branch.includes(customer.branch.toString())) {
         await session.abortTransaction();
         session.endSession();
-        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res.status(403).json({
           message:
             "You are not authorized to update customer details in this branch.",
@@ -646,7 +646,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (existCustomer) {
         await session.abortTransaction();
         session.endSession();
-        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res.status(409).json({
           message: "Customer already exists with same mobile no.",
           success: false,
@@ -662,7 +662,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (existCustomer) {
         await session.abortTransaction();
         session.endSession();
-        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res.status(409).json({
           message: "Customer already exists with same email address.",
           success: false,
@@ -713,7 +713,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (rent_amount < customer.rent_amount) {
         await session.abortTransaction();
         session.endSession();
-        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res.status(400).json({
           message: "Rent amount cannot be less than previous rent amount.",
           success: false,
@@ -756,7 +756,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (!existBranch || existBranch.pgcode !== req.pgcode) {
         await session.abortTransaction();
         session.endSession();
-        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res
           .status(400)
           .json({ message: "Invalid branch for this PG", success: false });
@@ -777,7 +777,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (!newRoom || newRoom.pgcode !== req.pgcode) {
         await session.abortTransaction();
         session.endSession();
-        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res
           .status(400)
           .json({ message: "Invalid new room for this PG", success: false });
@@ -787,7 +787,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (newRoom.filled >= newRoom.capacity) {
         await session.abortTransaction();
         session.endSession();
-        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res
           .status(400)
           .json({ message: "New room is already full", success: false });
@@ -828,7 +828,10 @@ export const updateCustomerDetails = async (req, res, next) => {
       success: true,
     });
   } catch (err) {
-    await session.abortTransaction();
+    // Only abort if transaction is still in progress
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
     session.endSession();
     next(err);
   }

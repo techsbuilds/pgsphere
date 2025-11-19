@@ -113,6 +113,14 @@ function Meal() {
         setLoader(true)
         //First get branch data 
         const branchData = await getAllBranch()
+        
+        // Check if branches exist
+        if (!branchData || branchData.length === 0) {
+          setMealData({})
+          setSelectedBranch('')
+          return
+        }
+        
         setSelectedBranch(branchData[0]._id)
         const data = await getMealList(branchData[0]._id)
         setMealData(data)
@@ -218,8 +226,7 @@ function Meal() {
          openForm={openMealForm} 
          selectedMeal={mealsForSelectedDate} 
          selectedDate={selectedDate} 
-         selectedBranch={selectedBranch} 
-         mealDocumentId={mealDocument?._id}
+         mealDocument={mealDocument}
          onClose={handleCloseMealForm}
        />
       

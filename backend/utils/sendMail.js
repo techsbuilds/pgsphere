@@ -25,7 +25,54 @@ export const sendOtopEmail = async (to, otp) => {
         await sendEmail({
             to,
             subject: 'Your OTP Code',
-            html: `<p>Your OTP code is: <strong>${otp}</strong></p><p>This code will expire in 3 minutes.</p> ⁠`,
+            html: `
+            <!DOCTYPE html>
+            <html lang="en">
+              <head>
+                <meta charset="UTF-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+              </head>
+              <body style="margin:0;padding:0;background:#f4f6fb;font-family: 'Helvetica Neue', Arial, sans-serif;color:#1f2933;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:24px 12px;">
+                  <tr>
+                    <td align="center">
+                      <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:480px;background:#ffffff;border-radius:12px;box-shadow:0 10px 30px rgba(15,23,42,0.08);overflow:hidden;">
+                        <tr>
+                          <td style="background:#4f46e5;padding:32px 24px;text-align:center;">
+                            <h1 style="margin:0;font-size:26px;color:#ffffff;letter-spacing:0.05em;">Pgsphere</h1>
+                            <p style="margin:8px 0 0;font-size:14px;color:#c7d2fe;letter-spacing:0.08em;">Secure Sign-In Verification</p>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding:32px 28px;">
+                            <p style="font-size:16px;margin:0 0 16px;">Hello,</p>
+                            <p style="font-size:15px;margin:0 0 24px;color:#475569;">Use the One-Time Password (OTP) below to continue signing in to your Pgsphere account.</p>
+                            <div style="text-align:center;margin-bottom:24px;">
+                              <span style="display:inline-block;padding:18px 32px;border-radius:12px;background:#eef2ff;color:#1e1b4b;font-size:32px;font-weight:700;letter-spacing:0.35em;">
+                                ${otp}
+                              </span>
+                            </div>
+                            <p style="font-size:14px;margin:0 0 12px;color:#475569;">
+                              This code will expire in <strong>3 minutes</strong>. For your security, do not share this code with anyone.
+                            </p>
+                            <div style="margin:28px 0 16px;height:1px;background:#e2e8f0;"></div>
+                            <p style="font-size:13px;margin:0;color:#94a3b8;">
+                              Didn’t request this code? Please ignore this email or contact support if you have concerns.
+                            </p>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="background:#f8fafc;padding:18px;text-align:center;">
+                            <p style="margin:0;font-size:12px;color:#94a3b8;">© ${new Date().getFullYear()} Pgsphere. All rights reserved.</p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </body>
+            </html>
+            `,
         });
     } catch (error) {
         console.error('Error sending OTP email:', error);

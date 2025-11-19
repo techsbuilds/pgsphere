@@ -377,23 +377,28 @@ export const verifyCustomerSignup = async (req, res, next) => {
 
 
 export const logoutPortal = async (req, res, next) => {
-  const {userType} = req 
   try {
-    if(userType === "Admin"){
-      res.clearCookie("pgtoken", {
+    res.clearCookie("pgtoken", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        domain: process.env.NODE_ENV === "production" ? ".digitallaundry.co.in" : undefined,
+        domain: process.env.NODE_ENV === "production" ? ".pgsphere.com" : undefined,
       });
-    }else{
+
+    return res.status(200).json({ message: "Logout successful", status: 200 });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export const logoutCustomerPortal = async (req, res, next) => {
+  try {
     res.clearCookie("pgcustomertoken", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      domain: process.env.NODE_ENV === "production" ? ".digitallaundry.co.in" : undefined,
+      domain: process.env.NODE_ENV === "production" ? ".pgsphere.com" : undefined,
     });
-    }
 
     return res.status(200).json({ message: "Logout successful", status: 200 });
   } catch (err) {

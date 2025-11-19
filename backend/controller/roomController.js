@@ -59,7 +59,7 @@ export const updateRoom = async (req, res, next) => {
 
     try {
         const { roomId } = req.params
-        const { room_id, capacity, remark } = req.body
+        const { room_id, capacity, remark, room_type, service_type } = req.body
 
         const { mongoid, userType, pgcode } = req
 
@@ -111,6 +111,14 @@ export const updateRoom = async (req, res, next) => {
 
         if (remark) {
             room.remark = remark
+        }
+
+        if(room_type) {
+            room.room_type = room_type
+        }
+
+        if(service_type){
+            room.service_type = service_type
         }
 
         await room.save()

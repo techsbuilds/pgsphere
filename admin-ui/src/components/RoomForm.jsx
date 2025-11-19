@@ -132,6 +132,9 @@ function RoomForm({branchId,floor,onClose,selectedRoom}) {
                         <option value={'Room'}>Room</option>
                         <option value={'Hall'}>Hall</option>
                        </select>
+                       {
+                        errors.room_type && <span className='text-xs sm:text-sm text-red-500'>{errors.room_type.message}</span>
+                       }
                     </div>
                 </div>
                 <div className='flex flex-col gap-1 sm:gap-2'>
@@ -145,6 +148,9 @@ function RoomForm({branchId,floor,onClose,selectedRoom}) {
                         <option value={'AC'}>AC</option>
                         <option value={'Non-AC'}>Non-AC</option>
                        </select>
+                       {
+                        errors.service_type && <span className='text-xs sm:text-sm text-red-500'>{errors.service_type.message}</span>
+                       }
                     </div>
                 </div>
                 <div className='flex flex-col gap-1 sm:gap-2'>
@@ -156,7 +162,7 @@ function RoomForm({branchId,floor,onClose,selectedRoom}) {
                      rows={3}></textarea>
                 </div>
                 <div className='flex justify-center items-center'>
-                    <button type='submit' disabled={loading} className='p-2 hover:bg-blue-600 w-full sm:w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-primary rounded-md text-white font-medium text-sm sm:text-base'>
+                    <button type='submit' disabled={loading} className='p-2 hover:bg-primary/90 w-full sm:w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-primary rounded-md text-white font-medium text-sm sm:text-base'>
                         {
                             loading ? 
                             <LoaderCircle className='animate-spin w-4 h-4 sm:w-5 sm:h-5'></LoaderCircle> :
