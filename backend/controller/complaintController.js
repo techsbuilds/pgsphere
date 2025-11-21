@@ -146,7 +146,7 @@ export const closeComplaints = async (req, res, next) => {
 
             const branches = acmanager.branch
 
-            if (branches.includes(branch)) {
+            if (!branches.includes(branch)) {
                 return res.status(402).json({ message: "You are Not Autherized to Access This Data", success: false })
             }
 

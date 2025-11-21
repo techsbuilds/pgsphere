@@ -18,12 +18,12 @@ import { formatDate } from "../helper";
 import { capitalise } from "../helper";
 
 //Importing icons
-import { UserPen, BadgeIndianRupee } from 'lucide-react';
+import { UserPen, BadgeIndianRupee, Bed } from 'lucide-react';
 import { Minus } from 'lucide-react';
 import { Check ,ShieldCheck} from 'lucide-react';
 
 
-export const useCustomerTable = (handleOpenForm, room, handleOpenVerifyCustomer, handleOpenDepositeForm) =>{
+export const useCustomerTable = (handleOpenForm, room, handleOpenVerifyCustomer, handleOpenDepositeForm, handleOpenChangeRoom) =>{
     const [rows,setRows] = useState([])
     const [loading , setLoading] = useState(false)
 
@@ -65,16 +65,16 @@ export const useCustomerTable = (handleOpenForm, room, handleOpenVerifyCustomer,
 
        if(data.row.status === 'pending'){
          actionArr.push(
-           <GridActionsCellItem
-            icon={<UserPen size={22}></UserPen>}
-            label="Edit"
-            onClick={()=>handleOpenForm(data.row)}
-            showInMenu
-            ></GridActionsCellItem>,
             <GridActionsCellItem
             label="Verify Account"
             onClick={()=>handleOpenVerifyCustomer(data.row)}
             icon={<ShieldCheck size={22}></ShieldCheck>}
+            showInMenu
+            ></GridActionsCellItem>,
+            <GridActionsCellItem
+            label="Change Room"
+            onClick={()=>handleOpenChangeRoom(data.row)}
+            icon={<Bed size={22}></Bed>}
             showInMenu
             ></GridActionsCellItem>
          )
@@ -183,14 +183,21 @@ export const useCustomerTable = (handleOpenForm, room, handleOpenVerifyCustomer,
               const status = params.value;
               return (
                 <div className="flex items-center w-full h-full">
-                  <span className={`px-3 py-1 leading-5 flex gap-1 justify-center items-center rounded-full w-24  font-medium ${status==="Paid" ? 'bg-green-500 text-white' : 'bg-yellow-100 border border-yellow-500 text-yellow-500'}`}>
-                    {status === "Paid" ?
-                     "Paid" :
-                      `₹${params.row.deposite_amount - params.row.paid_deposite_amount}`
-                    }
-                    {status === 'Pending' && <small className="text-[10px] text-yellow-500 text-white">Pending</small>}
-                  </span>
-
+                  {
+                    (params.row.deposite_amount === null || params.row.deposite_amount === undefined) ? (
+                      <span className="px-3 py-1 leading-5 flex gap-1 justify-center items-center rounded-full w-24  font-medium bg-gray-200 text-gray-500">
+                        Not Verified
+                      </span>
+                    ) : (
+                      <span className={`px-3 py-1 leading-5 flex gap-1 justify-center items-center rounded-full w-24  font-medium ${status==="Paid" ? 'bg-green-500 text-white' : 'bg-yellow-100 border border-yellow-500 text-yellow-500'}`}>
+                        {status === "Paid" ?
+                         "Paid" :
+                          `₹${params.row.deposite_amount - params.row.paid_deposite_amount}`
+                        }
+                        {status === 'Pending' && <small className="text-[10px] text-yellow-500 text-white">Pending</small>}
+                      </span>
+                    )
+                  }
                 </div>
               );
             },

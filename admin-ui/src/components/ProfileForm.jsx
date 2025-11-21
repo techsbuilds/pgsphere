@@ -68,7 +68,7 @@ function ProfileForm({userDetails, onClose}) {
                 </div>
              </div>
              <div className="flex justify-center items-center">
-               <button type="submit" disabled={loading} className="p-2 hover:bg-blue-600 disabled:cursor-not-allowed w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-blue-500 rounded-md text-white font-medium">
+               <button type="submit" disabled={loading} className="p-2 hover:bg-primary/90 disabled:cursor-not-allowed w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-primary rounded-md text-white font-medium">
                 {
                   loading ? 
                   <LoaderCircle className="animate-spin"></LoaderCircle> :

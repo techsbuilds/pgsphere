@@ -42,6 +42,7 @@ export const PWAProvider = ({ children }) => {
   // Handle beforeinstallprompt event
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
+      console.log('beforeinstallprompt event fired');
       // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
       // Stash the event so it can be triggered later
@@ -57,6 +58,7 @@ export const PWAProvider = ({ children }) => {
     };
 
     const handleAppInstalled = () => {
+      console.log('App installed');
       setIsInstalled(true);
       setIsInstallable(false);
       setShowInstallBanner(false);
@@ -66,13 +68,37 @@ export const PWAProvider = ({ children }) => {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
-    // In development, always show banner for testing after a delay
+    // Show banner for iOS Safari users
+    const checkIOSSafari = () => {
+      const ua = window.navigator.userAgent;
+      const iOS = !!ua.match(/iPad|iPhone|iPod/);
+      const webkit = !!ua.match(/WebKit/);
+      const iOSSafari = iOS && webkit && !ua.match(/CriOS/);
+      
+      if (iOSSafari && !isInstalled) {
+        setTimeout(() => {
+          setIsInstallable(true);
+          setShowInstallBanner(true);
+        }, 3000);
+      }
+    };
+
+    // In development or if no prompt available, show banner after delay for testing
     let devTimer;
-    if (import.meta.env.DEV && !isInstalled) {
-      devTimer = setTimeout(() => {
-        setIsInstallable(true);
-        setShowInstallBanner(true);
-      }, 2000); // Show after 2 seconds in development
+    if (!isInstalled) {
+      // Check for iOS Safari
+      checkIOSSafari();
+      
+      // For other browsers in dev mode, show banner for testing
+      if (import.meta.env.DEV) {
+        devTimer = setTimeout(() => {
+          // Only show if beforeinstallprompt hasn't fired yet
+          if (!deferredPrompt) {
+            setIsInstallable(true);
+            setShowInstallBanner(true);
+          }
+        }, 2000); // Show after 2 seconds in development
+      }
     }
 
     return () => {
@@ -82,7 +108,7 @@ export const PWAProvider = ({ children }) => {
         clearTimeout(devTimer);
       }
     };
-  }, [isInstalled]);
+  }, [isInstalled, deferredPrompt]);
 
   // Check for iOS Safari
   const isIOSSafari = () => {

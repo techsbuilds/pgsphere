@@ -51,11 +51,11 @@ function BankAccount() {
         
         {/* Mobile Button Layout */}
         <div className='flex flex-col sm:hidden gap-2'>
-          <button className='flex cursor-pointer bg-blue-500 hover:bg-blue-600 transition-all duration-300 items-center justify-center gap-2 p-2 rounded-md'>
+          <button className='flex cursor-pointer bg-primary hover:bg-primary/90 transition-all duration-300 items-center justify-center gap-2 p-2 rounded-md'>
             <RotateCw size={16} className='text-white'></RotateCw>
             <span className='text-white text-sm'>Reset All Balances</span>
           </button>
-          <button onClick={()=>handleOpenForm()} className='flex cursor-pointer bg-blue-500 hover:bg-blue-600 transition-all duration-300 items-center justify-center gap-2 p-2 rounded-md'>
+          <button onClick={()=>handleOpenForm()} className='flex cursor-pointer bg-primary hover:bg-primary/90 transition-all duration-300 items-center justify-center gap-2 p-2 rounded-md'>
             <Plus size={16} className='text-white'></Plus>
             <span className='text-white text-sm'>Add Account</span>
           </button>
@@ -63,11 +63,11 @@ function BankAccount() {
         
         {/* Desktop Button Layout */}
         <div className='hidden sm:flex items-center gap-2'>
-          <button className='flex cursor-pointer bg-blue-500 hover:bg-blue-600 transition-all duration-300 items-center gap-2 p-2 rounded-md'>
+          <button className='flex cursor-pointer bg-primary hover:bg-primary/90 transition-all duration-300 items-center gap-2 p-2 rounded-md'>
             <RotateCw size={18} className='text-white'></RotateCw>
             <span className='text-white'>Reset All Balances</span>
           </button>
-          <button onClick={()=>handleOpenForm()} className='flex cursor-pointer bg-blue-500 hover:bg-blue-600 transition-all duration-300 items-center gap-2 p-2 rounded-md'>
+          <button onClick={()=>handleOpenForm()} className='flex cursor-pointer bg-primary hover:bg-primary/90 transition-all duration-300 items-center gap-2 p-2 rounded-md'>
             <Plus size={18} className='text-white'></Plus>
             <span className='text-white'>Add Account</span>
           </button>

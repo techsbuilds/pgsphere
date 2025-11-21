@@ -41,7 +41,7 @@ function AdminLayout() {
         <SideBar showSideBar={showSideBar} setShowSideBar={setShowSideBar} type='admin'></SideBar>
         <main className={`flex relative overflow-y-auto w-full flex-col ml-0 ${showSideBar ? 'md:ml-64' : 'md:ml-0'} h-full transition-all duration-300 ease-in-out`} onClick={handleMainClick}>
             <Header setShowSideBar={setShowSideBar} showSideBar={showSideBar}></Header>
-            <div className="p-6 mt-16 w-full flex-1 bg-[#F9FAFB]">
+            <div className="md:p-6 p-3 mt-16 w-full flex-1 bg-[#F9FAFB]">
               <Outlet></Outlet>
             </div>
         </main>

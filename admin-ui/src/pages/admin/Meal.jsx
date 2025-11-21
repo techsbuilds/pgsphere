@@ -217,6 +217,8 @@ function Meal() {
      }
   }
 
+  console.log(mealsForSelectedDate)
+
 
   return (
     <div className='flex flex-col h-full gap-4 sm:gap-6 lg:gap-8 px-2 sm:px-4 lg:px-0'>
@@ -388,9 +390,13 @@ function Meal() {
                   Menu for {format(selectedDate, "EEEE")}, {format(selectedDate, "MMM")} {format(selectedDate, "d")}, {selectedDate.getFullYear()}
                 </h1>
               </div>
-              <button onClick={()=>handleOpenMealForm(true)} className='flex-shrink-0'>
-               <Pen size={18} className='sm:w-5 sm:h-5 text-gray-600 cursor-pointer'></Pen>
-              </button>
+              {
+                mealsForSelectedDate.length > 0 && (
+                  <button onClick={()=>handleOpenMealForm(true)} className='flex-shrink-0'>
+                    <Pen size={18} className='sm:w-5 sm:h-5 text-gray-600 cursor-pointer'></Pen>
+                  </button>
+                )
+              }
              </div>
              <div className='flex flex-col gap-2'>
               {mealsForSelectedDate.length > 0 ? (

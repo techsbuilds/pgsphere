@@ -1,6 +1,6 @@
 import express from 'express'
 import { verifyCustomer, verifyOwner } from '../middleware/verifyUser.js'
-import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, getCustomerDetailsForCustomer, getPendingCustomerRentList, updateCustomerDetails, exportCustomersToExcel, verifyCustomerLogin, updateCustomerByCustomer, getCustomerPendingRentListById, getCustomerRentListForCustomer, getDashboardSummary, changeCustomerPassword } from '../controller/customerController.js'
+import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, getCustomerDetailsForCustomer, getPendingCustomerRentList, updateCustomerDetails, exportCustomersToExcel, verifyCustomerLogin, updateCustomerByCustomer, getCustomerPendingRentListById, getCustomerRentListForCustomer, getDashboardSummary, changeCustomerPassword, changeRoom } from '../controller/customerController.js'
 import { aadharCardMulter } from '../middleware/upload.js'
 
 const app = express.Router()
@@ -49,4 +49,7 @@ app.get('/dashboard/me', verifyCustomer, getDashboardSummary)
 
 //For Change Customer Password
 app.post('/change-password/me',verifyCustomer,changeCustomerPassword)
+
+//For change room
+app.put('/change-room/:customerId', verifyOwner, changeRoom)
 export default app

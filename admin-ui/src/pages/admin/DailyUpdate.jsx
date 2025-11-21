@@ -188,7 +188,7 @@ function DailyUpdate() {
                         onClick={() => field.onChange(type)}
                         className={`p-2 sm:p-2.5 text-xs sm:text-sm border rounded-2xl transition-all duration-300 ${
                           field.value === type
-                            ? "bg-blue-500 text-white border-blue-500"
+                            ? "bg-primary text-white border-blue-500"
                             : "bg-gray-100 border-neutral-300 hover:bg-neutral-200"
                         }`}
                       >
@@ -218,7 +218,7 @@ function DailyUpdate() {
                {errors.title && (<span className="text-xs sm:text-sm text-red-500">{errors.title.message}</span>)}
               </div>
             </div>
-            <button type="submit" disabled={loader} className="p-2.5 sm:p-3 bg-primary text-xs sm:text-sm hover:bg-blue-600 transition-all duration-300 text-white rounded-md cursor-pointer font-medium">
+            <button type="submit" disabled={loader} className="p-2.5 sm:p-3 bg-primary text-xs sm:text-sm hover:bg-primary/90 transition-all duration-300 text-white rounded-md cursor-pointer font-medium">
               Send Update
             </button>
           </form>

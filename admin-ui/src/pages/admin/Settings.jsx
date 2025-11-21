@@ -193,7 +193,7 @@ function Settings() {
               }
            </select>
          </div>
-        <button onClick={handleGenerateLink} disabled={loader} className={`w-full sm:w-48 ${selectBranch ? "bg-[#202947] cursor-pointer hover:bg-[#2a3457]" : "bg-gray-500 cursor-not-allowed"} transition-all duration-300 text-white py-2.5 sm:py-2 rounded-md text-sm sm:text-base font-medium`}>
+        <button onClick={handleGenerateLink} disabled={loader || !selectBranch} className={`w-full sm:w-48 ${selectBranch ? "bg-[#202947] cursor-pointer hover:bg-[#2a3457]" : "bg-gray-500 cursor-not-allowed"} transition-all duration-300 text-white py-2.5 sm:py-2 rounded-md text-sm sm:text-base font-medium`}>
           {loader ? <LoaderCircle className='animate-spin mx-auto' size={20} /> : 'Generate Link'}
         </button>
         {

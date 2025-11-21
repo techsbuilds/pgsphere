@@ -1227,6 +1227,12 @@ export const verifyCustomerLogin = async (req, res, next) => {
         .status(404)
         .json({ message: "Customer not found.", success: false });
 
+    if(variable_deposite_amount && variable_deposite_amount > deposite_amount)    
+      return res.status(400).json({
+        message: "Pay deposit amount cannot be greater than deposite amount.",
+        success: false,
+      });
+
     customer.rent_amount = rent_amount;
     customer.deposite_amount = deposite_amount;
 
@@ -1249,7 +1255,7 @@ export const verifyCustomerLogin = async (req, res, next) => {
       // Create new deposite amount
       const newDepositeAmount = await DEPOSITEAMOUNT({
         customer: customer._id,
-        amount: deposite_amount,
+        amount: variable_deposite_amount,
       });
 
       // Create transaction for deposite amount
@@ -1272,6 +1278,14 @@ export const verifyCustomerLogin = async (req, res, next) => {
     }else{
       customer.paid_deposite_amount = 0
     }
+
+    const room = await ROOM.findById(customer.room);
+
+    if(room.filled >= room.capacity) return res.status(400).json({ message: "Room is full.", success: false })
+
+    room.filled = room.filled + 1;
+
+    await room.save();
 
     await customer.save();
     await customerLogin.save();
@@ -1753,4 +1767,44 @@ export const changeCustomerPassword = async(req,res,next) =>{
       } catch (err) {
           next(err)
       }
+}
+
+export const changeRoom = async (req, res, next) => {
+   try{
+    const {pgcode } = req;
+
+    const {customerId} = req.params;
+
+    if(!customerId) return res.status(400).json({ message: "Customer id is required.", success: false })
+
+    const customerLogin = await LOGINMAPPING.findOne({ mongoid: customerId, pgcode, userType: "Customer" });
+
+    const customer = await CUSTOMER.findById(customerId);
+
+    if(!customer) return res.status(404).json({ message: "Customer not found.", success: false })
+
+    if(!customerLogin) return res.status(404).json({ message: "Customer not found.", success: false })
+    
+    const {room, branch} = req.body;
+
+    if(!room || !branch) return res.status(400).json({ message: "Room and branch are required.", success: false })
+
+    console.log(room, branch)
+
+    const existRoom = await ROOM.findOne({ _id: room, branch, pgcode });
+
+    if(!existRoom) return res.status(404).json({ message: "Room not found.", success: false })
+    
+    if(existRoom.branch.toString() !== branch) return res.status(400).json({ message: "Room is not in the given branch.", success: false })
+    
+    customer.branch = branch  
+    customer.room = room;
+    await customer.save();
+    
+    return res.status(200).json({ message: "Room changed successfully.", success: true })
+    
+
+   }catch(err){
+     next(err)
+   }
 }
