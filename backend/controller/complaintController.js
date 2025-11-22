@@ -51,7 +51,7 @@ export const getAllComplaintsbyBranch = async (req, res, next) => {
 
         const branch = customer.branch
 
-        const complaintsData = await COMPLAINT.find({ pgcode, branch }).populate('added_by').sort({ createdAt: -1 })
+        const complaintsData = await COMPLAINT.find({ pgcode, branch, added_by: mongoid }).populate('added_by').sort({ createdAt: -1 })
 
         return res.status(200).json({ message: "Successfully Getting Complaints by Customer. ", data: complaintsData, success: true })
 
