@@ -299,6 +299,13 @@ export const getMealDetailsbyDay = async (req, res, next) => {
 
         const meal = await MEAL.find(filter)
 
+        meal.forEach(m => {
+            m.meals = m.meals.map(singleMeal => ({
+                ...singleMeal,
+                cancelled: singleMeal.cancelled?.filter(cid => cid.toString() === mongoid.toString()) || []
+            }))
+        })
+        
         return res.status(200).json({ message: "Get Meal Successfully by Day.", meal, success: true })
 
     } catch (error) {
