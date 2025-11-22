@@ -310,7 +310,7 @@ function CustomerForm({selectedCustomer, onClose}) {
              {
               !selectedCustomer && 
               <div className='grid grid-cols-2 items-center gap-3 sm:gap-4'>
-              <div className='flex flex-col gap-1'>
+              <div className='flex flex-col md:col-span-1 col-span-2 gap-1'>
                 <label className='text-sm sm:text-base'>Select Bank Account <span className='text-red-500 text-sm'>*</span></label>
                 <div className='flex flex-col'>
                    <select 
@@ -326,7 +326,7 @@ function CustomerForm({selectedCustomer, onClose}) {
                    {errors.bank_account && <span className='text-sm text-red-500'>{errors.bank_account.message}</span>}
                 </div>
                </div>
-               <div className='flex flex-col gap-2'>
+               <div className='flex flex-col md:col-span-1 col-span-2 gap-2'>
                 <label className='text-sm sm:text-base'>Select Payment Mode <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
                     <select

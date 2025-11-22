@@ -254,121 +254,73 @@ export const changeEmployeeStatus = async (req, res, next) => {
 }
 
 export const getEmployeePendingSalaries = async (req, res, next) => {
-  try {
-    const { searchQuery, branch } = req.query;
-    const { userType, pgcode, mongoid } = req;
+  try{
+    const {searchQuery, branch} = req.query 
 
-    const filter = { status: true };
-  
-    if (userType === 'Account') {
+    const {mongoid, userType} = req 
 
-      const acManager = await ACCOUNT.findById(mongoid)
+    let filter = {status: true}
 
-      if (!acManager) {
-        return res.status(404).json({ message: "Account Manager Not Found.", success: false })
-      }
-
-      const branchId = acManager.branch
-
-      if (branch) {
-
-        if (!branchId.includes(branch)) {
-          return res.status(403).json({ message: "You are not Autherized to access this Branch.", success: false })
-        }
-
-        filter.branch = branch
-      } else {
-        filter.branch = { $in: branchId }
-      }
-
-    } else {
-      if (branch) {
-        filter.branch = branch
-      }
-    }
-    filter.pgcode = pgcode;
-
-    // Apply additional filters
     if (searchQuery) {
-      filter.employee_name = { $regex: searchQuery, $options: "i" };
+      filter.employee_name = { $regex: searchQuery, $options: 'i' };
     }
 
-    const employees = await EMPLOYEE.find(filter).populate("branch");
+    if(userType === "Account"){
+      const account = await ACCOUNT.findById(mongoid) 
 
-    const result = [];
+      if(!account) return res.status(400).json({message:"Account manager not found.",success:false})
 
-    for (const employee of employees) {
-      const monthList = getMonthYearList(employee.createdAt);
+      if(branch) {
+          if(!account.branch.includes(branch)) return res.status(403).json({message:"You have no access to get pending rents of requested branch.",success:false})
 
-      // Fetch salary transactions for this employee
-      const salaryTransaction = await TRANSACTION.find({
-        transactionType: "expense",
-        type: "employee_salary",
-        refModel: "Employeesalary",
-        branch: employee.branch._id,
-        pgcode
-      }).populate({
-        path: "refId",
-        model: "Employeesalary",
-        match: { employee: employee._id },
-      });
-
-      // Build paid salary map
-      const paidSalaryMap = {};
-      for (const tx of salaryTransaction) {
-        const entry = tx.refId;
-        if (!entry) continue;
-
-        const key = `${entry.month}-${entry.year}`;
-        if (!paidSalaryMap[key]) {
-          paidSalaryMap[key] = 0;
-        }
-        paidSalaryMap[key] += entry.amount;
+          filter.branch = branch
+      }else{
+          filter.branch = { $in: account.branch };
       }
-
-      // Calculate pending salaries
-      const pendingSalary = [];
-      for (const { month, year } of monthList) {
-        const key = `${month}-${year}`;
-        const paid = paidSalaryMap[key] || 0;
-        const pending = Math.max(employee.salary - paid, 0);
-
-        if (pending > 0) {
-          const today = new Date();
-          const currentMonth = today.getMonth() + 1;
-          const currentYear = today.getFullYear();
-          const isRequired = !(month === currentMonth && year === currentYear);
-
-          pendingSalary.push({
-            month,
-            year,
-            pending,
-            required: isRequired,
-          });
-        }
-      }
-
-      // Only push if employee has pending salary
-      if (pendingSalary.length > 0) {
-        result.push({
-          employeeId: employee._id,
-          employee_name: employee.employee_name,
-          employee_type: employee.employee_type,
-          mobile_no: employee.mobile_no,
-          salary: employee.salary,
-          branch: employee.branch?.branch_name || null,
-          pending_salary: pendingSalary,
-        });
+    }else {
+      if(branch){
+          filter.branch = branch
       }
     }
 
-    return res.status(200).json({
-      message: "All salary details retrieved successfully.",
-      success: true,
-      data: result,
-    });
-  } catch (err) {
-    next(err);
+    const employees = await EMPLOYEE.find(filter)
+    .populate('branch')
+    .sort({createdAt:-1})
+
+    const result = [] 
+
+    for (const employee of employees){
+      const pendingSalary = await EMPLOYEESALARY.find({employee:employee._id, status:'Pending'})
+
+      const pendingSalaryMap = [] 
+
+      for(const employeeSalary of pendingSalary){
+          const isRequired = !(employeeSalary.month === (new Date()).getMonth() + 1 && employeeSalary.year === (new Date()).getFullYear())
+          pendingSalaryMap.push({
+              month:employeeSalary.month,
+              year:employeeSalary.year,
+              pending: employeeSalary.salary - employeeSalary.paid_amount,
+              required:isRequired
+          })
+      }
+
+      if(pendingSalaryMap.length > 0){
+          result.push({
+              employeeId:employee._id,
+              employee_name:employee.employee_name,
+              employee_type:employee.employee_type,
+              mobile_no:employee.mobile_no,
+              salary:employee.salary,
+              branch:employee.branch.branch_name,
+              pending_salary:pendingSalaryMap
+          })
+      }
+    }
+
+    return res.status(200).json({message:"All pending salary details retrived successfully.",success:true,data:result})
+
+  }catch(err){
+    next(err)
   }
 };
 

@@ -1321,7 +1321,9 @@ export const getCustomerPendingRentListById = async (req, res, next) => {
           .status(404)
           .json({ message: "Account manager not found.", success: false });
 
-      if (!account.branch.includes(customer.branch.toString())) {
+      console.log(account.branch, customer.branch._id.toString())
+
+      if (!account.branch.includes(customer.branch._id.toString())) {
         return res
           .status(403)
           .json({
@@ -1609,7 +1611,6 @@ export const getCustomerRentListForCustomer = async (req, res, next) => {
         type: "rent_attempt",
         refModel: "Rentattempt",
         pgcode,
-        added_by_type: "Customer",
         branch: customer.branch,
       })
         .populate({
@@ -1626,14 +1627,26 @@ export const getCustomerRentListForCustomer = async (req, res, next) => {
 
         if (!entry) continue;
 
-        requestList.push({
-          amount: entry.amount,
-          payment_proof: entry.payment_proof,
-          month: entry.month,
-          year: entry.year,
-          status: req.status,
-          payment_mode: req.payment_mode,
-        });
+        if(customerRequest.added_by_type === "Customer"){
+          requestList.push({
+            amount: entry.amount,
+            payment_proof: entry.payment_proof,
+            month: entry.month,
+            year: entry.year,
+            status: req.status,
+            payment_mode: req.payment_mode,
+            isAdmin:false
+          });
+        }else{
+          requestList.push({
+            amount: entry.amount,
+            month: entry.month,
+            year: entry.year,
+            status: req.status,
+            payment_mode: req.payment_mode,
+            isAdmin:true
+          });
+        }
       }
 
       rentList.push({

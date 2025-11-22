@@ -31,7 +31,7 @@ export const createTransactionForCustomerRent = async (req, res, next) =>{
      if(!existCustomer) return res.status(404).json({message:"Customer not found.",success:false})
 
      if(userType === "Account"){
-         const account = await ACCOUNT.findOne(mongoid)
+         const account = await ACCOUNT.findById(mongoid)
 
          if(!account) return res.status(404).json({message:"Account not found.",success:false})
 
