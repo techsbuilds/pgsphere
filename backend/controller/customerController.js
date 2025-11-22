@@ -589,7 +589,7 @@ export const updateCustomerDetails = async (req, res, next) => {
     if (!customerId) {
       await session.abortTransaction();
       session.endSession();
-      removeFile(path.join("uploads", "aadhar", req.file.filename));
+      if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
       return res
         .status(400)
         .json({ message: "Please provide customer id.", success: false });
@@ -601,7 +601,7 @@ export const updateCustomerDetails = async (req, res, next) => {
     if (!customer) {
       await session.abortTransaction();
       session.endSession();
-      removeFile(path.join("uploads", "aadhar", req.file.filename));
+      if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
       return res
         .status(404)
         .json({ message: "Customer not found.", success: false });
@@ -620,7 +620,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (!account) {
         await session.abortTransaction();
         session.endSession();
-        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res
           .status(404)
           .json({ message: "Account manager not found.", success: false });
@@ -629,7 +629,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (!account.branch.includes(customer.branch.toString())) {
         await session.abortTransaction();
         session.endSession();
-        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res.status(403).json({
           message:
             "You are not authorized to update customer details in this branch.",
@@ -646,7 +646,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (existCustomer) {
         await session.abortTransaction();
         session.endSession();
-        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res.status(409).json({
           message: "Customer already exists with same mobile no.",
           success: false,
@@ -662,7 +662,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (existCustomer) {
         await session.abortTransaction();
         session.endSession();
-        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res.status(409).json({
           message: "Customer already exists with same email address.",
           success: false,
@@ -713,7 +713,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (rent_amount < customer.rent_amount) {
         await session.abortTransaction();
         session.endSession();
-        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res.status(400).json({
           message: "Rent amount cannot be less than previous rent amount.",
           success: false,
@@ -756,7 +756,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (!existBranch || existBranch.pgcode !== req.pgcode) {
         await session.abortTransaction();
         session.endSession();
-        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res
           .status(400)
           .json({ message: "Invalid branch for this PG", success: false });
@@ -777,7 +777,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (!newRoom || newRoom.pgcode !== req.pgcode) {
         await session.abortTransaction();
         session.endSession();
-        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res
           .status(400)
           .json({ message: "Invalid new room for this PG", success: false });
@@ -787,7 +787,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (newRoom.filled >= newRoom.capacity) {
         await session.abortTransaction();
         session.endSession();
-        removeFile(path.join("uploads", "aadhar", req.file.filename));
+        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
         return res
           .status(400)
           .json({ message: "New room is already full", success: false });
@@ -828,7 +828,10 @@ export const updateCustomerDetails = async (req, res, next) => {
       success: true,
     });
   } catch (err) {
-    await session.abortTransaction();
+    // Only abort if transaction is still in progress
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
     session.endSession();
     next(err);
   }
@@ -1224,6 +1227,12 @@ export const verifyCustomerLogin = async (req, res, next) => {
         .status(404)
         .json({ message: "Customer not found.", success: false });
 
+    if(variable_deposite_amount && variable_deposite_amount > deposite_amount)    
+      return res.status(400).json({
+        message: "Pay deposit amount cannot be greater than deposite amount.",
+        success: false,
+      });
+
     customer.rent_amount = rent_amount;
     customer.deposite_amount = deposite_amount;
 
@@ -1246,7 +1255,7 @@ export const verifyCustomerLogin = async (req, res, next) => {
       // Create new deposite amount
       const newDepositeAmount = await DEPOSITEAMOUNT({
         customer: customer._id,
-        amount: deposite_amount,
+        amount: variable_deposite_amount,
       });
 
       // Create transaction for deposite amount
@@ -1269,6 +1278,14 @@ export const verifyCustomerLogin = async (req, res, next) => {
     }else{
       customer.paid_deposite_amount = 0
     }
+
+    const room = await ROOM.findById(customer.room);
+
+    if(room.filled >= room.capacity) return res.status(400).json({ message: "Room is full.", success: false })
+
+    room.filled = room.filled + 1;
+
+    await room.save();
 
     await customer.save();
     await customerLogin.save();
@@ -1304,7 +1321,9 @@ export const getCustomerPendingRentListById = async (req, res, next) => {
           .status(404)
           .json({ message: "Account manager not found.", success: false });
 
-      if (!account.branch.includes(customer.branch.toString())) {
+      console.log(account.branch, customer.branch._id.toString())
+
+      if (!account.branch.includes(customer.branch._id.toString())) {
         return res
           .status(403)
           .json({
@@ -1592,7 +1611,6 @@ export const getCustomerRentListForCustomer = async (req, res, next) => {
         type: "rent_attempt",
         refModel: "Rentattempt",
         pgcode,
-        added_by_type: "Customer",
         branch: customer.branch,
       })
         .populate({
@@ -1609,14 +1627,26 @@ export const getCustomerRentListForCustomer = async (req, res, next) => {
 
         if (!entry) continue;
 
-        requestList.push({
-          amount: entry.amount,
-          payment_proof: entry.payment_proof,
-          month: entry.month,
-          year: entry.year,
-          status: req.status,
-          payment_mode: req.payment_mode,
-        });
+        if(customerRequest.added_by_type === "Customer"){
+          requestList.push({
+            amount: entry.amount,
+            payment_proof: entry.payment_proof,
+            month: entry.month,
+            year: entry.year,
+            status: req.status,
+            payment_mode: req.payment_mode,
+            isAdmin:false
+          });
+        }else{
+          requestList.push({
+            amount: entry.amount,
+            month: entry.month,
+            year: entry.year,
+            status: req.status,
+            payment_mode: req.payment_mode,
+            isAdmin:true
+          });
+        }
       }
 
       rentList.push({
@@ -1750,4 +1780,44 @@ export const changeCustomerPassword = async(req,res,next) =>{
       } catch (err) {
           next(err)
       }
+}
+
+export const changeRoom = async (req, res, next) => {
+   try{
+    const {pgcode } = req;
+
+    const {customerId} = req.params;
+
+    if(!customerId) return res.status(400).json({ message: "Customer id is required.", success: false })
+
+    const customerLogin = await LOGINMAPPING.findOne({ mongoid: customerId, pgcode, userType: "Customer" });
+
+    const customer = await CUSTOMER.findById(customerId);
+
+    if(!customer) return res.status(404).json({ message: "Customer not found.", success: false })
+
+    if(!customerLogin) return res.status(404).json({ message: "Customer not found.", success: false })
+    
+    const {room, branch} = req.body;
+
+    if(!room || !branch) return res.status(400).json({ message: "Room and branch are required.", success: false })
+
+    console.log(room, branch)
+
+    const existRoom = await ROOM.findOne({ _id: room, branch, pgcode });
+
+    if(!existRoom) return res.status(404).json({ message: "Room not found.", success: false })
+    
+    if(existRoom.branch.toString() !== branch) return res.status(400).json({ message: "Room is not in the given branch.", success: false })
+    
+    customer.branch = branch  
+    customer.room = room;
+    await customer.save();
+    
+    return res.status(200).json({ message: "Room changed successfully.", success: true })
+    
+
+   }catch(err){
+     next(err)
+   }
 }

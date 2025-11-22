@@ -67,29 +67,33 @@ function Header({setShowSideBar, showSideBar}) {
          <div className='flex items-center gap-3'>
            <Menu className='cursor-pointer hover:bg-gray-100 p-1 rounded-md' onClick={()=>setShowSideBar((prev)=> !prev)}></Menu>
            <div className='flex items-center gap-2'>
-             <img src={logo1} alt="Pgsphere Logo" className='h-8 w-8 object-contain' />
+             <img src={logo1} alt="Pgsphere Logo" className='h-12 w-12 object-contain' />
              <h1 className='text-lg font-semibold'>Pgsphere</h1>
            </div>
          </div>
          
-         {/* Right: Search Icon and Profile */}
+         {/* Right: Search Icon and Profile/Logout */}
          <div className='flex items-center gap-3'>
            <Search size={20} className='text-gray-500 cursor-pointer' onClick={()=>setOpenSearchBar(true)}></Search>
-           <div className='relative' ref={profileDropdownRef}>
-             <User size={20} className='text-gray-500 cursor-pointer' onClick={()=>setShowProfileDropdown(!showProfileDropdown)}></User>
-             {showProfileDropdown && (
-               <div className='absolute right-0 top-8 bg-white border border-neutral-200 rounded-md shadow-lg py-2 w-32 z-20'>
-                 <button onClick={() => {handleNavigateProfile(); setShowProfileDropdown(false)}} className='w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2'>
-                   <User size={16} className='text-gray-500'></User>
-                   Profile
-                 </button>
-                 <button onClick={() => {handleLogout(); setShowProfileDropdown(false)}} className='w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2 text-red-500'>
-                   <LogOut size={16}></LogOut>
-                   Logout
-                 </button>
-               </div>
-             )}
-           </div>
+           {auth.user.userType === 'Admin' ? (
+             <div className='relative' ref={profileDropdownRef}>
+               <User size={20} className='text-gray-500 cursor-pointer' onClick={()=>setShowProfileDropdown(!showProfileDropdown)}></User>
+               {showProfileDropdown && (
+                 <div className='absolute right-0 top-8 bg-white border border-neutral-200 rounded-md shadow-lg py-2 w-32 z-20'>
+                   <button onClick={() => {handleNavigateProfile(); setShowProfileDropdown(false)}} className='w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2'>
+                     <User size={16} className='text-gray-500'></User>
+                     Profile
+                   </button>
+                   <button onClick={() => {handleLogout(); setShowProfileDropdown(false)}} className='w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2 text-red-500'>
+                     <LogOut size={16}></LogOut>
+                     Logout
+                   </button>
+                 </div>
+               )}
+             </div>
+           ) : (
+             <LogOut onClick={handleLogout} className='cursor-pointer text-red-500' size={20}></LogOut>
+           )}
          </div>
        </div>
 

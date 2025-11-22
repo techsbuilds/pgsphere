@@ -31,7 +31,7 @@ export const createTransactionForCustomerRent = async (req, res, next) =>{
      if(!existCustomer) return res.status(404).json({message:"Customer not found.",success:false})
 
      if(userType === "Account"){
-         const account = await ACCOUNT.findOne(mongoid)
+         const account = await ACCOUNT.findById(mongoid)
 
          if(!account) return res.status(404).json({message:"Account not found.",success:false})
 
@@ -59,6 +59,7 @@ export const createTransactionForCustomerRent = async (req, res, next) =>{
      if(isDeposite){
       customerRent.is_deposite = true 
       customerRent.status = 'Paid'
+      customerRent.paid_amount = existCustomer.deposite_amount
 
       const defaultBankAccount = await BANKACCOUNT.findOne({is_default:true})
 
@@ -88,10 +89,26 @@ export const createTransactionForCustomerRent = async (req, res, next) =>{
         year
       })
 
+      const rentTransaction = new TRANSACTION({
+         transactionType:'income',
+         type:'rent_attempt',
+         refModel:'Rentattempt',
+         refId:rentAttempt,
+         payment_mode:'cash',
+         status:'completed',
+         branch:existCustomer.branch,
+         pgcode,
+         bank_account:defaultBankAccount,
+         added_by:mongoid,
+         added_by_type:userType
+      })
+
       await customerRent.save() 
       await depositeAmount.save()
       await depositeTransaction.save()
       await rentAttempt.save()
+      await rentTransaction.save()
+
 
       return res.status(200).json({message:"Customer rent marked as desposite successfully.",success:true})
      }
@@ -661,6 +678,8 @@ export const getAllTransactions = async (req, res, next) =>{
    try{
       const {pgcode, userType, mongoid} = req
       const {branch, bank_account ,transactionType} = req.query
+
+      console.log(transactionType)
         
       let filter = {
          pgcode

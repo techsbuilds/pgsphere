@@ -16,6 +16,7 @@ import {
   Phone,
   Mail,
   BedSingle,
+  LoaderCircle,
   Building2,
 } from "lucide-react";
 

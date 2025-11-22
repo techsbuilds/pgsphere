@@ -118,7 +118,7 @@ export const useEmployeeSalaryTable = (handleOpenForm) => {
             renderCell: (params) => {
                 return (
                     <div className="flex items-center w-full h-full">
-                        <button onClick={()=>handleOpenForm(params.row)} disabled={loading} className="bg-blue-500 hover:bg-blue-600 transition-colors duration-300 cursor-pointer text-lg w-32 text-white rounded-md p-1.5">
+                        <button onClick={()=>handleOpenForm(params.row)} disabled={loading} className="bg-primary hover:bg-primary/90 transition-colors duration-300 cursor-pointer text-lg w-32 text-white rounded-md p-1.5">
                             Pay Salary 
                         </button>
                     </div>

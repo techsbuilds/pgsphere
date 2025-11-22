@@ -154,7 +154,7 @@ function DepositeForm({ openForm, customer, onClose }) {
             <button onClick={()=>onClose(false)} className="p-2 hover:bg-gray-100 transition-all duration-300 text-sm w-32 cursor-pointer flex justify-center items-center rounded-md border border-neutral-300">
               Cancel
             </button>
-            <button disabled={loader} type="submit" className="p-2 min-w-32 text-sm transition-all duration-300 cursor-pointer flex justify-center items-center bg-primary hover:bg-blue-600 rounded-md text-white font-medium">
+            <button disabled={loader} type="submit" className="p-2 min-w-32 text-sm transition-all duration-300 cursor-pointer flex justify-center items-center bg-primary hover:bg-primary/90 rounded-md text-white font-medium">
               {
                 loader ? 
                 <LoaderCircle className="animate-spin"></LoaderCircle>

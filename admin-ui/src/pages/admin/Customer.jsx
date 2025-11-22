@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import CustomerForm from '../../components/CustomerForm';
 import VerifyCustomer from '../../components/VerifyCustomer';
 import DepositeForm from '../../components/DepositeForm';
+import ChangeRoom from '../../components/ChangeRoom';
 
 import { DataGrid } from '@mui/x-data-grid';
 import Box from '@mui/material/Box';
@@ -16,7 +17,8 @@ function Customer() {
   const [selectedBranch,setSelectedBranch] = useState('')
   const [openVerifyCustomer,setOpenVerifyCustomer] = useState(false)
   const [openDepositeForm,setOpenDepositeForm] = useState(false)
-  
+  const [openChangeRoom,setOpenChangeRoom] = useState(false)
+
   const handleOpenForm = (customer=null) =>{
     setSelectedCustomer(customer)
     setOpenForm(true)
@@ -31,8 +33,13 @@ function Customer() {
     setSelectedCustomer(data)
     setOpenDepositeForm(true)
   }
+
+  const handleOpenChangeRoom = (data) =>{
+    setSelectedCustomer(data)
+    setOpenChangeRoom(true)
+  }
  
-  const { loading, rows, columns, refetch} = useCustomerTable(handleOpenForm, "", handleOpenVerifyCustomer, handleOpenDepositeForm)
+  const { loading, rows, columns, refetch} = useCustomerTable(handleOpenForm, "", handleOpenVerifyCustomer, handleOpenDepositeForm, handleOpenChangeRoom)
 
   const handleCloseForm = (refresh) =>{
     setSelectedCustomer(null)
@@ -52,6 +59,12 @@ function Customer() {
     if(refresh) refetch()
   }
 
+  const handleCloseChangeRoom = (refresh = false) =>{
+    setSelectedCustomer(null)
+    setOpenChangeRoom(false)
+    if(refresh) refetch()
+  }
+
   useEffect(()=>{
     refetch(searchQuery, selectedBranch)
   },[searchQuery, selectedBranch])
@@ -63,6 +76,7 @@ function Customer() {
       {openForm && <CustomerForm selectedCustomer={selectedCustomer} onClose={handleCloseForm}></CustomerForm>}
       <VerifyCustomer customer={selectedCustomer} onClose={handleCloseVerifyCustomer} openForm={openVerifyCustomer} ></VerifyCustomer>
       <DepositeForm openForm={openDepositeForm} customer={selectedCustomer} onClose={handleCloseDepositeForm}></DepositeForm>
+      <ChangeRoom openForm={openChangeRoom} selectedCustomer={selectedCustomer} onClose={handleCloseChangeRoom}></ChangeRoom>
       <div className='h-full ag-theme-alpine w-full min-h-[400px] sm:min-h-[500px] customer-grid'>
       <Box 
             sx={{

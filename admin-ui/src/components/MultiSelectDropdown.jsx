@@ -46,22 +46,28 @@ const MultiSelectDropdown = ({ options, selected, onChange, placeholder = "Selec
       {/* Dropdown menu */}
       {isOpen && (
         <div className="absolute mt-2 w-full bg-white border rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
-          {options.map((option) => (
-            <div
-              key={option.value}
-              onClick={() => toggleOption(option)}
-              className={`flex items-center px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                selected.includes(option.value) ? "bg-gray-50" : ""
-              }`}
-            >
-              <Check
-                className={`w-4 h-4 mr-2 ${
-                  selected.includes(option.value) ? "opacity-100 text-blue-600" : "opacity-0"
+          {options && options.length > 0 ? (
+            options.map((option) => (
+              <div
+                key={option.value}
+                onClick={() => toggleOption(option)}
+                className={`flex items-center px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
+                  selected.includes(option.value) ? "bg-gray-50" : ""
                 }`}
-              />
-              {option.label}
+              >
+                <Check
+                  className={`w-4 h-4 mr-2 ${
+                    selected.includes(option.value) ? "opacity-100 text-blue-600" : "opacity-0"
+                  }`}
+                />
+                {option.label}
+              </div>
+            ))
+          ) : (
+            <div className="px-3 py-2 text-sm text-gray-500 text-center">
+              No branch found
             </div>
-          ))}
+          )}
         </div>
       )}
     </div>

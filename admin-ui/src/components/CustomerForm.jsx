@@ -310,7 +310,7 @@ function CustomerForm({selectedCustomer, onClose}) {
              {
               !selectedCustomer && 
               <div className='grid grid-cols-2 items-center gap-3 sm:gap-4'>
-              <div className='flex flex-col gap-1'>
+              <div className='flex flex-col md:col-span-1 col-span-2 gap-1'>
                 <label className='text-sm sm:text-base'>Select Bank Account <span className='text-red-500 text-sm'>*</span></label>
                 <div className='flex flex-col'>
                    <select 
@@ -326,7 +326,7 @@ function CustomerForm({selectedCustomer, onClose}) {
                    {errors.bank_account && <span className='text-sm text-red-500'>{errors.bank_account.message}</span>}
                 </div>
                </div>
-               <div className='flex flex-col gap-2'>
+               <div className='flex flex-col md:col-span-1 col-span-2 gap-2'>
                 <label className='text-sm sm:text-base'>Select Payment Mode <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
                     <select
@@ -379,7 +379,7 @@ function CustomerForm({selectedCustomer, onClose}) {
                </div>
              </div>
              <div className="flex justify-center items-center">
-             <button type="submit" disabled={loading} className="p-2  hover:bg-blue-600 w-full sm:w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-primary rounded-md text-white font-medium text-sm sm:text-base">
+             <button type="submit" disabled={loading} className="p-2 hover:bg-primary/90 w-full sm:w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-primary rounded-md text-white font-medium text-sm sm:text-base">
                 {
                   loading ? 
                   <LoaderCircle className="animate-spin w-4 h-4 sm:w-5 sm:h-5"></LoaderCircle> :

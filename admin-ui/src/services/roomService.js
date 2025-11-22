@@ -48,3 +48,15 @@ export const getRoomById = async (roomId) =>{
     throw new Error(errMessage)
    }
 }
+
+//For change room 
+export const changeRoom = async (customerId, data) =>{
+  try{
+    const response = await api.put(`/customer/change-room/${customerId}`, data)
+    return response.data.data
+  }catch(err){
+    console.log(err)
+    const errMessage = err?.response?.data?.message || "Something went wrong."
+    throw new Error(errMessage)
+  }
+}

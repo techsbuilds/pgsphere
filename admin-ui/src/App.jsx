@@ -96,6 +96,7 @@ function App() {
             <Route path='customers/meals' element={<Meal></Meal>}></Route>
             <Route path='customers/complaints' element={<Complaints></Complaints>}></Route>
             <Route path='customers/dailyupdate' element={<DailyUpdate></DailyUpdate>}></Route>
+            <Route path='rent-preview' element={<RentPreview></RentPreview>}></Route>
             <Route path='employees/elist' element={<Employee></Employee>}></Route>
             <Route path='employees/salary' element={<EmployeeSalary></EmployeeSalary>}></Route>
             <Route path='rents' element={<Customer></Customer>}></Route>

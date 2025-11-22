@@ -45,7 +45,7 @@ function Inventory() {
             <Package size={48} className="text-white"></Package>
           </div>
           <div className="flex flex-col items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800">This Feature is Coming Soon</h1>
+            <h1 className="text-2xl text-center sm:text-3xl font-semibold text-gray-800">This Feature is Coming Soon</h1>
             <p className="text-gray-500 text-center text-sm sm:text-base max-w-md">
               We're working hard to bring you an amazing inventory management experience. Stay tuned!
             </p>

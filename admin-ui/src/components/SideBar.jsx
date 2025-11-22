@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Building2,
@@ -146,6 +146,7 @@ const accountRoutes = [
 
 function SideBar({ showSideBar, setShowSideBar, type }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [openSubmenu, setOpenSubmenu] = useState(null);
 
   const toggleSubmenu = (label) => {
@@ -166,6 +167,15 @@ function SideBar({ showSideBar, setShowSideBar, type }) {
   const handleLinkClick = () => {
     if (window.innerWidth < 768) {
       setShowSideBar(false);
+    }
+  };
+
+  const handleParentClick = (link, children, label) => {
+    if (children) {
+      toggleSubmenu(label);
+    } else if (link) {
+      navigate(link);
+      handleLinkClick();
     }
   };
 
@@ -199,7 +209,7 @@ function SideBar({ showSideBar, setShowSideBar, type }) {
           <div key={index} className="flex flex-col">
             {/* Parent Link / Toggle */}
             <div
-              onClick={() => (children ? toggleSubmenu(label) : handleLinkClick())}
+              onClick={() => handleParentClick(link, children, label)}
               className={`group flex p-2 px-4 items-center justify-between hover:bg-white gap-2 rounded-full cursor-pointer ${
                 isActive(label, link, children) ? "bg-white" : ""
               }`}

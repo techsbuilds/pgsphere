@@ -105,7 +105,7 @@ function PersonalDetails() {
                 :"Upload Logo"
               }
             </button>
-            : <label htmlFor='logo' className='px-3 py-1 transition-all duration-300 bg-[#2b80ff] hover:bg-blue-600 text-white rounded-md text-sm text-center cursor-pointer'>Add Logo</label>
+            : <label htmlFor='logo' className='px-3 py-1 transition-all duration-300 bg-[#2b80ff] hover:bg-primary/90 text-white rounded-md text-sm text-center cursor-pointer'>Add Logo</label>
           }
           <input ref={logoInputRef} onChange={handleFileChange} type='file' className='hidden' id='logo'></input>
         </div>
@@ -150,7 +150,7 @@ function PersonalDetails() {
               :"Upload Logo"
             }
           </button>
-          : <label htmlFor='logo' className='p-1 transition-all duration-300 bg-[#2b80ff] hover:bg-blue-600 text-white rounded-md w-36 text-center cursor-pointer'>Add Logo</label>
+          : <label htmlFor='logo' className='p-1 transition-all duration-300 bg-[#2b80ff] hover:bg-primary/90 text-white rounded-md w-36 text-center cursor-pointer'>Add Logo</label>
         }
         <input ref={logoInputRef} onChange={handleFileChange} type='file' className='hidden' id='logo'></input>
       </div>

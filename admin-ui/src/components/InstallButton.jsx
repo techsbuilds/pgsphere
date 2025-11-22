@@ -8,8 +8,8 @@ const InstallButton = () => {
   // Don't show if already installed
   if (isInstalled) return null;
   
-  // For iOS Safari, always show button (unless banner was dismissed)
-  if (isIOSSafari && !showInstallBanner) return null;
+  // For iOS Safari, show button if installable (banner might not show but button should)
+  if (isIOSSafari && !isInstallable) return null;
   
   // For other browsers, show only if installable
   if (!isIOSSafari && !isInstallable) return null;

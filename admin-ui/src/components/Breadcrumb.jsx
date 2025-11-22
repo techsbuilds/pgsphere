@@ -188,12 +188,19 @@ function Breadcrumb({
                     value={selectedBranch}
                     className="p-2 w-full sm:w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none text-sm sm:text-base"
                   >
-                    {/* <option value={""}>All Branch</option> */}
-                    {branch.map((item, index) => (
-                      <option key={index} value={item._id}>
-                        {item.branch_name}
-                      </option>
-                    ))}
+                    {
+                      branch.length===0 ? 
+                      <option value={""}>No Branch Found</option>
+                      :
+                      <>
+                        <option value={""}>All Branch</option>
+                        {branch.map((item, index) => (
+                          <option key={index} value={item._id}>
+                            {item.branch_name}
+                          </option>
+                        ))}
+                      </>
+                    }
                   </select>
                   <button
                     onClick={() => onClick()}
@@ -480,7 +487,7 @@ function Breadcrumb({
               {/* Mobile: Show only add button on right */}
               <button
                 onClick={() => onClick()}
-                className="md:hidden px-3 py-1.5 bg-blue-500 transition-all duration-300 hover:bg-primary/90 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+                className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-primary/90 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
               >
                 Add
               </button>
@@ -741,11 +748,12 @@ function Breadcrumb({
                   className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none"
                 >
                   <option value={""}>All Transaction</option>
-                  <option value={"customer_rent"}>Rent</option>
-                  <option value={"employee_salary"}>Salary</option>
+                  <option value={"rent_attempt"}>Rent</option>
+                  <option value={"salary_attempt"}>Salary</option>
                   <option value={"monthly_bill"}>Monthly Bill</option>
                   <option value={"inventory_purchase"}>Inventory</option>
                   <option value={"cash_given"}>Cashout</option>
+                  <option value={"deposite"}>Deposite</option>
                 </select>
               </div>
             </div>
@@ -801,25 +809,55 @@ function Breadcrumb({
 
       case "/account/monthlybill":
         return (
-          <div className="flex justify-between items-center w-full">
-            <h1 className="text-2xl md:text-3xl font-semibold">
-              Monthly Bills
-            </h1>
-            <div className="flex items-center gap-2">
-              <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-48 md:w-72  flex items-center gap-2">
-                <Search className="text-gray-500" size={20}></Search>
+          <>
+            {/* Title Row */}
+            <div className="flex justify-between items-center w-full">
+              <h1 className="text-2xl md:text-3xl font-semibold">
+                Monthly Bills
+              </h1>
+              {/* Desktop: Show search and filter on right */}
+              <div className="hidden md:flex items-center gap-2">
+                <div className="border rounded-2xl border-neutral-300 bg-white p-2 w-72 flex items-center gap-2">
+                  <Search className="text-gray-500" size={20}></Search>
+                  <input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    type="text"
+                    className="flex-1 outline-none"
+                    placeholder="Search bill"
+                  ></input>
+                </div>
+                <select
+                  onChange={(e) => setSelectedBranch(e.target.value)}
+                  value={selectedBranch}
+                  className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none"
+                >
+                  <option value={""}>All Branch</option>
+                  {branch.map((item, index) => (
+                    <option key={index} value={item._id}>
+                      {item.branch_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Mobile: Bottom row with search and filter */}
+            <div className="md:hidden flex items-center gap-2">
+              <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 flex-1 flex items-center gap-2 min-w-0 h-10">
+                <Search className="text-gray-500 flex-shrink-0" size={20}></Search>
                 <input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   type="text"
-                  className="flex-1 outline-none"
+                  className="flex-1 outline-none min-w-0"
                   placeholder="Search bill"
                 ></input>
               </div>
               <select
                 onChange={(e) => setSelectedBranch(e.target.value)}
                 value={selectedBranch}
-                className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none"
+                className="p-1.5 flex-1 px-2 border rounded-2xl border-neutral-300 bg-white outline-none text-sm min-w-0 h-10"
               >
                 <option value={""}>All Branch</option>
                 {branch.map((item, index) => (
@@ -829,7 +867,7 @@ function Breadcrumb({
                 ))}
               </select>
             </div>
-          </div>
+          </>
         );
 
       case "/admin/scanner":
@@ -860,7 +898,7 @@ function Breadcrumb({
               {/* Mobile: Show only add button on right */}
               <button
                 onClick={() => onClick()}
-                className="md:hidden px-3 py-1.5 bg-blue-500 transition-all duration-300 hover:bg-primary/90 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
+                className="md:hidden px-3 py-1.5 bg-primary transition-all duration-300 hover:bg-primary/90 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm"
               >
                 Add
               </button>

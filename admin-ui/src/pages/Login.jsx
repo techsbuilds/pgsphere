@@ -140,13 +140,18 @@ function Login() {
               </div>
             </div>
          </div>
-         <button disabled={loading} type='submit' className='p-2 sm:p-3 hover:bg-blue-600 transition-all duration-300 cursor-pointer flex justify-center items-center bg-blue-500 rounded-md text-white font-medium text-sm sm:text-base'>
+         <div className='flex flex-col gap-2'>
+          <button disabled={loading} type='submit' className='p-2 sm:p-3 hover:bg-primary/90 transition-all duration-300 cursor-pointer flex justify-center items-center bg-primary rounded-md text-white font-medium text-sm sm:text-base'>
             {
              loading ? 
              <LoaderCircle className='animate-spin w-4 h-4 sm:w-5 sm:h-5'></LoaderCircle>
              :"Log in"
             }
-         </button>
+          </button>
+          <div>
+           <span className='text-xs sm:text-sm text-gray-500'>don't have an account? <a href='https://pgsphere.com/signup' className='text-blue-500 hover:underline'>Sign up</a></span>
+          </div>
+         </div>
        </form>
         )
      
@@ -168,7 +173,7 @@ function Login() {
               onClick={onVerifyOtp}
               disabled={loading || otp.length < 4}
               type='button'
-              className='p-2 sm:p-3 hover:bg-blue-600 transition-all w-full sm:w-36 duration-300 cursor-pointer flex justify-center items-center bg-blue-500 rounded-md text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base'
+              className='p-2 sm:p-3 hover:bg-primary/90 transition-all w-full sm:w-36 duration-300 cursor-pointer flex justify-center items-center bg-primary rounded-md text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base'
             >
               {loading ? <LoaderCircle className='animate-spin w-4 h-4 sm:w-5 sm:h-5'></LoaderCircle> : "Verify & Login"}
             </button>

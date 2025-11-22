@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 import { DataGrid } from '@mui/x-data-grid';
 import Box from '@mui/material/Box';
@@ -8,12 +9,13 @@ import Breadcrumb from "../../components/Breadcrumb";
 import { useCustomerRentTable } from "../../hooks/useCustomerRentTable";
 
 function CustomerRent() {
+  const { auth } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("");
 
   const handleRedirectToRentPreview = (customer) => {
-    navigate('/admin/rent-preview', {state: {customerId:customer.customerId}})
+    navigate(auth.user.userType === 'Admin' ? '/admin/rent-preview' : '/account/rent-preview', {state: {customerId:customer.customerId}})
   }
 
   const { loading, rows, columns, refetch } =

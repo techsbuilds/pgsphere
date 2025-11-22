@@ -1,5 +1,5 @@
 import express from 'express'
-import { customerLogin, loginUser, genLink, logoutPortal, signUpCustomer, signupUser, validateToken, verifyOtp, verifyCustomerSignup, verifyTokenForPassword, forgetPasswordCustomer, sendEmailForgetPassword } from '../controller/authController.js'
+import { customerLogin, loginUser, genLink, logoutPortal, signUpCustomer, signupUser, validateToken, verifyOtp, verifyCustomerSignup, verifyTokenForPassword, forgetPasswordCustomer, sendEmailForgetPassword, logoutCustomerPortal } from '../controller/authController.js'
 import { aadharCardMulter } from '../middleware/upload.js'
 import { verifyOwner } from '../middleware/verifyUser.js'
 
@@ -16,6 +16,9 @@ app.post('/validate-token', validateToken)
 
 //Logout
 app.get('/logout', logoutPortal)
+
+//logout for customer 
+app.get('/customer/logout', logoutCustomerPortal)
 
 // verify otp
 app.post('/verify-otp', verifyOtp)
