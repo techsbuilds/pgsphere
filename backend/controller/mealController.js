@@ -186,19 +186,7 @@ export const updateStatusByCustomer = async (req, res, next) => {
 export const getMealDetailsbyWeekly = async (req, res, next) => {
     try {
 
-        const { pgcode, userType, mongoid } = req
-        let { branch } = req.params
-
-        if (userType !== "Customer") {
-
-            if (!branch) {
-                return res.status(400).json({ message: "Please Provide Branch !", success: false })
-            }
-
-            if (!Array.isArray(branch)) {
-                branch = [branch]
-            }
-        }
+        const { pgcode, mongoid } = req
 
         let filter = {}
 
@@ -219,34 +207,16 @@ export const getMealDetailsbyWeekly = async (req, res, next) => {
         sunday.setDate(monday.getDate() + 6)
         sunday.setHours(23, 59, 59, 999)
 
-        if (userType === 'Account') {
+        const customer = await CUSTOMER.findById(mongoid)
 
-            const acmanager = await ACCOUNT.findById(mongoid)
-
-            if (!acmanager) {
-                return res.status(404).json({ message: "Acmagaer Not Found!", success: false })
-            }
-
-            const isAuthorized = branch.every((br) => acmanager.branch.includes(br));
-
-            if (!isAuthorized) {
-                return res.status(400).json({ message: "You are Not Autherized to Add Meals in this Branch!", success: false })
-            }
-
-            filter.branch = branch
-
+        if (!customer) {
+            return res.status(404).json({ message: "Customer Not Found !", success: false })
         }
-        if (userType === 'Customer') {
-            const customer = await CUSTOMER.findById(mongoid)
 
-            if (!customer) {
-                return res.status(404).json({ message: "Customer Not Found !", success: false })
-            }
+        let branch = customer.branch
 
-            filter.branch = customer.branch
-        }
-        if (userType === 'Admin') {
-            filter.branch = branch
+        if (!Array.isArray(branch)) {
+            branch = [branch]
         }
 
         const weeklyMealsRaw = await MEAL.find({
@@ -266,6 +236,12 @@ export const getMealDetailsbyWeekly = async (req, res, next) => {
 
         // Fill meals till today
         weeklyMealsRaw.forEach(meal => {
+
+            meal.meals = meal.meals.map(m => ({
+                ...m,
+                cancelled: m.cancelled?.filter(cid => cid.toString() === mongoid.toString()) || []
+            }))
+
             const mealDay = days[new Date(meal.date).getDay()]
             // Only add meals if day <= today
             const mealDayIndex = days.indexOf(mealDay)
@@ -283,6 +259,7 @@ export const getMealDetailsbyWeekly = async (req, res, next) => {
         next(error)
     }
 }
+
 export const getMealDetailsbyDay = async (req, res, next) => {
     try {
 
