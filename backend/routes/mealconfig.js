@@ -14,6 +14,6 @@ app.get('/', verifyOwner,getMealConfig)
 app.get('/customer',verifyCustomer,getMealConfig)
 
 //For update meal-config
-app.put('/:mealconfig_id',verifyAdmin,updateMealConfig)
+app.put('/:mealconfig_id', verifyOwner, updateMealConfig)
 
 export default app
