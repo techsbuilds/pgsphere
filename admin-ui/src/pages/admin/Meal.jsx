@@ -209,7 +209,7 @@ function Meal() {
 
   const parseTime = (type) =>{
      if(type === 'Breakfast'){
-      return mealConfig.breakfast_time
+      return mealConfig?.breakfast_time
      }else if(type === 'Lunch'){
       return mealConfig?.lunch_time
      }else if(type === 'Dinner'){
