@@ -111,3 +111,19 @@ export const updateMealConfig = async (req, res, next) => {
         next(error)
     }
 }
+
+export const getMealConfigForCustomer = async (req, res, next) => {
+    try {
+        const { mongoid, pgcode } = req
+
+        const mealconfig = await MEALCONFIG.findOne({ pgcode })
+
+        if (!mealconfig) {
+            return res.status(404).json({ message: "Meal Config Not Found", success: false })
+        }
+
+        return res.status(200).json({ message: "Getting Meal Config Successfully", data: mealconfig, success: true })
+    } catch (error) {
+        next(error)
+    }
+}

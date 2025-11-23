@@ -137,7 +137,7 @@ app.use('/api/floor', verifyOwner, floorRoute)
 app.use('/api/meal', mealRoute)
 app.use('/api/complaint', complaintRoute)
 app.use('/api/scanner', verifyOwner, verifyAdmin, scannerRoute)
-app.use('/api/mealconfig', verifyOwner, mealconfigRoute)
+app.use('/api/mealconfig', mealconfigRoute)
 
 // Middleware to catch errors
 app.use((err, req, res, next) => {
