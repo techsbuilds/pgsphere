@@ -225,7 +225,7 @@ export const createCustomer = async (req, res, next) => {
       pgcode
     );
 
-    if (variable_deposite_amount) {
+    if (variable_deposite_amount && variable_deposite_amount > 0) {
       //Create deposite amount
       const newDepositeAmount = await DEPOSITEAMOUNT({
         customer: newCustomer._id,

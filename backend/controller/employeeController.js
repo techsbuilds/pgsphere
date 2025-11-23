@@ -257,9 +257,11 @@ export const getEmployeePendingSalaries = async (req, res, next) => {
   try{
     const {searchQuery, branch} = req.query 
 
-    const {mongoid, userType} = req 
+    const {mongoid, userType, pgcode} = req 
 
     let filter = {status: true}
+
+    filter.pgcode = pgcode
 
     if (searchQuery) {
       filter.employee_name = { $regex: searchQuery, $options: 'i' };

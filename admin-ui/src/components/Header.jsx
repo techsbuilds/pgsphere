@@ -64,8 +64,8 @@ function Header({setShowSideBar, showSideBar}) {
        {/* Mobile Layout */}
        <div className='md:hidden flex items-center justify-between w-full'>
          {/* Left: Hamburger + Logo and Name */}
-         <div className='flex items-center gap-3'>
-           <Menu className='cursor-pointer hover:bg-gray-100 p-1 rounded-md' onClick={()=>setShowSideBar((prev)=> !prev)}></Menu>
+         <div className='flex items-center gap-2'>
+           <Menu size={28} className='cursor-pointer hover:bg-gray-100 p-1 rounded-md' onClick={()=>setShowSideBar((prev)=> !prev)}></Menu>
            <div className='flex items-center gap-2'>
              <img src={logo1} alt="Pgsphere Logo" className='h-12 w-12 object-contain' />
              <h1 className='text-lg font-semibold'>Pgsphere</h1>
