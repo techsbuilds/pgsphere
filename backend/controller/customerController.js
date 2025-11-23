@@ -1421,8 +1421,6 @@ export const getCustomerDetailsForCustomer = async (req, res, next) => {
   try {
     const { userType, mongoid } = req;
 
-    console.log(mongoid)
-
     let data = {}
 
     if (userType !== "Customer") {
@@ -1733,6 +1731,8 @@ export const getDashboardSummary = async (req, res, next) => {
       status: "Pending",
     });
 
+    const pendingDeposite = customer.deposite_status === "Pending" ? customer.deposite_amount - customer.paid_deposite_amount : 0;
+
     pendingRent.forEach((rent) => {
       pendingRentAmount += rent.rent_amount - rent.paid_amount;
     });
@@ -1747,6 +1747,7 @@ export const getDashboardSummary = async (req, res, next) => {
           complaintCount,
           pendingRentAmount,
           pendingRentMonths,
+          pendingDeposite,
         },
       });
   } catch (error) {
