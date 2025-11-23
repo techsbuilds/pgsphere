@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyAdmin, verifyOwner } from "../middleware/verifyUser.js";
+import { verifyAdmin, verifyCustomer, verifyOwner } from "../middleware/verifyUser.js";
 import { createMealConfig, getMealConfig, updateMealConfig } from "../controller/mealconfigController.js";
 
 const app = express.Router()
@@ -8,7 +8,10 @@ const app = express.Router()
 app.post('/',verifyAdmin,createMealConfig)
 
 //For get meal-config
-app.get('/',getMealConfig)
+app.get('/', verifyOwner,getMealConfig)
+
+//For get meal-config for customer 
+app.get('/customer',verifyCustomer,getMealConfig)
 
 //For update meal-config
 app.put('/:mealconfig_id',verifyAdmin,updateMealConfig)
