@@ -305,7 +305,7 @@ export const getMealDetailsbyDay = async (req, res, next) => {
                 cancelled: singleMeal.cancelled?.filter(cid => cid.toString() === mongoid.toString()) || []
             }))
         })
-        
+
         return res.status(200).json({ message: "Get Meal Successfully by Day.", meal, success: true })
 
     } catch (error) {
@@ -555,16 +555,20 @@ export const getMealDetailsbyMonthly = async (req, res, next) => {
                 });
             }
 
-            filter.branch = branch;
+            filter.branch = { $in: branch };
+
         }
 
         if (userType === 'Admin') {
-            filter.branch = branch;
+            filter.branch = { $in: branch };
         }
 
+        const forcustomerbranch = filter.branch
+        
         // ✅ Total customers in branch
-        const totalCustomer = await CUSTOMER.find({ branch }).countDocuments();
+        const totalCustomer = await CUSTOMER.find({ branch: forcustomerbranch }).countDocuments();
 
+        console.log("Total Customers:", totalCustomer);
         // ✅ Fetch meals in the 30-day window
         const mealsRaw = await MEAL.find({
             ...filter,
