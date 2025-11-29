@@ -81,13 +81,13 @@ function SearchBar({ setOpenSearchBar }) {
           <div className='flex items-center'>
             <button 
               onClick={() => handleSetRole("Customers")} 
-              className={`px-3 py-2 text-sm sm:text-base ${activeTab === "Customers" ? "bg-primary hover:bg-primary/90 text-white" : "bg-white hover:bg-gray-50 text-gray-500"} border-neutral-300 cursor-pointer border rounded-l-2xl transition-colors`}
+              className={`md:px-3 px-2 py-1 md:py-2 text-xs sm:text-base ${activeTab === "Customers" ? "bg-primary hover:bg-primary/90 text-white" : "bg-white hover:bg-gray-50 text-gray-500"} border-neutral-300 cursor-pointer border rounded-l-2xl transition-colors`}
             >
               <span>Customers</span>
             </button>
             <button 
               onClick={() => handleSetRole("Employees")} 
-              className={`px-3 py-2 text-sm sm:text-base ${activeTab === "Employees" ? "bg-primary hover:bg-primary/90 text-white" : "bg-white hover:bg-gray-50 text-gray-500"} cursor-pointer border-t ${auth.user.userType === "Account" && "border-r rounded-r-2xl"} border-neutral-300 border-b transition-colors`}
+              className={`md:px-3 px-2 py-1 md:py-2 text-xs sm:text-base ${activeTab === "Employees" ? "bg-primary hover:bg-primary/90 text-white" : "bg-white hover:bg-gray-50 text-gray-500"} cursor-pointer border-t ${auth.user.userType === "Account" && "border-r rounded-r-2xl"} border-neutral-300 border-b transition-colors`}
             >
               <span>Employees</span>
             </button>
@@ -95,7 +95,7 @@ function SearchBar({ setOpenSearchBar }) {
             {auth.user.userType === "Admin" && (
               <button 
                 onClick={() => handleSetRole("Ac Managers")} 
-                className={`px-3 py-2 text-sm sm:text-base ${activeTab === "Ac Managers" ? "bg-primary hover:bg-primary/90 text-white" : "bg-white hover:bg-gray-50 text-gray-500"} cursor-pointer border border-neutral-300 rounded-r-2xl transition-colors`}
+                className={`md:px-3 px-2 py-1 md:py-2 text-xs sm:text-base ${activeTab === "Ac Managers" ? "bg-primary hover:bg-primary/90 text-white" : "bg-white hover:bg-gray-50 text-gray-500"} cursor-pointer border border-neutral-300 rounded-r-2xl transition-colors`}
               >
                 <span>Ac Managers</span>
               </button>
