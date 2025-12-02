@@ -1595,8 +1595,7 @@ export const getCustomerRentListForCustomer = async (req, res, next) => {
 
     let bankAccount = null
     if(!scanner){
-      bankAccount = await BANKACCOUNT.findOne({pgcode, is_default:true, status:"active"})
-      bankAccount = bankAccount.map((ba)=> ({bankaccount: ba._id}))
+      bankAccount = await BANKACCOUNT.findOne({pgcode, is_default:true, status:"active"}).lean()
     }
 
     if (!customer)
@@ -1672,7 +1671,7 @@ export const getCustomerRentListForCustomer = async (req, res, next) => {
         customer_name: customer.customer_name,
         mobile_no: customer.mobile_no,
         rentList,
-        scannerDetails: scanner || bankAccount || null,
+        scannerDetails: scanner || {bankaccount:{...bankAccount,bankaccount:bankAccount._id}} || null,
       },
     });
   } catch (err) {
