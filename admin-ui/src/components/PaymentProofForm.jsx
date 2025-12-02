@@ -66,7 +66,7 @@ function PaymentProofForm({openForm, onClose, requestDetails}) {
            </div>
 
            <div className='flex flex-col gap-2'>
-             <h2 className='text-sm sm:text-base font-medium'>Payment Proof</h2>
+             <h2 className='text-sm sm:text-base font-medium'>{requestDetails?.payment_proof_image ? "Payment Proof" : "Bank Details"}</h2>
              {requestDetails?.payment_proof_image && <img src={requestDetails?.payment_proof} className='w-full h-48 sm:h-64 lg:h-72 object-contain rounded-md border border-neutral-200'></img>}
                <div className='p-2 flex items-center bg-slate-50 gap-2 border border-neutral-300 rounded-md text-xs sm:text-sm'>
                  <span className='font-medium'>Bank Account:</span>
