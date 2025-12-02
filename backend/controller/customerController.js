@@ -1593,6 +1593,12 @@ export const getCustomerRentListForCustomer = async (req, res, next) => {
       status: "active",
     }).populate("bankaccount");
 
+    let bankAccount = null
+    if(!scanner){
+      bankAccount = await BANKACCOUNT.findOne({pgcode, is_default:true, status:"active"})
+      bankAccount = bankAccount.map((ba)=> ({bankaccount: ba._id}))
+    }
+
     if (!customer)
       return res
         .status(404)
@@ -1666,7 +1672,7 @@ export const getCustomerRentListForCustomer = async (req, res, next) => {
         customer_name: customer.customer_name,
         mobile_no: customer.mobile_no,
         rentList,
-        scannerDetails: scanner || null,
+        scannerDetails: scanner || bankAccount || null,
       },
     });
   } catch (err) {

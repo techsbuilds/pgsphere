@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
 const scannerSchema = new mongoose.Schema({
-
     sc_image: {
         type: String,
         required: [true, 'Please Provide Scanner Image']
