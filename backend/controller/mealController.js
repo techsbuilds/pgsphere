@@ -1,5 +1,4 @@
 import ACCOUNT from "../models/ACCOUNT.js"
-import BRANCH from "../models/BRANCH.js"
 import CUSTOMER from "../models/CUSTOMER.js"
 import MEAL from "../models/MEAL.js"
 import moment from "moment/moment.js"
@@ -7,27 +6,174 @@ import MEALCONFIG from "../models/MEALCONFIG.js"
 import mongoose from "mongoose"
 import DAILYUPDATE from "../models/DAILYUPDATE.js"
 import { convertTo24Hour } from "../utils/gethour.js"
+import XLXS from 'xlsx'
 
-export const addMeal = async (req, res, next) => {
+export const addMealbyXl = async (req, res, next) => {
+    try {
+
+        const { mongoid, userType, pgcode } = req
+        let { branch } = req.body
+
+        if (!branch) {
+            return res.status(400).json({ message: "Please Provide Branch !", success: false })
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ message: "Please Uplaod Meal Excel File !", success: false })
+        }
+
+        // Read Excel File
+        const workbook = XLXS.readFile(req.file.path);
+        const sheet = workbook.Sheets[workbook.SheetNames[0]]
+        const rows = XLXS.utils.sheet_to_json(sheet)
+
+        if (!rows.length) {
+            return res.status(400).json({ message: "Excel File is Empty !", success: false })
+        }
+
+        let result = []
+
+        for (let row of rows) {
+            let { date, breakfast, lunch, dinner } = row
+            let meals = []
+
+
+            if (!date) {
+                result.push({ date, status: "failed", message: "please Provide All Required Fields !" })
+                continue;
+            }
+
+            if (typeof date === 'number') {
+                date = moment(new Date((date - 25569) * 86400 * 1000));
+            }
+            else {
+                date = moment(date, ["YYYY-MM-DD", "DD-MM-YYYY", "DD/MM/YYYY", "MM-DD-YYYY", "MM/DD/YYYY"], false);
+            }
+
+
+            if (!date.isValid()) {
+                result.push({ date, status: "failed", message: "Please Provide Valid Date !" })
+                continue;
+            }
+
+            date = date.format("YYYY-MM-DD");
+
+            const today = moment().startOf("day");
+            const selectedDate = moment(date, "YYYY-MM-DD");
+
+            if (selectedDate.isBefore(today)) {
+                return res.status(400).json({
+                    message: "Meal cannot be created for a past date.",
+                    success: false
+                });
+            }
+
+            if (breakfast) {
+                meals.push({
+                    items: breakfast.split(',').map(item => item.trim()),
+                    type: 'Breakfast',
+                    description: ''
+                })
+            }
+            if (lunch) {
+                meals.push({
+                    items: lunch.split(',').map(item => item.trim()),
+                    type: 'Lunch',
+                    description: ''
+                })
+            }
+            if (dinner) {
+                meals.push({
+                    items: dinner.split(',').map(item => item.trim()),
+                    type: 'Dinner',
+                    description: ''
+                })
+            }
+
+            // // if (!Array.isArray(meals)) {
+            // //     return res.status(400).json({ message: "Please Provide Valid Meal , meal in Array.", success: false })
+            // // }
+
+            if (!Array.isArray(branch)) {
+                branch = [branch]
+            }
+
+            const isexist = await MEAL.findOne({ date, pgcode, branch: { $in: branch } })
+
+            if (isexist) {
+                result.push({ date, status: "skipped", message: "Meal Already Exist for this Date and Branch" })
+                continue;
+            }
+
+            if (userType === 'Account') {
+                const acmanager = await ACCOUNT.findById(mongoid)
+
+                if (!acmanager) {
+                    result.push({ date, status: "failed", message: "Acmanager not found." })
+
+                }
+
+
+                const isAuthorized = branch.every((br) => acmanager.branch.includes(br));
+
+                if (!isAuthorized) {
+                    result.push({ date, status: "failed", message: "You are Not Autherized to Add Meal in this branch" })
+                }
+
+            }
+
+            const meal = MEAL({
+                date,
+                meals,
+                pgcode,
+                branch,
+                added_by: mongoid,
+                added_by_type: userType
+            })
+
+            await meal.save()
+
+            result.push({ date, status: "added", message: "Meal Added Successfully" })
+        }
+
+        return res.status(201).json({ message: "Meal Created Successfully.", success: true, result })
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const addMealByDate = async (req, res, next) => {
     try {
 
         const { mongoid, userType, pgcode } = req
 
-        let { date, meals, branch } = req.body
+        let { branch, meals, date } = req.body
 
-        if (!date || !meals || !branch) {
-            return res.status(400).json({ message: "Please Provide All Requires Fields.", success: false })
+        if (!branch || !meals || !date) {
+            return res.status(400).json({ message: "Please Provide All Required Fields !", success: false })
         }
 
-        const parsedDate = moment(date, ["YYYY-MM-DD", "DD-MM-YYYY", "DD/MM/YYYY", "MM-DD-YYYY", "MM/DD/YYYY"], true);
-
-        if (parsedDate.isValid()) {
-            // Convert to standard format
-            date = parsedDate.format("YYYY-MM-DD");
-        } else {
-            // If invalid, fallback to today
-            date = moment().format("YYYY-MM-DD");
+        if (!Array.isArray(branch)) {
+            branch = [branch]
         }
+
+        if (!Array.isArray(meals)) {
+            return res.status(400).json({ message: "Please Provide Valid Meal , meal in Array.", success: false })
+        }
+
+        if (typeof date === 'number') {
+            date = moment(new Date((date - 25569) * 86400 * 1000));
+        }
+        else {
+            date = moment(date, ["YYYY-MM-DD", "DD-MM-YYYY", "DD/MM/YYYY", "MM-DD-YYYY", "MM/DD/YYYY"], false);
+        }
+
+        if (!date.isValid()) {
+            return res.status(400).json({ message: "Please provide valid Date !", success: false })
+        }
+
+        date = date.format("YYYY-MM-DD");
 
         const today = moment().startOf("day");
         const selectedDate = moment(date, "YYYY-MM-DD");
@@ -39,34 +185,24 @@ export const addMeal = async (req, res, next) => {
             });
         }
 
-        if (!Array.isArray(meals)) {
-            return res.status(400).json({ message: "Please Provide Valid Meal , meal in Array.", success: false })
-        }
-
-        if (!Array.isArray(branch)) {
-            branch = [branch]
-        }
-
         const isexist = await MEAL.findOne({ date, pgcode, branch: { $in: branch } })
 
         if (isexist) {
-            return res.status(400).json({ message: "Meal Already Exist for this Branch on this Date", success: false })
+            return res.status(400).json({ message: "Meal Already Exist for this Date and Branch", success: false })
         }
 
         if (userType === 'Account') {
             const acmanager = await ACCOUNT.findById(mongoid)
 
             if (!acmanager) {
-                return res.status(404).json({ message: "Acmagaer Not Found !", success: false })
+                return res.status(404).json({ message: "Acmanager Not FOund !", success: false })
             }
-
 
             const isAuthorized = branch.every((br) => acmanager.branch.includes(br));
 
             if (!isAuthorized) {
-                return res.status(400).json({ message: "You are Not Autherized to Add Meals in this Branch!", success: false })
+                return res.status(403).json({ message: "You are Not Autherized to Add Meal in this Branch", success: false })
             }
-
         }
 
         const meal = MEAL({
@@ -81,7 +217,6 @@ export const addMeal = async (req, res, next) => {
         await meal.save()
 
         return res.status(201).json({ message: "Meal Created Successfully.", success: true })
-
     } catch (error) {
         next(error)
     }
@@ -488,7 +623,7 @@ export const updateMeal = async (req, res, next) => {
         await meal.save({ session })
 
         const dailyUpdate = new DAILYUPDATE({
-            title: "Meal Updated",
+            title: `Meal Updated for ${date}` ,
             content_type: "General",
             pgcode,
             branch: dailyUpdateBranch,
@@ -564,7 +699,7 @@ export const getMealDetailsbyMonthly = async (req, res, next) => {
         }
 
         const forcustomerbranch = filter.branch
-        
+
         // ✅ Total customers in branch
         const totalCustomer = await CUSTOMER.find({ branch: forcustomerbranch }).countDocuments();
 

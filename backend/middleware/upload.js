@@ -7,6 +7,30 @@ const pgLogoDir = path.join(process.cwd(), 'uploads', 'logo')
 const aadharcardDir = path.join(process.cwd(), 'uploads', 'aadhar')
 const scannerDir = path.join(process.cwd(), 'uploads', 'scanner')
 const paymentProofDir = path.join(process.cwd(), 'uploads', 'paymentproof')
+const mealExcelDir = path.join(process.cwd(),'uploads','mealExcel')
+
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+        cb(null, true)
+    } else {
+        cb(new Error('Only image file allowed!'))
+    }
+}
+
+const excelFileFilter = (req, file, cb) => {
+    const allowed = [
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-excel",
+        "text/csv"
+    ];
+
+    if (allowed.includes(file.mimetype)) {
+        cb(null, true)
+    } else {
+        cb(new Error("Only Excel (.xlsx, .xls, .csv) files allowed!"))
+    }
+}
+
 
 if (!fs.existsSync(branchUploadDir)) {
     fs.mkdirSync(branchUploadDir)
@@ -26,6 +50,10 @@ if (!fs.existsSync(scannerDir)) {
 
 if(!fs.existsSync(paymentProofDir)){
     fs.mkdirSync(paymentProofDir)
+}
+
+if(!fs.existsSync(mealExcelDir)){
+    fs.mkdirSync(mealExcelDir)
 }
 
 const branchStorage = multer.diskStorage({
@@ -92,14 +120,20 @@ const paymentProofStorage = multer.diskStorage({
     }
 })
 
-const fileFilter = (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-        cb(null, true)
-    } else {
-        cb(new Error('Only image file allowed!'))
-    }
-}
+const mealExcelStorage = multer.diskStorage({
 
+    destination:(req,file,cb) =>{
+        cb(null,mealExcelDir)
+    },
+
+    filename:(req,file,cb) =>{
+        const uniqeSufix = Date.now() + '-' + Math.round(Math.random() + 1E9)
+        const ext = path.extname(file.originalname)
+        const name ='meal-' + uniqeSufix + ext
+        cb(null,name)
+    }
+
+})
 
 export const uploadBranchImages = multer({
     storage: branchStorage,
@@ -147,8 +181,16 @@ export const uploadPaymentProofImages = multer({
     fileFilter
 })
 
+export const uploadMealExcelFiles = multer({
+    storage : mealExcelStorage,
+    limits:{ fileSize: 10 * 1024 * 1024 },
+    fileFilter:excelFileFilter
+})
+
 export const branchMulter = uploadBranchImages.single('image')
 export const logoMulter = uploadLogoImages.single('logo')
 export const aadharCardMulter = uploadAadharCardImages.single('aadharcard')
 export const scannerMulter = uploadScannerImages.single('scanner')
 export const paymentProofMulter = uploadPaymentProofImages.single('payment_proof')
+export const mealMulter = uploadMealExcelFiles.single('meal_excel')
+
