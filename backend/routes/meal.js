@@ -1,11 +1,15 @@
 import express from 'express'
 import { verifyCustomer, verifyOwner } from '../middleware/verifyUser.js'
-import { addMeal, getMealDetailsbyWeekly, updateStatusByCustomer, getMealDetailsbyMonthly, getMealDetailsbyDay, updateMeal, getMealDetailsbyDayForOwner } from '../controller/mealController.js'
+import { getMealDetailsbyWeekly, updateStatusByCustomer, getMealDetailsbyMonthly, getMealDetailsbyDay, updateMeal, getMealDetailsbyDayForOwner, addMealByDate, addMealbyXl } from '../controller/mealController.js'
+import { mealMulter } from '../middleware/upload.js'
 
 const app = express.Router()
 
-//For add meal
-app.post('/', verifyOwner, addMeal)
+//For Add-meal by Date
+app.post('/', verifyOwner, addMealByDate)
+
+//For Add-meal by Excel
+app.post('/xl', verifyOwner, mealMulter, addMealbyXl)
 
 //For get Meal by Monthly
 app.get('/monthly/:branch', verifyOwner, getMealDetailsbyMonthly)
@@ -14,10 +18,10 @@ app.get('/monthly/:branch', verifyOwner, getMealDetailsbyMonthly)
 app.get('/weekly/', verifyCustomer, getMealDetailsbyWeekly)
 
 //For get meal details by day
-app.get('/:date/',verifyCustomer, getMealDetailsbyDay)
+app.get('/:date/', verifyCustomer, getMealDetailsbyDay)
 
 //For get today-meal for Acmanager
-app.get('/:date/:branch',verifyOwner,getMealDetailsbyDayForOwner)
+app.get('/:date/:branch', verifyOwner, getMealDetailsbyDayForOwner)
 
 //For update meal status by customer
 app.put('/', verifyCustomer, updateStatusByCustomer)
