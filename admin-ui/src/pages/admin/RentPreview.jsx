@@ -65,6 +65,7 @@ function RentPreview() {
     setLoader(true);
     try {
       const data = await getCustomerPendingRentById(location.state.customerId);
+      console.log('customer rent details----->',data)
       setCustomerDetails(data);
       setPendingRentList(data?.pendingRentMap);
       if (data?.pendingRentMap?.length > 0) {
@@ -115,6 +116,7 @@ function RentPreview() {
 
   useEffect(()=>{
     setSelectedRent(pendingRentList.find((rent)=>rent.month===Number(selectedMonthYear.split('-')[0]) && rent.year===Number(selectedMonthYear.split('-')[1])))
+    setCustomerRequest(pendingRentList.find((rent)=>rent.month===Number(selectedMonthYear.split('-')[0]) && rent.year===Number(selectedMonthYear.split('-')[1]))?.customerRequest || [])
   },[selectedMonthYear])
 
   const handleSkipCustomerRent = async () =>{
@@ -290,19 +292,19 @@ function RentPreview() {
               <div className="flex items-stretch sm:items-center gap-2 w-full sm:w-auto">
                 <button
                   onClick={() => setOpenPayRentForm(true)}
-                  className="p-1.5 px-3 sm:px-4 cursor-pointer rounded-md text-white bg-primary hover:bg-primary/90 transition-all duration-300 text-xs sm:text-sm whitespace-nowrap"
+                  className="md:p-1.5 p-1 px-2 md:px-4 cursor-pointer rounded-md text-white bg-primary hover:bg-primary/90 transition-all duration-300 text-xs md:text-sm whitespace-nowrap"
                 >
                   Collect Rent
                 </button>
                 <button
                   onClick={() => setOpenExtraChargeForm(true)}
-                  className="p-1.5 px-3 sm:px-4 cursor-pointer rounded-md text-white bg-primary hover:bg-primary/90 transition-all duration-300 text-xs sm:text-sm whitespace-nowrap"
+                  className="md:p-1.5 p-1 px-2 md:px-4 cursor-pointer rounded-md text-white bg-primary hover:bg-primary/90 transition-all duration-300 text-xs md:text-sm whitespace-nowrap"
                 >
                   Add Extra Charge
                 </button>
                 <button
                  onClick={() => setOpenSkipRentConfirmation(true)}
-                 className="p-1.5 px-3 sm:px-4 cursor-pointer rounded-md border hover:bg-gray-50 border-gray-400 text-xs sm:text-sm whitespace-nowrap">
+                 className="md:p-1.5 p-1 px-2 md:px-4 cursor-pointer rounded-md border hover:bg-gray-50 border-gray-400 text-xs md:text-sm whitespace-nowrap">
                   Skip Rent
                 </button>
               </div>

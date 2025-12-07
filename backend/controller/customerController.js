@@ -22,6 +22,12 @@ import OTP from "../models/OTP.js";
 
 dotenv.config();
 
+const removeCustomerDocs = async (files) =>{
+  if(files['profile']?.[0]?.filename) await removeFile(path.join("uploads", "profile", files['profile']?.[0]?.filename))
+  if(files['aadharFront']?.[0]?.filename) await removeFile(path.join("uploads", "aadhar", files['aadharFront']?.[0]?.filename))
+  if(files['aadharBack']?.[0]?.filename) await removeFile(path.join("uploads", "aadhar", files['aadharBack']?.[0]?.filename))
+}
+
 export const createCustomer = async (req, res, next) => {
   try {
     const { mongoid, userType, pgcode } = req;
@@ -40,6 +46,8 @@ export const createCustomer = async (req, res, next) => {
       joining_date,
       payment_mode,
       bank_account,
+      emergency_contact_name,
+      emergency_contact_mobile_no
     } = req.body;
 
     const adminLogin = await LOGINMAPPING.findOne({
@@ -49,9 +57,7 @@ export const createCustomer = async (req, res, next) => {
     });
 
     if (!adminLogin) {
-      if (req.file) {
-        await removeFile(path.join("uploads", "aadhar", req.file.filename));
-      }
+      await removeCustomerDocs(req.files)
       return res.status(400).json({
         message: "Your PG is not active. Please contact support.",
         success: false,
@@ -60,19 +66,26 @@ export const createCustomer = async (req, res, next) => {
 
     const admin = await ADMIN.findById(adminLogin.mongoid);
     if (!admin) {
-      if (req.file) {
-        await removeFile(path.join("uploads", "aadhar", req.file.filename));
-      }
+      await removeCustomerDocs(req.files)
       return res.status(400).json({
         message: "Your PG is not active. Please contact support.",
         success: false,
       });
     }
 
-    if (!req.file)
-      return res
-        .status(400)
-        .json({ message: "Please upload aadharcard image.", success: false });
+    const profileImage = req.files['profile']?.[0]?.filename || null;
+    const aadharFront = req.files['aadharFront']?.[0]?.filename || null;
+    const aadharBack = req.files['aadharBack']?.[0]?.filename || null;
+
+    if (!profileImage) {
+      await removeCustomerDocs(req.files);
+      return res.status(400).json({message:"Customer profile image is required.", success:false})
+    }
+
+    if(!aadharFront || !aadharBack){
+      await removeCustomerDocs(req.files);
+      return res.status(400).json({message:"Aadhar card front or back image is required.", success:false})
+    }
 
     if (
       !customer_name ||
@@ -84,9 +97,11 @@ export const createCustomer = async (req, res, next) => {
       !branch ||
       !joining_date ||
       !bank_account ||
-      !payment_mode
+      !payment_mode || 
+      !emergency_contact_name ||
+      !emergency_contact_mobile_no
     ) {
-      await removeFile(path.join("uploads", "aadhar", req.file.filename));
+      await removeCustomerDocs(req.files)
       return res.status(400).json({
         message: "Please provide all required fields.",
         success: false,
@@ -94,7 +109,7 @@ export const createCustomer = async (req, res, next) => {
     }
 
     if(variable_deposite_amount > deposite_amount){
-      await removeFile(path.join("uploads", "aadhar", req.file.filename));
+      await removeCustomerDocs(req.files)
       return res.status(400).json({
         message: "Pay deposite amount cannot be greater than deposite amount.",
         success: false,
@@ -105,18 +120,14 @@ export const createCustomer = async (req, res, next) => {
       const account = await ACCOUNT.findById(mongoid);
 
       if (!account) {
-        if (req.file) {
-          await removeFile(path.join("uploads", "aadhar", req.file.filename));
-        }
+        await removeCustomerDocs(req.files)
         return res
           .status(404)
           .json({ message: "Account manager is not found.", success: false });
       }
 
       if (!account.branch.includes(branch)) {
-        if (req.file) {
-          await removeFile(path.join("uploads", "aadhar", req.file.filename));
-        }
+        await removeCustomerDocs(req.files)
         return res.status(403).json({
           message: "You are not authorized to add customer in this branch.",
           success: false,
@@ -124,10 +135,10 @@ export const createCustomer = async (req, res, next) => {
       }
     }
 
-    const existCustomer = await CUSTOMER.findOne({ mobile_no, email });
+    const existCustomer = await LOGINMAPPING.findOne({ email, status:'active' });
 
     if (existCustomer) {
-      await removeFile(path.join("uploads", "aadhar", req.file.filename));
+      await removeCustomerDocs(req.files)
       return res.status(409).json({
         message: "Customer is already exist with same email or mobile no.",
         success: false,
@@ -137,7 +148,7 @@ export const createCustomer = async (req, res, next) => {
     const existRoom = await ROOM.findById(room);
 
     if (!existRoom) {
-      await removeFile(path.join("uploads", "aadhar", req.file.filename));
+      await removeCustomerDocs(req.files)
       return res
         .status(404)
         .json({ message: "Room not found.", success: false });
@@ -146,14 +157,14 @@ export const createCustomer = async (req, res, next) => {
     const existBranch = await BRANCH.findById(branch);
 
     if (!existBranch) {
-      await removeFile(path.join("uploads", "aadhar", req.file.filename));
+      await removeCustomerDocs(req.files)
       return res
         .status(404)
         .json({ message: "Branch is not found", success: false });
     }
 
     if (existRoom.branch.toString() !== branch) {
-      await removeFile(path.join("uploads", "aadhar", req.file.filename));
+      await removeCustomerDocs(req.files)
       return res.status(400).json({
         message: "Room does not belong to this branch.",
         success: false,
@@ -161,14 +172,16 @@ export const createCustomer = async (req, res, next) => {
     }
 
     if (existRoom.filled >= existRoom.capacity) {
-      await removeFile(path.join("uploads", "aadhar", req.file.filename));
+      await removeCustomerDocs(req.files)
       return res.status(400).json({
         message: "Room is already full. Cannot add more customers.",
         success: false,
       });
     }
 
-    let imageUrl = `${process.env.DOMAIN}/uploads/aadhar/${req.file.filename}`;
+    let profileUrl = `${process.env.DOMAIN}/uploads/profile/${profileImage}`;
+    let aadharFrontUrl = `${process.env.DOMAIN}/uploads/aadhar/${aadharFront}`
+    let aadharBackUrl = `${process.env.DOMAIN}/uploads/aadhar/${aadharBack}`
 
     const saltRounds = 10;
     const hashedPassword = await bcryptjs.hash(pgcode, saltRounds);
@@ -176,6 +189,7 @@ export const createCustomer = async (req, res, next) => {
     let isDepositePaid = deposite_amount === variable_deposite_amount ? "Paid" : "Pending"
 
     const newCustomer = await CUSTOMER({
+      customer_profile_picture: profileUrl,
       customer_name,
       mobile_no,
       email,
@@ -191,7 +205,10 @@ export const createCustomer = async (req, res, next) => {
       ref_person_name,
       added_by: mongoid,
       added_by_type: userType,
-      aadharcard_url: imageUrl,
+      aadharcard_url: aadharFrontUrl,
+      aadharcard_back_url: aadharBackUrl,
+      emergency_contact_name: emergency_contact_name,
+      emergency_contact_mobile_no: emergency_contact_mobile_no
     });
 
     const newLogin = await LOGINMAPPING({
@@ -200,6 +217,8 @@ export const createCustomer = async (req, res, next) => {
       password: hashedPassword,
       userType: "Customer",
       pgcode,
+      plan: adminLogin.plan,
+      expiry: adminLogin.expiry,
       status: "active",
     });
 
@@ -369,6 +388,7 @@ export const getAllCustomer = async (req, res, next) => {
       { $sort: { createdAt: -1 } },
       {
         $project: {
+          customer_profile_picture: 1,
           customer_name: 1,
           email: 1,
           mobile_no: 1,
@@ -378,6 +398,9 @@ export const getAllCustomer = async (req, res, next) => {
           rent_amount: 1,
           joining_date: 1,
           aadharcard_url: 1,
+          aadharcard_back_url: 1,
+          emergency_contact_name: 1,
+          emergency_contact_mobile_no: 1,
           ref_person_name: 1,
           ref_person_contact_no: 1,
           added_by: 1,
@@ -583,13 +606,15 @@ export const updateCustomerDetails = async (req, res, next) => {
       branch,
       joining_date,
       ref_person_name,
-      ref_person_contact_no
+      ref_person_contact_no,
+      emergency_contact_name,
+      emergency_contact_mobile_no
     } = req.body;
 
     if (!customerId) {
       await session.abortTransaction();
       session.endSession();
-      if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
+      await removeCustomerDocs(req.files)
       return res
         .status(400)
         .json({ message: "Please provide customer id.", success: false });
@@ -601,7 +626,7 @@ export const updateCustomerDetails = async (req, res, next) => {
     if (!customer) {
       await session.abortTransaction();
       session.endSession();
-      if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
+      removeCustomerDocs(req.files)
       return res
         .status(404)
         .json({ message: "Customer not found.", success: false });
@@ -620,7 +645,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (!account) {
         await session.abortTransaction();
         session.endSession();
-        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
+        removeCustomerDocs(req.files)
         return res
           .status(404)
           .json({ message: "Account manager not found.", success: false });
@@ -629,7 +654,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (!account.branch.includes(customer.branch.toString())) {
         await session.abortTransaction();
         session.endSession();
-        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
+        removeCustomerDocs(req.files)
         return res.status(403).json({
           message:
             "You are not authorized to update customer details in this branch.",
@@ -646,7 +671,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (existCustomer) {
         await session.abortTransaction();
         session.endSession();
-        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
+        removeCustomerDocs(req.files)
         return res.status(409).json({
           message: "Customer already exists with same mobile no.",
           success: false,
@@ -662,7 +687,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (existCustomer) {
         await session.abortTransaction();
         session.endSession();
-        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
+        removeCustomerDocs(req.files)
         return res.status(409).json({
           message: "Customer already exists with same email address.",
           success: false,
@@ -713,7 +738,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       if (rent_amount < customer.rent_amount) {
         await session.abortTransaction();
         session.endSession();
-        if(req.file) removeFile(path.join("uploads", "aadhar", req.file.filename));
+        removeCustomerDocs(req.files)
         return res.status(400).json({
           message: "Rent amount cannot be less than previous rent amount.",
           success: false,
@@ -740,17 +765,46 @@ export const updateCustomerDetails = async (req, res, next) => {
 
     }
 
-    if (req.file) {
+    //Profile Image
+    if (req.files['profile']?.[0]?.filename) {
       //Remove old aadhar image
-      const oldImagePath = customer.aadharcard_url.split('/uploads/aadhar/')[1];
-      await removeFile(path.join('uploads', 'aadhar', oldImagePath));
+      if(customer.customer_profile_picture){
+      const oldImagePath = customer.customer_profile_picture.split('/uploads/profile/')[1];
+      await removeFile(path.join('uploads', 'profile', oldImagePath));
+      }
 
       //Set new aadhar image
-      let imageUrl = `${process.env.DOMAIN}/uploads/aadhar/${req.file.filename}`;
-      customer.aadharcard_url = imageUrl;
+      let imageUrl = `${process.env.DOMAIN}/uploads/profile/${req.files['profile']?.[0]?.filename}`;
+      customer.customer_profile_picture = imageUrl;
     }
 
-    // ✅ Branch check
+    //Aadhar card front image 
+    if (req.files['aadharFront']?.[0]?.filename) {
+      //Remove old aadhar image
+      if(customer.aadharcard_url){
+      const oldAadharFrontPath = customer.aadharcard_url.split('/uploads/aadhar/')[1];
+      await removeFile(path.join('uploads', 'aadhar', oldAadharFrontPath));
+      }
+
+      //Set new aadhar image
+      let aadharFrontUrl = `${process.env.DOMAIN}/uploads/aadhar/${req.files['aadharFront']?.[0]?.filename}`;
+      customer.aadharcard_url = aadharFrontUrl;
+    }
+
+    //Aadhar card back image 
+    if (req.files['aadharBack']?.[0]?.filename) {
+      //Remove old aadhar image
+      if(customer.aadharcard_back_url){
+      const oldAadharBackPath = customer.aadharcard_back_url.split('/uploads/aadhar/')[1];
+      await removeFile(path.join('uploads', 'aadhar', oldAadharBackPath));
+      }
+
+      //Set new aadhar image
+      let aadharBackUrl = `${process.env.DOMAIN}/uploads/aadhar/${req.files['aadharBack']?.[0]?.filename}`;
+      customer.aadharcard_back_url = aadharBackUrl;
+    }
+
+    // Branch check
     if (branch) {
       const existBranch = await BRANCH.findById(branch).session(session);
       if (!existBranch || existBranch.pgcode !== req.pgcode) {
@@ -764,7 +818,7 @@ export const updateCustomerDetails = async (req, res, next) => {
       customer.branch = branch;
     }
 
-    // ✅ Room shift logic with transaction
+    // Room shift logic with transaction
     if (room && room.toString() !== customer.room?.toString()) {
       const oldRoomId = customer.room;
       const newRoomId = room;
@@ -817,6 +871,10 @@ export const updateCustomerDetails = async (req, res, next) => {
 
     if (ref_person_contact_no) customer.ref_person_contact_no = ref_person_contact_no;
 
+    if (emergency_contact_mobile_no) customer.emergency_contact_mobile_no = emergency_contact_mobile_no;
+
+    if (emergency_contact_name) customer.emergency_contact_name = emergency_contact_name;
+
     await customer.save({ session });
     await customerLogin.save({ session });
 
@@ -829,6 +887,7 @@ export const updateCustomerDetails = async (req, res, next) => {
     });
   } catch (err) {
     // Only abort if transaction is still in progress
+    removeCustomerDocs(req.files)
     if (session.inTransaction()) {
       await session.abortTransaction();
     }
@@ -1095,6 +1154,7 @@ export const getPendingCustomerRentList = async (req, res, next) => {
 
       if (pendingRentMap.length > 0) {
         result.push({
+          customer_profile_picture: customer.customer_profile_picture,
           customerId: customer._id,
           customer_name: customer.customer_name,
           branch: customer.branch,

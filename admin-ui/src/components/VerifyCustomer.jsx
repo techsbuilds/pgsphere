@@ -85,14 +85,37 @@ function VerifyCustomer({ openForm, customer, onClose }) {
         </div>
         <div className="flex flex-col max-h-[90vh] overflow-y-scroll gap-4">
           <div className="flex flex-col gap-2">
-            <h1 className="font-medium">Aadhar Card</h1>
+            <h1 className="font-medium">Profile Picture</h1>
             <img
-              src={customer.aadharcard_url}
-              alt="aadhar card"
-              className="w-full h-72"
+              src={customer.customer_profile_picture}
+              alt="profile picture"
+              className="w-full h-44 rounded-md"
             ></img>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+
+         <div className="flex flex-col gap-2">
+         <h1 className="font-medium">Aadhar Card</h1>
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+            <div className="flex flex-col gap-2">
+              <h1 className="text-sm">Front Image</h1>
+              <img
+              src={customer.aadharcard_url}
+              alt="aadhar card front image"
+              className="w-full h-44"
+              ></img>
+            </div>
+            <div className="flex flex-col gap-2">
+              <h1 className="text-sm">Back Image</h1>
+              <img
+              src={customer.aadharcard_back_url}
+              alt="aadhar card back image"
+              className="w-full h-44"
+              ></img>
+            </div>
+          </div>
+         </div>
+
+          <div className="grid mt-2 grid-cols-2 gap-4">
             <div className="flex items-center gap-2">
               <label>
                 <UserRound></UserRound>
@@ -128,7 +151,7 @@ function VerifyCustomer({ openForm, customer, onClose }) {
                 <Building2></Building2>
               </label>
               <span className="text-[16px]">
-                Branch {sliceString(customer?.branch?.branch_name, 20)}
+                {sliceString(customer?.branch?.branch_name, 20)}
               </span>
             </div>
           </div>
@@ -147,7 +170,7 @@ function VerifyCustomer({ openForm, customer, onClose }) {
                 {errors.rent_amount && <span className="text-sm text-red-500">{errors.rent_amount.message}</span>}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
              <div className="flex flex-col gap-2">
               <label>
                Fixed Deposite Amount <span className="text-sm text-red-500">*</span>
@@ -175,7 +198,7 @@ function VerifyCustomer({ openForm, customer, onClose }) {
               {errors.variable_deposite_amount && <span className="text-sm text-red-500">{errors.variable_deposite_amount.message}</span>}
              </div>
             </div>
-            <div className="grid mb-2 grid-cols-2 gap-4 items-center">
+            <div className="grid mb-2 grid-cols-1 md:grid-cols-2 gap-4 items-center">
               <div className="flex flex-col gap-2">
                 <label>
                   Bank Account <span className="text-sm text-red-500">*</span>

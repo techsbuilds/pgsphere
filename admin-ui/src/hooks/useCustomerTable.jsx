@@ -117,7 +117,7 @@ export const useCustomerTable = (handleOpenForm, room, handleOpenVerifyCustomer,
             renderCell: (params) => (
               <div className="flex items-center w-full h-full">
                  <div className="flex items-center gap-3">
-                   <img src={BOY} alt="vendor" className="w-9 h-9 rounded-full" />
+                   <img src={params.row.customer_profile_picture ? params.row.customer_profile_picture : BOY} alt="customer" className="w-9 h-9 rounded-full" />
                    <div className="flex flex-col">
                      <span className="leading-5 font-medium">{capitalise(params.value)}</span>
                      <div className="flex text-gray-600 items-center gap-0.5">

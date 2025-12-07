@@ -1,12 +1,12 @@
 import express from 'express'
 import { verifyCustomer, verifyOwner } from '../middleware/verifyUser.js'
 import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, getCustomerDetailsForCustomer, getPendingCustomerRentList, updateCustomerDetails, exportCustomersToExcel, verifyCustomerLogin, updateCustomerByCustomer, getCustomerPendingRentListById, getCustomerRentListForCustomer, getDashboardSummary, changeCustomerPassword, changeRoom } from '../controller/customerController.js'
-import { aadharCardMulter } from '../middleware/upload.js'
+import { customerMulter } from '../middleware/upload.js'
 
 const app = express.Router()
 
 //For create new customer
-app.post('/', verifyOwner, aadharCardMulter, createCustomer)
+app.post('/', verifyOwner, customerMulter, createCustomer)
 
 //For get all customer
 app.get('/', verifyOwner, getAllCustomer)
@@ -39,7 +39,7 @@ app.get('/pending-rent/:customerId', verifyOwner, getCustomerPendingRentListById
 app.put('/me', verifyCustomer, updateCustomerByCustomer)
 
 //For update customer details
-app.put('/:customerId', verifyOwner, aadharCardMulter, updateCustomerDetails)
+app.put('/:customerId', verifyOwner, customerMulter, updateCustomerDetails)
 
 //For get customer rent list for customer portal 
 app.get('/me/rent-list', verifyCustomer, getCustomerRentListForCustomer)
