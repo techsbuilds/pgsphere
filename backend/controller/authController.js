@@ -13,6 +13,12 @@ import ACCOUNT from "../models/ACCOUNT.js";
 import MEALCONFIG from "../models/MEALCONFIG.js";
 
 
+const removeCustomerDocs = async (files) =>{
+  await removeFile(path.join("uploads", "profile", files['profile']?.[0]?.filename))
+  await removeFile(path.join("uploads", "aadhar", files['aadharFront']?.[0]?.filename))
+  await removeFile(path.join("uploads", "aadhar", files['aadharBack']?.[0]?.filename))
+}
+
 //For login user 
 export const loginUser = async (req, res, next) => {
   try {
@@ -188,19 +194,31 @@ export const signupUser = async (req, res, next) => {
 //For customer side
 export const signUpCustomer = async (req, res, next) => {
   try {
-    const { customer_name, pgcode, email, password, mobile_no, room, branch, ref_person_name, ref_person_contact_no, joining_date, added_by, added_by_type } = req.body
+    const { customer_name, pgcode, email, password, mobile_no, room, branch, emergency_contact_name, emergency_contact_mobile_no, ref_person_name, ref_person_contact_no, joining_date, added_by, added_by_type } = req.body
 
-    if (!customer_name || !pgcode || !email || !password || !mobile_no || !room || !branch || !joining_date || !added_by || !added_by_type) {
-      await removeFile(path.join("uploads", "aadhar", req.file.filename))
+    if (!customer_name || !pgcode || !email || !password || !mobile_no || !room || !branch || !joining_date || !added_by || !added_by_type || !emergency_contact_name || !emergency_contact_mobile_no) {
+      await removeCustomerDocs(req.files)
       return res.status(400).json({ message: "Please provide required fields.", success: false })
     }
 
-    if (!req.file) return res.status(400).json({ message: "Please upload aadhar card.", success: false })
+    const profileImage = req.files['profile']?.[0]?.filename || null;
+    const aadharFront = req.files['aadharFront']?.[0]?.filename || null;
+    const aadharBack = req.files['aadharBack']?.[0]?.filename || null;
+
+    if (!profileImage) {
+      await removeCustomerDocs(req.files);
+      return res.status(400).json({message:"Customer profile image is required.", success:false})
+    }
+
+    if(!aadharFront || !aadharBack){
+      await removeCustomerDocs(req.files);
+      return res.status(400).json({message:"Aadhar card front or back image is required.", success:false})
+    }
 
     const existCustomer = await LOGINMAPPING.findOne({ email })
 
     if (existCustomer) {
-      await removeFile(path.join("uploads", "aadhar", req.file.filename))
+      await removeCustomerDocs(req.files);
       return res.status(409).json({ message: "User is already exist with same email address or mobile no.", success: false })
     }
 
@@ -209,33 +227,36 @@ export const signUpCustomer = async (req, res, next) => {
     const existBranch = await BRANCH.findOne({ _id: branch, pgcode })
 
     if (!existBranch) {
-      await removeFile(path.join("uploads", "aadhar", req.file.filename))
+      await removeCustomerDocs(req.files);
       return res.status(400).json({ message: "Branch not found.", success: false })
     }
 
     const existRoom = await ROOM.findOne({ _id: room, pgcode })
 
     if (!existRoom) {
-      await removeFile(path.join("uploads", "aadhar", req.file.filename))
+      await removeCustomerDocs(req.files);
       return res.status(404).json({ message: "Room is not found.", success: false })
     }
 
     if (existRoom.branch.toString() !== branch) {
-      await removeFile(path.join("uploads", "aadhar", req.file.filename))
+      await removeCustomerDocs(req.files);
       return res.status(400).json({ message: "Requested room is not in given branch.", success: false })
     }
 
     if (existRoom.filled >= existRoom.capacity) {
-      await removeFile(path.join("uploads", "aadhar", req.file.filename))
+      await removeCustomerDocs(req.files);
       return res.status(400).json({ message: "Room capacity full. Please select another room.", success: false })
     }
 
-    let imageUrl = `${process.env.DOMAIN}/uploads/aadhar/${req.file.filename}`;
+    let profileUrl = `${process.env.DOMAIN}/uploads/profile/${profileImage}`;
+    let aadharFrontUrl = `${process.env.DOMAIN}/uploads/aadhar/${aadharFront}`
+    let aadharBackUrl = `${process.env.DOMAIN}/uploads/aadhar/${aadharBack}`
 
     const saltRounds = 10;
     const hashedPassword = await bcryptjs.hash(password, saltRounds);
 
     const newCustomer = await CUSTOMER({
+      customer_profile_picture:profileUrl,
       customer_name,
       mobile_no,
       email,
@@ -246,7 +267,10 @@ export const signUpCustomer = async (req, res, next) => {
       ref_person_name,
       ref_person_contact_no,
       joining_date,
-      aadharcard_url: imageUrl
+      aadharcard_url: aadharFrontUrl,
+      aadharcard_back_url: aadharBackUrl,
+      emergency_contact_name: emergency_contact_name,
+      emergency_contact_mobile_no: emergency_contact_mobile_no
     })
 
     const newLoginMapping = await LOGINMAPPING({

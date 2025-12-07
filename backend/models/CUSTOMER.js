@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 
 const customerSchema = new mongoose.Schema({
+  customer_profile_picture:{
+    type: String,
+    required: true
+  },
   customer_name: {
     type: String,
     required: true
@@ -57,6 +61,23 @@ const customerSchema = new mongoose.Schema({
   },
   aadharcard_url:{
     type:String,
+    required:true
+  },
+  aadharcard_back_url:{
+    type:String,
+    required:true
+  },
+  emergency_contact_name:{
+    type:String,
+    required:true
+  },
+  emergency_contact_mobile_no:{
+    type: String,
+    match: [
+      /^(?:\+91[-\s]?)?[6-9]\d{9}$/,
+      'Mobile number must be valid and can optionally start with +91'
+    ],
+    trim: true,
     required:true
   },
   ref_person_name:{

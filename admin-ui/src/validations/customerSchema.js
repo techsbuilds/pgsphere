@@ -47,6 +47,17 @@ export const customerSchema = z.object({
 
   joining_date: z
     .date({ invalid_type_error: "Joining date is required." }),
+  
+  emergency_contact_name: z 
+    .string() 
+    .min(1, {message:"Emergency contact name is required."}),
+
+  emergency_contact_mobile_no: z  
+    .string()
+    .min(1, { message: "Mobile number is required." })
+    .regex(/^[6-9]\d{9}$/, {
+      message: "Enter a valid 10-digit Indian mobile number.",
+    }),
 
   ref_person_name: z.union([
     z.string().min(1, { message: "Reference name cannot be empty." }),

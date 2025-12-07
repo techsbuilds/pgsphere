@@ -11,7 +11,8 @@ import { getAllBranch } from '../services/branchService';
 import { getRoomByBranchId } from '../services/roomService';
 import { createCustomer, updateCustomer } from '../services/customerService';
 import { getAllBankAccount } from '../services/bankAccountService';
-
+import PROFILE from '../assets/profile.png'
+import AADHAR from '../assets/aadhar.png'
 
 function CustomerForm({selectedCustomer, onClose}) {
   const [loading,setLoading] = useState(false)
@@ -19,12 +20,14 @@ function CustomerForm({selectedCustomer, onClose}) {
   const [rooms,setRooms] = useState([])
   const [selectedBranch,setSelectedBranch] = useState('')
   const [selectedRoom,setSelectedRoom] = useState('')
-  const [file,setFile] = useState(null)
-  const [preview,setPreview] = useState(selectedCustomer ? selectedCustomer.aadharcard_url : null)
+  const [profileFile,setProfileFile] = useState(null)
+  const [profilePreview,setProfilePreview] = useState(selectedCustomer ? selectedCustomer.customer_profile_picture : null)
+  const [aadharFrontFile,setAadharFrontFile] = useState(null)
+  const [aadharFrontPreview,setAadharFrontPreview] = useState(selectedCustomer ? selectedCustomer.aadharcard_url : null)
+  const [aadharBackFile,setAadharBackFile] = useState(null)
+  const [aadharBackPreview,setAadharBackPreview] = useState(selectedCustomer ? selectedCustomer.aadharcard_back_url : null)
   const [bankAccounts,setBankAccounts] = useState([])
-  const [imageError,setImageError] = useState('')
-
-  console.log('seleced customer',selectedCustomer)
+  const [imageError,setImageError] = useState({})
 
   
   const {
@@ -49,6 +52,8 @@ function CustomerForm({selectedCustomer, onClose}) {
        payment_mode:'',
        ref_person_name:'',
        ref_person_contact_no:'',
+       emergency_contact_name:'',
+       emergency_contact_mobile_no:''
     }
   })
 
@@ -68,6 +73,8 @@ function CustomerForm({selectedCustomer, onClose}) {
         payment_mode:"NONE",
         ref_person_contact_no:selectedCustomer.ref_person_contact_no || '',
         ref_person_name:selectedCustomer.ref_person_name || '',
+        emergency_contact_name:selectedCustomer.emergency_contact_name || '',
+        emergency_contact_mobile_no:selectedCustomer.emergency_contact_mobile_no || ''
       })
       setSelectedBranch(selectedCustomer.branch._id)
       setSelectedRoom(selectedCustomer.room._id)
@@ -116,18 +123,30 @@ function CustomerForm({selectedCustomer, onClose}) {
     if(selectedBranch) handleGetRoomsByBranchId(selectedBranch)
   },[selectedBranch])
 
+  const handleCheckImage = () =>{
+    if(!aadharFrontFile || !aadharBackFile || !profileFile){
+       if(!aadharFrontFile) setImageError((prev) => ({...prev, aadharFront:'Please upload aadhar card front image.'}))
+       if(!aadharBackFile) setImageError((prev) => ({...prev, aadharBack:"Please upload aadhar card back image."}))
+       if(!profileFile) setImageError((prev) => ({...prev, profile: "Please upload profile picture."}))
+       return false;
+    }else{
+      setImageError({})
+      return true
+    }
+  }
+
 
   const handleAddCustomer = async (customerData)=>{
-    if(!file) {
-      setImageError("Please upload aadhar card image.")
+    if(!handleCheckImage()){
+      toast.error("Please upload all required images.")
       return 
-    }else{
-      setImageError("")
     }
     setLoading(true)
     try{
        const formData = new FormData()
-       formData.append('aadharcard',file)
+       formData.append('profile',profileFile)
+       formData.append('aadharFront',aadharFrontFile)
+       formData.append('aadharBack', aadharBackFile)
        for (const [key, value] of Object.entries(customerData)) {
          formData.append(key, value)
        }
@@ -143,8 +162,11 @@ function CustomerForm({selectedCustomer, onClose}) {
   }
 
   const handleEditCustomer = async (customerData) => {
-     if(!preview) {
-      setImageError("Please upload aadhar card image.")
+     if(!profilePreview || !aadharFrontPreview || !aadharBackPreview) {
+      if(!profilePreview) setImageError((prev) => ({...prev, profile:'Please upload profile image.'}))
+      if(!aadharFrontPreview) setImageError((prev) => ({...prev, aadharFront:'Please upload aadhar card front image.'}))
+      if(!aadharBackPreview) setImageError((prev) => ({...prev, aadharBack:"Please upload aadhar card back image."}))
+      toast.error('Please upload all required images.')
       return 
      }else{
       setImageError("")
@@ -152,7 +174,9 @@ function CustomerForm({selectedCustomer, onClose}) {
      setLoading(true)
      try{
        const formData = new FormData()
-       formData.append('aadharcard',file)
+       if(profileFile) formData.append('profile',profileFile)
+       if(aadharFrontFile) formData.append('aadharFront', aadharFrontFile)
+       if(aadharBackFile) formData.append('aadharBack', aadharBackFile)
        for (const [key, value] of Object.entries(customerData)) {
         formData.append(key, value)
        }
@@ -184,10 +208,29 @@ function CustomerForm({selectedCustomer, onClose}) {
            </div>
            <form onSubmit={handleSubmit(selectedCustomer ? handleEditCustomer : handleAddCustomer)} className='flex flex-col gap-3 sm:gap-4'>
              <div className='flex flex-col gap-2'>
-               <label>Aadhar Card <span className='text-sm text-red-500'>*</span></label>
+               <label>Profile Picture <span className='text-sm text-red-500'>*</span></label>
                <div className='flex flex-col'>
-                 <UploadImage file={file} setFile={setFile} previewImage={preview} setPreviewImage={setPreview}></UploadImage> 
-                 {imageError && <span className='text-xs sm:text-sm text-red-500'>{imageError}</span>}
+                 <UploadImage uploadText={"Click to upload"} uploadImage={PROFILE} file={profileFile} setFile={setProfileFile} previewImage={profilePreview} setPreviewImage={setProfilePreview}></UploadImage> 
+                 {imageError?.profile && <span className='text-xs sm:text-sm text-red-500'>{imageError?.profile}</span>}
+               </div>
+             </div>
+             <div className='flex flex-col gap-2'>
+               <span>Aadhar Card</span>
+               <div className='grid grid-cols-1 md:grid-cols-2 gap-4 items-center'>
+                <div className='flex flex-col gap-2'>
+                  <label className='text-sm text-gray-500'>Front Side <span className='text-sm text-red-500'>*</span></label>
+                  <div className='flex flex-col'>
+                    <UploadImage uploadText={"Click to upload"} uploadImage={AADHAR} file={aadharFrontFile} setFile={setAadharFrontFile} previewImage={aadharFrontPreview} setPreviewImage={setAadharFrontPreview}></UploadImage>
+                    {imageError?.aadharFront && <span className='text-xs sm:text-sm text-red-500'>{imageError?.aadharFront}</span>}
+                  </div>
+                </div>
+                <div className='flex flex-col gap-2'>
+                  <label className='text-sm text-gray-500'>Back Side <span className='text-sm text-red-500'>*</span></label>
+                  <div className='flex flex-col'>
+                    <UploadImage uploadText={"Click to upload"} uploadImage={AADHAR} file={aadharBackFile} setFile={setAadharBackFile} previewImage={aadharBackPreview} setPreviewImage={setAadharBackPreview}></UploadImage>
+                    {imageError?.aadharBack && <span className='text-xs sm:text-sm text-red-500'>{imageError?.aadharBack}</span>}
+                  </div>  
+                </div>
                </div>
              </div>
              <div className='flex flex-col gap-1 sm:gap-2'>
@@ -241,7 +284,7 @@ function CustomerForm({selectedCustomer, onClose}) {
               </div>
 
              <div className='grid grid-cols-2 items-center gap-3 sm:gap-4'>
-              <div className={`flex ${selectedCustomer && "col-span-2"}  flex-col gap-1 sm:gap-2`}>
+              <div className={`flex ${selectedCustomer ? "col-span-2" : "md:col-span-1 col-span-2"}   flex-col gap-1 sm:gap-2`}>
                 <label className='text-sm sm:text-base'>Fixed Deposite Amount <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
                   <input 
@@ -256,7 +299,7 @@ function CustomerForm({selectedCustomer, onClose}) {
 
              {
                 !selectedCustomer && 
-                <div className='flex flex-col gap-1 sm:gap-2'>
+                <div className='flex md:col-span-1 col-span-2 flex-col gap-1 sm:gap-2'>
                 <label className='text-sm sm:text-base'>Pay Deposite Amount <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
                   <input 
@@ -355,6 +398,33 @@ function CustomerForm({selectedCustomer, onClose}) {
                 {errors.joining_date && <span className='text-xs sm:text-sm text-red-500'>{errors.joining_date.message}</span>}
                 </div>
              </div>
+
+             <div className='flex flex-col gap-2 sm:gap-2'>
+               <label className='text-sm sm:text-base'>Emergency Person Name <span className='text-sm text-red-500'>*</span> </label>
+               <div className='flex flex-col'>
+                 <input 
+                 type='text'
+                 {...register('emergency_contact_name')}
+                 placeholder='Enter emergenecy person name'
+                 className='p-2 sm:p-3 border border-neutral-300 rounded-md outline-none text-sm sm:text-base'
+                 ></input>
+                 {errors.emergency_contact_name && <span className='text-xs sm:text-sm text-red-500'>{errors.emergency_contact_name.message}</span>}
+               </div>
+             </div>
+
+             <div className='flex flex-col gap-2 sm:gap-2'>
+               <label className='text-sm sm:text-base'>Emergency Person Mobile No <span className='text-sm text-red-500'>*</span></label>
+               <div className='flex flex-col'>
+                 <input 
+                 type='text'
+                 placeholder='Enter emergenct person mobile no'
+                 {...register('emergency_contact_mobile_no')}
+                 className='p-2 sm:p-3 border border-neutral-300 rounded-md outline-none text-sm sm:text-base'
+                 ></input>
+                 {errors.emergency_contact_mobile_no && <span className='text-xs sm:text-sm text-red-500'>{errors.emergency_contact_mobile_no.message}</span>}
+               </div>
+             </div>
+
              <div className='flex flex-col gap-1 sm:gap-2'>
                <label className='text-sm sm:text-base'>Referral Person Name</label>
                <div className='flex flex-col'>
@@ -366,6 +436,7 @@ function CustomerForm({selectedCustomer, onClose}) {
                 ></input>
                </div>
              </div>
+
              <div className='flex flex-col gap-1 sm:gap-2'>
                <label className='text-sm sm:text-base'>Referral Person Contactno</label>
                <div className='flex flex-col'>
