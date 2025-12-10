@@ -1,4 +1,4 @@
-import { ChevronRight, Plus, Search } from "lucide-react";
+import { ChevronRight, FileText, Plus, Search } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getAllBranch } from "../services/branchService";
@@ -13,6 +13,7 @@ function Breadcrumb({
   selectedStatus,
   setSelectedStatus,
   onClick,
+  openExcel
 }) {
   const location = useLocation();
   const navigate = useNavigate()
@@ -202,6 +203,12 @@ function Breadcrumb({
                       </>
                     }
                   </select>
+                  <button 
+                    onClick={() => openExcel()}
+                    className="p-2 px-3 sm:px-4 bg-primary transition-all duration-300 hover:bg-primary/90 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm sm:text-base whitespace-nowrap">
+                    <span className="hidden sm:inline">Import Meal</span>
+                    <span className="sm:hidden"><FileText></FileText></span>
+                  </button>
                   <button
                     onClick={() => onClick()}
                     className="p-2 px-3 sm:px-4 bg-primary transition-all duration-300 hover:bg-primary/90 font-medium cursor-pointer backdrop-blur-md rounded-md text-white text-sm sm:text-base whitespace-nowrap"

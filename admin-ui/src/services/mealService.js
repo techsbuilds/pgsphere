@@ -68,3 +68,18 @@ export const getTodayMeal = async (date, branchId) => {
         throw new Error(errMessage)
     }
 }
+
+export const createMealByXl = async (formData) => {
+    try{
+        const response = await api.post('/meal/xl', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          })
+        return response.data.data
+    }catch(err){
+        console.log(err)
+        const errMessage = err?.response?.data?.message
+        throw new Error(errMessage)
+    }
+}

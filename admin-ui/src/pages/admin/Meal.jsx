@@ -4,6 +4,7 @@ import { format, addDays, subDays } from "date-fns"
 import { getMealList, getMealConfig } from '../../services/mealService';
 import { getAllBranch } from '../../services/branchService';
 import MealForm from '../../components/MealForm';
+import AddMealByXl from '../../components/AddMealByXl';
 
 //Importing icons
 import { Calendar, ChevronLeft, Utensils,  ChevronRight, Clock, User, Pen } from 'lucide-react';
@@ -21,6 +22,12 @@ function Meal() {
   const [mealData, setMealData] = useState({})
   const [mealsForSelectedDate, setMealsForSelectedDate] = useState([])
   const [mealDocument, setMealDocument] = useState(null)
+  const [openMealXlForm,setOpenMealXlForm] = useState(false)
+  const [counts,setCounts] = useState({
+    breakfast:0,
+    lunch:0,
+    dinner:0
+  })
   const scrollContainerRef = useRef(null)
   const currentDate = new Date()
   
@@ -84,6 +91,7 @@ function Meal() {
     const dateKey = format(date, "yyyy-MM-dd")
     const dateData = data[dateKey] || {}
     const dateMeals = dateData.meals || []
+    setCounts(dateData.counts || {breakfast:0,lunch:0,dinner:0})
     
     if (dateMeals.length > 0 && dateMeals[0].meals) {
       const mealDoc = dateMeals[0]
@@ -193,6 +201,27 @@ function Meal() {
     }
   }
 
+  const handleCloseAddMealXlForm = (refresh = false) =>{
+    setOpenMealXlForm(false)
+    if (refresh && selectedBranch) {
+      // Refresh meal list after save
+      const handleGetMealList = async () => {
+        try {
+          setLoader(true)
+          const data = await getMealList(selectedBranch)
+          setMealData(data)
+          updateMealsForDate(selectedDate, data)
+        } catch(err) {
+          console.log(err)
+          toast.error(err?.message)
+        } finally {
+          setLoader(false)
+        }
+      }
+      handleGetMealList()
+    }
+  }
+
   useEffect(()=>{
     const handleGetMealConfig = async () =>{
       try{
@@ -217,12 +246,10 @@ function Meal() {
      }
   }
 
-  console.log(mealsForSelectedDate)
-
 
   return (
     <div className='flex flex-col h-full gap-4 sm:gap-6 lg:gap-8 px-2 sm:px-4 lg:px-0'>
-       <Breadcrumb onClick={handleOpenMealForm} selectedBranch={selectedBranch} setSelectedBranch={setSelectedBranch}></Breadcrumb>
+       <Breadcrumb openExcel={()=>setOpenMealXlForm(true)} onClick={handleOpenMealForm} selectedBranch={selectedBranch} setSelectedBranch={setSelectedBranch}></Breadcrumb>
        <MealForm 
          isEdit={isEdit} 
          openForm={openMealForm} 
@@ -231,7 +258,11 @@ function Meal() {
          mealDocument={mealDocument}
          onClose={handleCloseMealForm}
        />
-      
+       <AddMealByXl
+        openForm={openMealXlForm}
+        onClose={handleCloseAddMealXlForm}
+       ></AddMealByXl>
+       
       {loader ? (
         <div className='flex flex-col gap-3 sm:gap-4 rounded-2xl bg-white p-3 sm:p-4 animate-pulse'>
           <div className='flex items-center gap-2'>
@@ -444,9 +475,22 @@ function Meal() {
                           <Clock size={16} className='sm:w-[18px] sm:h-[18px] text-neutral-400'></Clock>
                           <span className='text-neutral-400 text-xs sm:text-sm whitespace-nowrap'>Cancel before {parseTime(meal.type)}</span>
                         </div>
-                        <span className='bg-[#f5f5f5] py-1 px-2 text-xs sm:text-sm rounded-2xl whitespace-nowrap'>
-                          {meal.cancelled ? (meal.cancelled.length > 0 ? `${meal.cancelled.length} Cancelled` : '0 Cancelled') : '0 Cancelled'}
-                        </span>
+                        <div className='flex flex-col items-end gap-1.5'>
+                          <div className='flex items-center gap-2'>
+                            <span className='bg-blue-50 text-blue-700 py-1 px-2 text-xs sm:text-sm rounded-2xl whitespace-nowrap font-medium'>
+                              {(() => {
+                                const mealType = meal.type?.toLowerCase() || '';
+                                const count = mealType === 'breakfast' ? counts.breakfast : 
+                                             mealType === 'lunch' ? counts.lunch : 
+                                             mealType === 'dinner' ? counts.dinner : 0;
+                                return `${count} Expected`;
+                              })()}
+                            </span>
+                            <span className='bg-red-50 text-red-700 py-1 px-2 text-xs sm:text-sm rounded-2xl whitespace-nowrap font-medium'>
+                              {meal.cancelled ? (meal.cancelled.length > 0 ? `${meal.cancelled.length} Cancelled` : '0 Cancelled') : '0 Cancelled'}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </button>
                   )
